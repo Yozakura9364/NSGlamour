@@ -627,8 +627,11 @@ def is_empty_ec_dye_name(value: str) -> bool:
 def parse_ec_dyes(block: str) -> List[str]:
     dyes = []
     for tag_block in iter_div_blocks(block, ["tag"]):
-        dye = clean_ec_dye_name(text_from_html(tag_block))
-        if dye and dye not in dyes:
+        raw_dye = text_from_html(tag_block)
+        if not raw_dye:
+            continue
+        dye = clean_ec_dye_name(raw_dye)
+        if dye:
             dyes.append(dye)
     return dyes[:2]
 
@@ -1151,7 +1154,14 @@ def get_ec_normal_dyes(entry: Dict[str, Any]) -> List[str]:
     if entry.get("slot") == "Glasses":
         return []
     dyes = entry.get("dyes", []) if isinstance(entry.get("dyes"), list) else []
-    return [dye for dye in dyes if not is_empty_ec_dye_name(dye)]
+    normal_dyes = []
+    for dye in dyes[:2]:
+        if not normalize_space(str(dye or "")):
+            continue
+        cleaned = clean_ec_dye_name(str(dye))
+        if cleaned:
+            normal_dyes.append(cleaned)
+    return normal_dyes
 
 
 def find_item_record_by_id(mapping: Dict[str, Any], item_id: int, slot_name: str = "") -> Optional[Dict[str, Any]]:
@@ -1334,54 +1344,97 @@ def get_rs_equipment_id(equipment: Dict[str, Any]) -> int:
     return 0
 
 
-def get_rs_dye_ids(equipment: Dict[str, Any]) -> List[int]:
-    raw_values: List[Any] = []
+def get_rs_dye_id_slots(equipment: Dict[str, Any]) -> List[Dict[str, Any]]:
     raw_dye_ids = equipment.get("dye_ids")
+    raw_values: List[Any] = []
     if isinstance(raw_dye_ids, str):
         raw_values.extend(part for part in raw_dye_ids.split(",") if part.strip())
     elif isinstance(raw_dye_ids, list):
         raw_values.extend(raw_dye_ids)
 
-    dyes = equipment.get("dyes")
-    if isinstance(dyes, list):
-        for dye in dyes:
-            if isinstance(dye, dict):
-                raw_values.append(dye.get("id"))
-            else:
-                raw_values.append(dye)
+    slots = []
+    for value in raw_values[:2]:
+        if isinstance(value, dict):
+            slots.append(
+                {
+                    "id": get_rs_id(value.get("id")),
+                    "name": get_rs_text(value.get("name")),
+                    "color": get_rs_text(value.get("color") or value.get("hex")),
+                }
+            )
+        else:
+            slots.append({"id": get_rs_id(value)})
+    return slots
 
-    dye_ids = []
-    for value in raw_values:
-        dye_id = get_rs_id(value)
-        if dye_id > 0:
-            dye_ids.append(dye_id)
-    return dye_ids[:2]
+
+def get_rs_dye_object_slots(equipment: Dict[str, Any]) -> List[Dict[str, Any]]:
+    dyes = equipment.get("dyes")
+    if not isinstance(dyes, list):
+        return []
+
+    slots = []
+    for dye in dyes[:2]:
+        if isinstance(dye, dict):
+            slots.append(
+                {
+                    "id": get_rs_id(dye.get("id")),
+                    "name": get_rs_text(dye.get("name")),
+                    "color": get_rs_text(dye.get("color") or dye.get("hex")),
+                }
+            )
+        else:
+            slots.append({"id": get_rs_id(dye), "name": get_rs_text(dye), "color": ""})
+    return slots
+
+
+def merge_rs_dye_slot(target: Dict[str, Any], source: Dict[str, Any], replace_empty_id: bool = False) -> None:
+    target_id = get_rs_id(target.get("id"))
+    source_id = get_rs_id(source.get("id"))
+    if replace_empty_id and target_id <= 0 and source_id > 0:
+        target["id"] = source_id
+        target_id = source_id
+    if target_id > 0 and source_id > 0 and target_id != source_id:
+        return
+    if target_id <= 0 and source_id > 0:
+        return
+    if not get_rs_text(target.get("name")) and get_rs_text(source.get("name")):
+        target["name"] = get_rs_text(source.get("name"))
+    if not get_rs_text(target.get("color")) and get_rs_text(source.get("color")):
+        target["color"] = get_rs_text(source.get("color"))
+
+
+def get_rs_dye_slots(equipment: Dict[str, Any]) -> List[Dict[str, Any]]:
+    id_slots = get_rs_dye_id_slots(equipment)
+    object_slots = get_rs_dye_object_slots(equipment)
+    if object_slots and len(object_slots) > len(id_slots):
+        return object_slots[:2]
+
+    slots = [dict(slot) for slot in id_slots]
+    if not slots:
+        slots = [dict(slot) for slot in object_slots]
+    else:
+        if len(object_slots) == len(slots):
+            for index, object_slot in enumerate(object_slots):
+                merge_rs_dye_slot(slots[index], object_slot)
+        else:
+            by_id = {get_rs_id(slot.get("id")): slot for slot in slots if get_rs_id(slot.get("id")) > 0}
+            for object_slot in object_slots:
+                matched_slot = by_id.get(get_rs_id(object_slot.get("id")))
+                if matched_slot is not None:
+                    merge_rs_dye_slot(matched_slot, object_slot)
+    return slots[:2]
+
+
+def get_rs_dye_ids(equipment: Dict[str, Any]) -> List[int]:
+    return [get_rs_id(slot.get("id")) for slot in get_rs_dye_slots(equipment)]
 
 
 def get_rs_dye_names(equipment: Dict[str, Any]) -> List[str]:
-    names = []
-    dyes = equipment.get("dyes")
-    if isinstance(dyes, list):
-        for dye in dyes:
-            if isinstance(dye, dict):
-                name = get_rs_text(dye.get("name"))
-            else:
-                name = get_rs_text(dye)
-            if name:
-                names.append(name)
-    return names[:2]
+    return [get_rs_text(slot.get("name")) for slot in get_rs_dye_slots(equipment)]
 
 
 def get_rs_dye_colors(equipment: Dict[str, Any]) -> List[str]:
-    colors = []
-    dyes = equipment.get("dyes")
-    if isinstance(dyes, list):
-        for dye in dyes:
-            if isinstance(dye, dict):
-                color = get_rs_text(dye.get("color") or dye.get("hex"))
-                if color:
-                    colors.append(color)
-    return colors[:2]
+    return [get_rs_text(slot.get("color")) for slot in get_rs_dye_slots(equipment)]
 
 
 def parse_rs_equipment(detail: Dict[str, Any]) -> List[Dict[str, Any]]:
