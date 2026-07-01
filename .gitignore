@@ -17,7 +17,8 @@ __pycache__/
 # Local/private assistant and workspace state.
 .agents/
 .claude/
-CLAUDE.md
+*.md
+!README.md
 
 # Large development-only source material.
 Anamnesis/
