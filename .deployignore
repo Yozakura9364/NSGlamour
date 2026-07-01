@@ -1,0 +1,36 @@
+# Use this as the WinSCP sync exclude list when copying the project root.
+# Safer option: run scripts/build_deploy.ps1 and sync deploy/NSGlamour instead.
+
+.git/
+.gitignore
+.deployignore
+.runtime/
+.venv/
+venv/
+deploy/
+dist/
+__pycache__/
+*.pyc
+*.pyo
+*.log
+*.tmp
+*.bak
+.DS_Store
+
+# Local/private assistant and personal notes.
+.agents/
+.claude/
+CLAUDE.md
+
+# Embedded source repos or unrelated workspaces, not needed by the web app.
+Anamnesis/
+MemoryLab/
+NSGameExplorer/
+
+# Source design files and conversion scratch output.
+templates/**/*.psd
+templates/**/*.psd.svg
+templates/psd2svg-output/
+
+# Dev-only sample output.
+data/resolved_*.json

@@ -1,0 +1,2989 @@
+{
+  "version": 2,
+  "description": "NSGlamour foreground-visible UI string database. Includes strings used by the template/equipinfo pages plus runtime dye group labels and API messages shown by import/search workflows.",
+  "generatedAt": "2026-06-20T07:20:00.000Z",
+  "locales": [
+    "zh-CN",
+    "zh-TW",
+    "en",
+    "ja",
+    "ko",
+    "de",
+    "fr"
+  ],
+  "autoFillSources": [
+    "data/item_model_mapping.json: slot_names",
+    "data/item_model_mapping.json: dye_labels",
+    "data/item_model_mapping.json: stains_by_locale[0]",
+    "existing project no-dye/undyeable labels"
+  ],
+  "strings": {
+    "common.ui.language": {
+      "zh-CN": "语言",
+      "zh-TW": "語言",
+      "en": "Language",
+      "ja": "言語",
+      "ko": "언어",
+      "de": "Sprache",
+      "fr": "Langue",
+      "note": "Common UI label shared by page headers and language controls."
+    },
+    "common.ui.interface_language": {
+      "zh-CN": "界面语言",
+      "zh-TW": "介面語言",
+      "en": "Interface language",
+      "ja": "UI言語",
+      "ko": "인터페이스 언어",
+      "de": "Oberflächensprache",
+      "fr": "Langue de l'interface",
+      "note": "Common UI label for the interface language menu."
+    },
+    "common.ui.settings": {
+      "zh-CN": "设置",
+      "zh-TW": "設定",
+      "en": "Settings",
+      "ja": "設定",
+      "ko": "설정",
+      "de": "Einstellungen",
+      "fr": "Paramètres",
+      "note": "Common UI label for settings controls."
+    },
+    "common.ui.image_1": {
+      "zh-CN": "图片1",
+      "zh-TW": "圖片1",
+      "en": "Image 1",
+      "ja": "画像1",
+      "ko": "이미지 1",
+      "de": "Bild 1",
+      "fr": "Image 1",
+      "note": "Common template image slot label."
+    },
+    "common.ui.image_2": {
+      "zh-CN": "图片2",
+      "zh-TW": "圖片2",
+      "en": "Image 2",
+      "ja": "画像2",
+      "ko": "이미지 2",
+      "de": "Bild 2",
+      "fr": "Image 2",
+      "note": "Common template image slot label."
+    },
+    "common.ui.image_3": {
+      "zh-CN": "图片3",
+      "zh-TW": "圖片3",
+      "en": "Image 3",
+      "ja": "画像3",
+      "ko": "이미지 3",
+      "de": "Bild 3",
+      "fr": "Image 3",
+      "note": "Common template image slot label."
+    },
+    "common.ui.dye": {
+      "zh-CN": "染色",
+      "zh-TW": "染色",
+      "en": "Dye",
+      "ja": "染色",
+      "ko": "염색",
+      "de": "Färbung",
+      "fr": "Teinture",
+      "note": "Common UI label for dye/coloring sections."
+    },
+    "common.ui.read": {
+      "zh-CN": "读取",
+      "zh-TW": "讀取",
+      "en": "Read",
+      "ja": "読み取り",
+      "ko": "읽기",
+      "de": "Lesen",
+      "fr": "Lire",
+      "note": "Common UI command for reading/loading from a source."
+    },
+    "common.ui.clear": {
+      "zh-CN": "清空",
+      "zh-TW": "清空",
+      "en": "Clear",
+      "ja": "クリア",
+      "ko": "지우기",
+      "de": "Leeren",
+      "fr": "Effacer",
+      "note": "Common UI command for clearing an input or current state."
+    },
+    "common.ui.equipment": {
+      "zh-CN": "装备",
+      "zh-TW": "裝備",
+      "en": "Equipment",
+      "ja": "装備",
+      "ko": "장비",
+      "de": "Ausrüstung",
+      "fr": "Équipement",
+      "note": "Common UI noun for equipment."
+    },
+    "common.page.equipment_info": {
+      "zh-CN": "装备信息",
+      "zh-TW": "裝備資訊",
+      "en": "Equipment Info",
+      "ja": "装備情報",
+      "ko": "장비 정보",
+      "de": "Ausrüstungsinfo",
+      "fr": "Infos d'équipement",
+      "note": "Side navigation label for the equipinfo page."
+    },
+    "common.ui.status": {
+      "zh-CN": "状态",
+      "zh-TW": "狀態",
+      "en": "Status",
+      "ja": "状態",
+      "ko": "상태",
+      "de": "Status",
+      "fr": "Statut",
+      "note": "Common UI noun for status sections."
+    },
+    "common.ui.yes": {
+      "zh-CN": "是",
+      "zh-TW": "是",
+      "en": "Yes",
+      "ja": "はい",
+      "ko": "예",
+      "de": "Ja",
+      "fr": "Oui",
+      "note": "Common boolean true label."
+    },
+    "common.ui.no": {
+      "zh-CN": "否",
+      "zh-TW": "否",
+      "en": "No",
+      "ja": "いいえ",
+      "ko": "아니요",
+      "de": "Nein",
+      "fr": "Non",
+      "note": "Common boolean false label."
+    },
+    "common.ui.number": {
+      "zh-CN": "编号",
+      "zh-TW": "編號",
+      "en": "Number",
+      "ja": "番号",
+      "ko": "번호",
+      "de": "Nummer",
+      "fr": "Numéro",
+      "note": "Common numeric identifier label."
+    },
+    "equipinfo.ui.import_equipment_info": {
+      "zh-CN": "导入装备信息",
+      "zh-TW": "匯入裝備資訊",
+      "en": "Import Equipment Info",
+      "ja": "装備情報をインポート",
+      "ko": "장비 정보 가져오기",
+      "de": "Ausrüstungsinfos importieren",
+      "fr": "Importer les infos d'équipement",
+      "note": "Equipinfo page title and import section label."
+    },
+    "equipinfo.ui.webpage_link": {
+      "zh-CN": "网页链接",
+      "zh-TW": "網頁連結",
+      "en": "Webpage Link",
+      "ja": "ウェブページリンク",
+      "ko": "웹페이지 링크",
+      "de": "Webseiten-Link",
+      "fr": "Lien de page web",
+      "note": "Equipinfo URL input label."
+    },
+    "equipinfo.ui.post_link_placeholder": {
+      "zh-CN": "石之家或 Eorzea Collection 幻化链接",
+      "zh-TW": "石之家或 Eorzea Collection 幻化連結",
+      "en": "Rising Stones or Eorzea Collection glamour link",
+      "ja": "石之家または Eorzea Collection のミラプリリンク",
+      "ko": "石之家 또는 Eorzea Collection 장비 투영 링크",
+      "de": "Glamour-Link von 石之家 oder Eorzea Collection",
+      "fr": "Lien de mirage 石之家 ou Eorzea Collection",
+      "note": "Equipinfo URL placeholder and empty URL status."
+    },
+    "equipinfo.ui.language_meta": {
+      "zh-CN": "语言：{locale}",
+      "zh-TW": "語言：{locale}",
+      "en": "Language: {locale}",
+      "ja": "言語：{locale}",
+      "ko": "언어: {locale}",
+      "de": "Sprache: {locale}",
+      "fr": "Langue : {locale}",
+      "note": "Equipinfo result metadata source-language label."
+    },
+    "equipinfo.ui.text_info_recognition": {
+      "zh-CN": "文字信息识别",
+      "zh-TW": "文字資訊識別",
+      "en": "Text Info Recognition",
+      "ja": "テキスト情報認識",
+      "ko": "텍스트 정보 인식",
+      "de": "Texterkennung für Ausrüstungsinfos",
+      "fr": "Reconnaissance des infos textuelles",
+      "note": "Equipinfo text input and parsed file type label."
+    },
+    "equipinfo.ui.recognize": {
+      "zh-CN": "识别",
+      "zh-TW": "識別",
+      "en": "Recognize",
+      "ja": "認識",
+      "ko": "인식",
+      "de": "Erkennen",
+      "fr": "Reconnaître",
+      "note": "Equipinfo text-recognition button."
+    },
+    "equipinfo.ui.waiting_input": {
+      "zh-CN": "等待输入",
+      "zh-TW": "等待輸入",
+      "en": "Waiting for input",
+      "ja": "入力待ち",
+      "ko": "입력 대기 중",
+      "de": "Warten auf Eingabe",
+      "fr": "En attente de saisie",
+      "note": "Equipinfo initial status."
+    },
+    "equipinfo.ui.recognition_result": {
+      "zh-CN": "识别结果",
+      "zh-TW": "識別結果",
+      "en": "Recognition Results",
+      "ja": "認識結果",
+      "ko": "인식 결과",
+      "de": "Erkennungsergebnisse",
+      "fr": "Résultats de reconnaissance",
+      "note": "Equipinfo result section title."
+    },
+    "equipinfo.ui.send_to_template": {
+      "zh-CN": "送到模板",
+      "zh-TW": "送到範本",
+      "en": "Send to Template",
+      "ja": "テンプレートへ送る",
+      "ko": "템플릿으로 보내기",
+      "de": "An Vorlage senden",
+      "fr": "Envoyer au modèle",
+      "note": "Equipinfo command for sending parsed equipment to the template page."
+    },
+    "equipinfo.ui.copy_generation": {
+      "zh-CN": "文案生成",
+      "zh-TW": "文案生成",
+      "en": "Copy Generation",
+      "ja": "文面生成",
+      "ko": "문안 생성",
+      "de": "Textgenerierung",
+      "fr": "Génération de texte",
+      "note": "Equipinfo copy output section title."
+    },
+    "equipinfo.ui.copy_format": {
+      "zh-CN": "文案格式",
+      "zh-TW": "文案格式",
+      "en": "Copy Format",
+      "ja": "文面形式",
+      "ko": "문안 형식",
+      "de": "Textformat",
+      "fr": "Format du texte",
+      "note": "Equipinfo copy format control label."
+    },
+    "equipinfo.ui.format_1": {
+      "zh-CN": "格式一",
+      "zh-TW": "格式一",
+      "en": "Format 1",
+      "ja": "形式1",
+      "ko": "형식 1",
+      "de": "Format 1",
+      "fr": "Format 1",
+      "note": "Equipinfo built-in copy format label."
+    },
+    "equipinfo.ui.format_2": {
+      "zh-CN": "格式二",
+      "zh-TW": "格式二",
+      "en": "Format 2",
+      "ja": "形式2",
+      "ko": "형식 2",
+      "de": "Format 2",
+      "fr": "Format 2",
+      "note": "Equipinfo built-in copy format label."
+    },
+    "equipinfo.ui.format_3": {
+      "zh-CN": "格式三",
+      "zh-TW": "格式三",
+      "en": "Format 3",
+      "ja": "形式3",
+      "ko": "형식 3",
+      "de": "Format 3",
+      "fr": "Format 3",
+      "note": "Equipinfo built-in copy format label."
+    },
+    "equipinfo.ui.format_4": {
+      "zh-CN": "格式四",
+      "zh-TW": "格式四",
+      "en": "Format 4",
+      "ja": "形式4",
+      "ko": "형식 4",
+      "de": "Format 4",
+      "fr": "Format 4",
+      "note": "Equipinfo built-in copy format label."
+    },
+    "equipinfo.ui.custom": {
+      "zh-CN": "自定义",
+      "zh-TW": "自訂",
+      "en": "Custom",
+      "ja": "カスタム",
+      "ko": "사용자 지정",
+      "de": "Benutzerdefiniert",
+      "fr": "Personnalisé",
+      "note": "Equipinfo custom copy format label."
+    },
+    "equipinfo.ui.template": {
+      "zh-CN": "模板",
+      "zh-TW": "範本",
+      "en": "Template",
+      "ja": "テンプレート",
+      "ko": "템플릿",
+      "de": "Vorlage",
+      "fr": "Modèle",
+      "note": "Equipinfo custom template label."
+    },
+    "equipinfo.ui.reset_default_template": {
+      "zh-CN": "恢复默认模板",
+      "zh-TW": "恢復預設範本",
+      "en": "Restore Default Template",
+      "ja": "既定テンプレートに戻す",
+      "ko": "기본 템플릿 복원",
+      "de": "Standardvorlage wiederherstellen",
+      "fr": "Restaurer le modèle par défaut",
+      "note": "Equipinfo custom template reset button."
+    },
+    "equipinfo.ui.template_params": {
+      "zh-CN": "模板参数",
+      "zh-TW": "範本參數",
+      "en": "Template Parameters",
+      "ja": "テンプレートパラメータ",
+      "ko": "템플릿 매개변수",
+      "de": "Vorlagenparameter",
+      "fr": "Paramètres du modèle",
+      "note": "Equipinfo token reference aria label."
+    },
+    "equipinfo.ui.loop": {
+      "zh-CN": "循环",
+      "zh-TW": "循環",
+      "en": "Loop",
+      "ja": "ループ",
+      "ko": "반복",
+      "de": "Schleife",
+      "fr": "Boucle",
+      "note": "Equipinfo token reference group."
+    },
+    "equipinfo.ui.condition": {
+      "zh-CN": "条件",
+      "zh-TW": "條件",
+      "en": "Condition",
+      "ja": "条件",
+      "ko": "조건",
+      "de": "Bedingung",
+      "fr": "Condition",
+      "note": "Equipinfo token reference group."
+    },
+    "equipinfo.ui.global": {
+      "zh-CN": "全局",
+      "zh-TW": "全域",
+      "en": "Global",
+      "ja": "グローバル",
+      "ko": "전역",
+      "de": "Global",
+      "fr": "Global",
+      "note": "Equipinfo token reference group."
+    },
+    "equipinfo.ui.dye_loop": {
+      "zh-CN": "染剂循环",
+      "zh-TW": "染劑循環",
+      "en": "Dye Loop",
+      "ja": "染料ループ",
+      "ko": "염료 반복",
+      "de": "Farbstoff-Schleife",
+      "fr": "Boucle de teinture",
+      "note": "Equipinfo token reference group."
+    },
+    "equipinfo.ui.change_equipment": {
+      "zh-CN": "更换装备",
+      "zh-TW": "更換裝備",
+      "en": "Change Equipment",
+      "ja": "装備を変更",
+      "ko": "장비 변경",
+      "de": "Ausrüstung ändern",
+      "fr": "Changer l'équipement",
+      "note": "Equipinfo item replacement button title."
+    },
+    "equipinfo.ui.change": {
+      "zh-CN": "更换",
+      "zh-TW": "更換",
+      "en": "Change",
+      "ja": "変更",
+      "ko": "변경",
+      "de": "Ändern",
+      "fr": "Changer",
+      "note": "Equipinfo item replacement button text."
+    },
+    "equipinfo.ui.switch_to_dark": {
+      "zh-CN": "切换为黑夜",
+      "zh-TW": "切換為黑夜",
+      "en": "Switch to Dark Mode",
+      "ja": "ダークモードに切り替え",
+      "ko": "다크 모드로 전환",
+      "de": "In den Dunkelmodus wechseln",
+      "fr": "Passer en mode sombre",
+      "note": "Theme toggle title used by equipinfo when the current theme is light."
+    },
+    "equipinfo.ui.search_failed": {
+      "zh-CN": "搜索失败",
+      "zh-TW": "搜尋失敗",
+      "en": "Search Failed",
+      "ja": "検索に失敗しました",
+      "ko": "검색 실패",
+      "de": "Suche fehlgeschlagen",
+      "fr": "Échec de la recherche",
+      "note": "Equipinfo search failure fallback."
+    },
+    "equipinfo.status.reading_webpage": {
+      "zh-CN": "正在读取网页……",
+      "zh-TW": "正在讀取網頁……",
+      "en": "Reading webpage...",
+      "ja": "ウェブページを読み取り中……",
+      "ko": "웹페이지를 읽는 중...",
+      "de": "Webseite wird gelesen...",
+      "fr": "Lecture de la page web...",
+      "note": "Equipinfo link import status."
+    },
+    "equipinfo.status.enter_equipment_text": {
+      "zh-CN": "请输入装备文字",
+      "zh-TW": "請輸入裝備文字",
+      "en": "Please enter equipment text",
+      "ja": "装備テキストを入力してください",
+      "ko": "장비 텍스트를 입력하세요",
+      "de": "Bitte Ausrüstungstext eingeben",
+      "fr": "Veuillez saisir le texte d'équipement",
+      "note": "Equipinfo empty text error."
+    },
+    "equipinfo.status.recognizing_text": {
+      "zh-CN": "正在识别文字……",
+      "zh-TW": "正在識別文字……",
+      "en": "Recognizing text...",
+      "ja": "テキストを認識中……",
+      "ko": "텍스트 인식 중...",
+      "de": "Text wird erkannt...",
+      "fr": "Reconnaissance du texte...",
+      "note": "Equipinfo text parsing status."
+    },
+    "equipinfo.status.copied_copy": {
+      "zh-CN": "已复制转换文案",
+      "zh-TW": "已複製轉換文案",
+      "en": "Converted copy text copied",
+      "ja": "変換した文面をコピーしました",
+      "ko": "변환된 문안을 복사했습니다",
+      "de": "Konvertierter Text kopiert",
+      "fr": "Texte converti copié",
+      "note": "Equipinfo copy-to-clipboard status."
+    },
+    "equipinfo.status.no_template_equipment": {
+      "zh-CN": "没有可送到模板的装备",
+      "zh-TW": "沒有可送到範本的裝備",
+      "en": "No equipment can be sent to the template",
+      "ja": "テンプレートへ送れる装備がありません",
+      "ko": "템플릿으로 보낼 장비가 없습니다",
+      "de": "Keine Ausrüstung kann an die Vorlage gesendet werden",
+      "fr": "Aucun équipement ne peut être envoyé au modèle",
+      "note": "Equipinfo send-to-template empty status."
+    },
+    "equipinfo.status.sent_to_template": {
+      "zh-CN": "已送到模板",
+      "zh-TW": "已送到範本",
+      "en": "Sent to template",
+      "ja": "テンプレートへ送りました",
+      "ko": "템플릿으로 보냈습니다",
+      "de": "An Vorlage gesendet",
+      "fr": "Envoyé au modèle",
+      "note": "Equipinfo send-to-template success status."
+    },
+    "equipinfo.status.default_template_restored": {
+      "zh-CN": "已恢复默认模板",
+      "zh-TW": "已恢復預設範本",
+      "en": "Default template restored",
+      "ja": "既定テンプレートを復元しました",
+      "ko": "기본 템플릿을 복원했습니다",
+      "de": "Standardvorlage wiederhergestellt",
+      "fr": "Modèle par défaut restauré",
+      "note": "Equipinfo custom template reset status."
+    },
+    "equipinfo.status.read_failed": {
+      "zh-CN": "读取失败",
+      "zh-TW": "讀取失敗",
+      "en": "Read Failed",
+      "ja": "読み取りに失敗しました",
+      "ko": "읽기 실패",
+      "de": "Lesen fehlgeschlagen",
+      "fr": "Échec de la lecture",
+      "note": "Equipinfo link import failure fallback."
+    },
+    "equipinfo.status.recognition_failed": {
+      "zh-CN": "识别失败",
+      "zh-TW": "識別失敗",
+      "en": "Recognition Failed",
+      "ja": "認識に失敗しました",
+      "ko": "인식 실패",
+      "de": "Erkennung fehlgeschlagen",
+      "fr": "Échec de la reconnaissance",
+      "note": "Equipinfo text recognition failure fallback."
+    },
+    "equipinfo.status.changed_item": {
+      "zh-CN": "已更换：{slot} / {item}",
+      "zh-TW": "已更換：{slot} / {item}",
+      "en": "Changed: {slot} / {item}",
+      "ja": "変更済み：{slot} / {item}",
+      "ko": "변경됨: {slot} / {item}",
+      "de": "Geändert: {slot} / {item}",
+      "fr": "Modifié : {slot} / {item}",
+      "note": "Equipinfo item replacement success status."
+    },
+    "equipinfo.backend.no_equipment_info": {
+      "zh-CN": "没有识别到装备信息",
+      "zh-TW": "沒有識別到裝備資訊",
+      "en": "No equipment info was recognized",
+      "ja": "装備情報を認識できませんでした",
+      "ko": "장비 정보를 인식하지 못했습니다",
+      "de": "Keine Ausrüstungsinfos erkannt",
+      "fr": "Aucune info d'équipement reconnue",
+      "note": "Backend /api/equipinfo/parse-text error."
+    },
+    "equipinfo.backend.unrecognized_link": {
+      "zh-CN": "无法识别，请输入石之家或 Eorzea Collection 链接",
+      "zh-TW": "無法識別，請輸入石之家或 Eorzea Collection 連結",
+      "en": "Unable to recognize it. Please enter a Rising Stones or Eorzea Collection link",
+      "ja": "認識できません。石之家または Eorzea Collection のリンクを入力してください",
+      "ko": "인식할 수 없습니다. 石之家 또는 Eorzea Collection 링크를 입력하세요",
+      "de": "Erkennung fehlgeschlagen. Bitte gib einen 石之家- oder Eorzea Collection-Link ein",
+      "fr": "Impossible de reconnaître le lien. Veuillez saisir un lien 石之家 ou Eorzea Collection",
+      "note": "Backend /api/import-glamour-link error shown on equipinfo link import."
+    },
+    "equipinfo.backend.text_too_long": {
+      "zh-CN": "文本过长，一次最多 20000 字",
+      "zh-TW": "文字過長，一次最多 20000 字",
+      "en": "Text is too long. Up to 20,000 characters at a time",
+      "ja": "テキストが長すぎます。一度に最大 20000 文字までです",
+      "ko": "텍스트가 너무 깁니다. 한 번에 최대 20000자까지 가능합니다",
+      "de": "Der Text ist zu lang. Maximal 20.000 Zeichen pro Vorgang",
+      "fr": "Le texte est trop long. 20 000 caractères maximum à la fois",
+      "note": "Backend /api/equipinfo/parse-text length error."
+    },
+    "equipinfo.backend.text_equipment_info": {
+      "zh-CN": "文本装备信息",
+      "zh-TW": "文字裝備資訊",
+      "en": "Text Equipment Info",
+      "ja": "テキスト装備情報",
+      "ko": "텍스트 장비 정보",
+      "de": "Text-Ausrüstungsinfos",
+      "fr": "Infos d'équipement textuelles",
+      "note": "Backend /api/equipinfo/parse-text source name."
+    },
+    "equipinfo.backend.dye_unrecognized": {
+      "zh-CN": "第 {line_number} 行染剂未识别：{dye}",
+      "zh-TW": "第 {line_number} 行染劑未識別：{dye}",
+      "en": "Line {line_number}: dye not recognized: {dye}",
+      "ja": "{line_number} 行目の染料を認識できません：{dye}",
+      "ko": "{line_number}행 염료를 인식하지 못했습니다: {dye}",
+      "de": "Zeile {line_number}: Farbstoff nicht erkannt: {dye}",
+      "fr": "Ligne {line_number} : teinture non reconnue : {dye}",
+      "note": "Backend /api/equipinfo/parse-text warning."
+    },
+    "equipinfo.backend.dye_without_equipment": {
+      "zh-CN": "第 {line_number} 行染剂没有可归属的装备：{line}",
+      "zh-TW": "第 {line_number} 行染劑沒有可歸屬的裝備：{line}",
+      "en": "Line {line_number}: dye has no equipment to attach to: {line}",
+      "ja": "{line_number} 行目の染料に割り当て先の装備がありません：{line}",
+      "ko": "{line_number}행 염료를 연결할 장비가 없습니다: {line}",
+      "de": "Zeile {line_number}: Farbstoff hat keine zugehörige Ausrüstung: {line}",
+      "fr": "Ligne {line_number} : la teinture n'a aucun équipement associé : {line}",
+      "note": "Backend /api/equipinfo/parse-text warning."
+    },
+    "equipinfo.backend.item_unrecognized": {
+      "zh-CN": "第 {line_number} 行装备未识别：{item_text}",
+      "zh-TW": "第 {line_number} 行裝備未識別：{item_text}",
+      "en": "Line {line_number}: equipment not recognized: {item_text}",
+      "ja": "{line_number} 行目の装備を認識できません：{item_text}",
+      "ko": "{line_number}행 장비를 인식하지 못했습니다: {item_text}",
+      "de": "Zeile {line_number}: Ausrüstung nicht erkannt: {item_text}",
+      "fr": "Ligne {line_number} : équipement non reconnu : {item_text}",
+      "note": "Backend /api/equipinfo/parse-text warning."
+    },
+    "equipinfo.backend.slot_unknown": {
+      "zh-CN": "第 {line_number} 行无法判断部位：{item_text}",
+      "zh-TW": "第 {line_number} 行無法判斷部位：{item_text}",
+      "en": "Line {line_number}: unable to determine slot: {item_text}",
+      "ja": "{line_number} 行目の部位を判定できません：{item_text}",
+      "ko": "{line_number}행 부위를 판단할 수 없습니다: {item_text}",
+      "de": "Zeile {line_number}: Slot kann nicht bestimmt werden: {item_text}",
+      "fr": "Ligne {line_number} : impossible de déterminer l'emplacement : {item_text}",
+      "note": "Backend /api/equipinfo/parse-text warning."
+    },
+    "item_model_mapping.runtime-data.001": {
+      "zh-CN": "橙色系",
+      "zh-TW": "橙色系",
+      "en": "Orange",
+      "ja": "オレンジ",
+      "ko": "주황",
+      "de": "Orange",
+      "fr": "Orange",
+      "note": "Dye picker group label returned by /api/stains and displayed in the UI.",
+      "occurrences": [
+        {
+          "file": "data/item_model_mapping.json",
+          "line": 0,
+          "kind": "runtime-data"
+        }
+      ]
+    },
+    "item_model_mapping.runtime-data.002": {
+      "zh-CN": "红色系",
+      "zh-TW": "紅色系",
+      "en": "Red",
+      "ja": "レッド",
+      "ko": "빨강",
+      "de": "Rot",
+      "fr": "Rouge",
+      "note": "Dye picker group label returned by /api/stains and displayed in the UI.",
+      "occurrences": [
+        {
+          "file": "data/item_model_mapping.json",
+          "line": 0,
+          "kind": "runtime-data"
+        }
+      ]
+    },
+    "item_model_mapping.runtime-data.003": {
+      "zh-CN": "黄色系",
+      "zh-TW": "黃色系",
+      "en": "Yellow",
+      "ja": "イエロー",
+      "ko": "노랑",
+      "de": "Gelb",
+      "fr": "Jaune",
+      "note": "Dye picker group label returned by /api/stains and displayed in the UI.",
+      "occurrences": [
+        {
+          "file": "data/item_model_mapping.json",
+          "line": 0,
+          "kind": "runtime-data"
+        }
+      ]
+    },
+    "item_model_mapping.runtime-data.004": {
+      "zh-CN": "灰色系",
+      "zh-TW": "灰色系",
+      "en": "Gray",
+      "ja": "グレー",
+      "ko": "회색",
+      "de": "Grau",
+      "fr": "Gris",
+      "note": "Dye picker group label returned by /api/stains and displayed in the UI.",
+      "occurrences": [
+        {
+          "file": "data/item_model_mapping.json",
+          "line": 0,
+          "kind": "runtime-data"
+        }
+      ]
+    },
+    "item_model_mapping.runtime-data.005": {
+      "zh-CN": "蓝色系",
+      "zh-TW": "藍色系",
+      "en": "Blue",
+      "ja": "ブルー",
+      "ko": "파랑",
+      "de": "Blau",
+      "fr": "Bleu",
+      "note": "Dye picker group label returned by /api/stains and displayed in the UI.",
+      "occurrences": [
+        {
+          "file": "data/item_model_mapping.json",
+          "line": 0,
+          "kind": "runtime-data"
+        }
+      ]
+    },
+    "item_model_mapping.runtime-data.006": {
+      "zh-CN": "绿色系",
+      "zh-TW": "綠色系",
+      "en": "Green",
+      "ja": "グリーン",
+      "ko": "초록",
+      "de": "Grün",
+      "fr": "Vert",
+      "note": "Dye picker group label returned by /api/stains and displayed in the UI.",
+      "occurrences": [
+        {
+          "file": "data/item_model_mapping.json",
+          "line": 0,
+          "kind": "runtime-data"
+        }
+      ]
+    },
+    "item_model_mapping.runtime-data.007": {
+      "zh-CN": "特殊色",
+      "zh-TW": "特殊色",
+      "en": "Special",
+      "ja": "スペシャル",
+      "ko": "특수",
+      "de": "Spezial",
+      "fr": "Spécial",
+      "note": "Dye picker group label returned by /api/stains and displayed in the UI.",
+      "occurrences": [
+        {
+          "file": "data/item_model_mapping.json",
+          "line": 0,
+          "kind": "runtime-data"
+        }
+      ]
+    },
+    "item_model_mapping.runtime-data.008": {
+      "zh-CN": "紫色系",
+      "zh-TW": "紫色系",
+      "en": "Purple",
+      "ja": "パープル",
+      "ko": "보라",
+      "de": "Lila",
+      "fr": "Violet",
+      "note": "Dye picker group label returned by /api/stains and displayed in the UI.",
+      "occurrences": [
+        {
+          "file": "data/item_model_mapping.json",
+          "line": 0,
+          "kind": "runtime-data"
+        }
+      ]
+    },
+    "server.app.server-error.eorzea_collection_http_https": {
+      "zh-CN": "只支持 Eorzea Collection 的 http/https 链接",
+      "zh-TW": "只支援 Eorzea Collection 的 http/https 連結",
+      "en": "Only supports http/https links from Eorzea Collection",
+      "ja": "Eorzea Collection の http/https リンクのみをサポートしています",
+      "ko": "Eorzea Collection의 http/https 링크만 지원합니다",
+      "de": "Unterstützt nur http/https-Links von Eorzea Collection",
+      "fr": "Ne prend en charge que les liens http/https de Eorzea Collection",
+      "note": "Backend error/status message returned by API and shown in the UI.",
+      "occurrences": [
+        {
+          "file": "scripts/app.py",
+          "line": 400,
+          "kind": "server-error"
+        }
+      ]
+    },
+    "server.app.server-error.ffxiv_eorzeacollection_com": {
+      "zh-CN": "只支持 ffxiv.eorzeacollection.com 的幻化链接",
+      "zh-TW": "僅支援 ffxiv.eorzeacollection.com 的幻化連結",
+      "en": "Only supports glamour links from ffxiv.eorzeacollection.com",
+      "ja": "ffxiv.eorzeacollection.com のミラプリリンクのみをサポートしています",
+      "ko": "ffxiv.eorzeacollection.com의 장비 투영 링크만 지원합니다",
+      "de": "Unterstützt nur Glamour-Links von ffxiv.eorzeacollection.com",
+      "fr": "Ne prend en charge que les liens de mirage de ffxiv.eorzeacollection.com",
+      "note": "Backend error/status message returned by API and shown in the UI.",
+      "occurrences": [
+        {
+          "file": "scripts/app.py",
+          "line": 402,
+          "kind": "server-error"
+        }
+      ]
+    },
+    "server.app.server-error.eorzea_collection_glamour": {
+      "zh-CN": "链接不是有效的 Eorzea Collection 幻化页",
+      "zh-TW": "連結不是有效的 Eorzea Collection 幻化頁",
+      "en": "Link is not a valid Eorzea Collection glamour page",
+      "ja": "リンクは有効な Eorzea Collection のミラプリページではありません",
+      "ko": "링크는 유효한 Eorzea Collection 장비 투영 페이지가 아닙니다",
+      "de": "Der Link ist keine gültige Eorzea-Collection-Glamour-Seite",
+      "fr": "Le lien n’est pas une page de mirage Eorzea Collection valide",
+      "note": "Backend error/status message returned by API and shown in the UI.",
+      "occurrences": [
+        {
+          "file": "scripts/app.py",
+          "line": 404,
+          "kind": "server-error"
+        }
+      ]
+    },
+    "server.app.server-error.eorzea_collection_http": {
+      "zh-CN": "Eorzea Collection 返回错误：HTTP {exc.code}",
+      "zh-TW": "Eorzea Collection 回傳錯誤：HTTP {exc.code}",
+      "en": "Eorzea Collection returned an error: HTTP {exc.code}",
+      "ja": "Eorzea Collection がエラーを返しました：HTTP {exc.code}",
+      "ko": "Eorzea Collection이 오류를 반환했습니다: HTTP {exc.code}",
+      "de": "Eorzea Collection hat einen Fehler zurückgegeben: HTTP {exc.code}",
+      "fr": "Eorzea Collection a renvoyé une erreur : HTTP {exc.code}",
+      "note": "Backend error/status message returned by API and shown in the UI.",
+      "occurrences": [
+        {
+          "file": "scripts/app.py",
+          "line": 425,
+          "kind": "server-error"
+        }
+      ]
+    },
+    "server.app.server-error.eorzea_collection_2": {
+      "zh-CN": "Eorzea Collection 返回了空跳转地址",
+      "zh-TW": "Eorzea Collection 回傳了空的重新導向地址",
+      "en": "Eorzea Collection returned an empty redirect URL",
+      "ja": "Eorzea Collection が空のリダイレクト先 URL を返しました",
+      "ko": "Eorzea Collection이 빈 리디렉션 주소를 반환했습니다",
+      "de": "Eorzea Collection hat eine leere Weiterleitungsadresse zurückgegeben",
+      "fr": "Eorzea Collection a renvoyé une adresse de redirection vide",
+      "note": "Backend error/status message returned by API and shown in the UI.",
+      "occurrences": [
+        {
+          "file": "scripts/app.py",
+          "line": 428,
+          "kind": "server-error"
+        }
+      ]
+    },
+    "server.app.server-error.eorzea_collection_3": {
+      "zh-CN": "无法读取 Eorzea Collection 页面：{exc.reason}",
+      "zh-TW": "無法讀取 Eorzea Collection 頁面：{exc.reason}",
+      "en": "Unable to read Eorzea Collection page: {exc.reason}",
+      "ja": "Eorzea Collection ページを読み取れません：{exc.reason}",
+      "ko": "Eorzea Collection 페이지를 읽을 수 없습니다: {exc.reason}",
+      "de": "Eorzea Collection-Seite kann nicht gelesen werden: {exc.reason}",
+      "fr": "Impossible de lire la page Eorzea Collection : {exc.reason}",
+      "note": "Backend error/status message returned by API and shown in the UI.",
+      "occurrences": [
+        {
+          "file": "scripts/app.py",
+          "line": 431,
+          "kind": "server-error"
+        }
+      ]
+    },
+    "server.app.server-error.eorzea_collection_4": {
+      "zh-CN": "Eorzea Collection 页面跳转次数过多",
+      "zh-TW": "Eorzea Collection 頁面重新導向次數過多",
+      "en": "Eorzea Collection page redirected too many times",
+      "ja": "Eorzea Collection ページのリダイレクト回数が多すぎます",
+      "ko": "Eorzea Collection 페이지의 리디렉션 횟수가 너무 많습니다",
+      "de": "Eorzea Collection-Seite wurde zu oft weitergeleitet",
+      "fr": "La page Eorzea Collection a effectué trop de redirections",
+      "note": "Backend error/status message returned by API and shown in the UI.",
+      "occurrences": [
+        {
+          "file": "scripts/app.py",
+          "line": 433,
+          "kind": "server-error"
+        }
+      ]
+    },
+    "server.app.server-error.018": {
+      "zh-CN": "未在页面中识别到投影信息",
+      "zh-TW": "未在頁面中識別到投影資訊",
+      "en": "No Glamours information was recognized on the page",
+      "ja": "ページ内でミラージュプリズム情報を認識できませんでした",
+      "ko": "페이지에서 장비 투영 정보를 인식하지 못했습니다",
+      "de": "Auf der Seite wurden keine Projektionen-Informationen erkannt",
+      "fr": "Aucune information sur les mirages n'a été reconnue sur la page",
+      "note": "Backend error/status message returned by API and shown in the UI.",
+      "occurrences": [
+        {
+          "file": "scripts/app.py",
+          "line": 535,
+          "kind": "server-error"
+        },
+        {
+          "file": "scripts/app.py",
+          "line": 569,
+          "kind": "server-error"
+        }
+      ]
+    },
+    "server.app.server-json-error.036": {
+      "zh-CN": "一次只能载入一条石之家幻化链接",
+      "zh-TW": "一次只能載入一條石之家幻化連結",
+      "en": "Only one Rising Stones glamour link can be loaded at a time",
+      "ja": "一度に読み込める石之家のミラプリリンクは 1 件のみです",
+      "ko": "石之家 장비 투영 링크는 한 번에 하나만 불러올 수 있습니다",
+      "de": "Es kann jeweils nur ein Rising-Stones-Glamour-Link geladen werden",
+      "fr": "Un seul lien de mirage Rising Stones peut être chargé à la fois",
+      "note": "Backend error/status message returned by API and shown in the UI.",
+      "occurrences": [
+        {
+          "file": "scripts/app.py",
+          "line": 1727,
+          "kind": "server-json-error"
+        }
+      ]
+    },
+    "static.app.frontend-literal.040": {
+      "zh-CN": "切换为黑夜模式",
+      "zh-TW": "切換為黑夜模式",
+      "en": "Switch to Dark Mode",
+      "ja": "ダークモードに切り替え",
+      "ko": "다크 모드로 전환",
+      "de": "In den Dunkelmodus wechseln",
+      "fr": "Passer en mode sombre",
+      "note": "",
+      "occurrences": [
+        {
+          "file": "static/template.js",
+          "line": 622,
+          "kind": "frontend-literal"
+        }
+      ]
+    },
+    "static.app.frontend-literal.047": {
+      "zh-CN": "无染色",
+      "zh-TW": "無染色",
+      "en": "No Color",
+      "ja": "染色無し",
+      "ko": "염색 안 함",
+      "de": "Keine Farbe",
+      "fr": "Aucune",
+      "note": "Auto-filled from data/item_model_mapping.json Stain id 0.",
+      "occurrences": [
+        {
+          "file": "static/template.js",
+          "line": 396,
+          "kind": "frontend-literal"
+        },
+        {
+          "file": "static/template.js",
+          "line": 398,
+          "kind": "frontend-literal"
+        }
+      ]
+    },
+    "static.app.frontend-literal.id": {
+      "zh-CN": "物品ID",
+      "zh-TW": "物品ID",
+      "en": "Item ID",
+      "ja": "Item ID",
+      "ko": "소지품 ID",
+      "de": "Item ID",
+      "fr": "Item ID",
+      "note": "",
+      "occurrences": [
+        {
+          "file": "static/template.js",
+          "line": 1683,
+          "kind": "frontend-literal"
+        }
+      ]
+    },
+    "static.app.frontend-literal.059": {
+      "zh-CN": "染剂",
+      "zh-TW": "染劑",
+      "en": "Dyes",
+      "ja": "染料",
+      "ko": "염료",
+      "de": "Farben",
+      "fr": "Teintures",
+      "note": "",
+      "occurrences": [
+        {
+          "file": "static/template.js",
+          "line": 1182,
+          "kind": "frontend-literal"
+        },
+        {
+          "file": "static/template.js",
+          "line": 1194,
+          "kind": "frontend-literal"
+        }
+      ]
+    },
+    "static.app.frontend-literal.100": {
+      "zh-CN": "不可染色",
+      "zh-TW": "不可染色",
+      "en": "Undyeable",
+      "ja": "染色不可",
+      "ko": "염색 불가",
+      "de": "Nicht färbbar",
+      "fr": "Teinture impossible",
+      "note": "Auto-filled from existing project no-dye/undyeable labels.",
+      "occurrences": [
+        {
+          "file": "static/template.js",
+          "line": 402,
+          "kind": "frontend-literal"
+        },
+        {
+          "file": "static/template.js",
+          "line": 1658,
+          "kind": "frontend-literal"
+        },
+        {
+          "file": "static/template.js",
+          "line": 2224,
+          "kind": "frontend-literal"
+        }
+      ]
+    },
+    "static.template.frontend-literal.207": {
+      "aliasOf": "static.app.frontend-literal.047",
+      "note": "Alias: use the canonical no-dye label.",
+      "occurrences": [
+        {
+          "file": "static/template.js",
+          "line": 400,
+          "kind": "frontend-literal"
+        }
+      ]
+    },
+    "static.template.frontend-literal.209": {
+      "zh-CN": "图片 {value}",
+      "zh-TW": "圖片 {value}",
+      "en": "Image {value}",
+      "ja": "画像 {value}",
+      "ko": "이미지 {value}",
+      "de": "Bild {value}",
+      "fr": "Image {value}",
+      "note": "Template image slot label. {value} is the dynamic image index or label.",
+      "occurrences": [
+        {
+          "file": "static/template.js",
+          "line": 750,
+          "kind": "frontend-literal"
+        }
+      ]
+    },
+    "static.template.frontend-literal.198": {
+      "aliasOf": "common.ui.image_1",
+      "note": "Alias: use the common numbered image slot label.",
+      "occurrences": [
+        {
+          "file": "static/template.js",
+          "line": 121,
+          "kind": "frontend-literal"
+        }
+      ]
+    },
+    "static.template.frontend-literal.199": {
+      "aliasOf": "common.ui.image_2",
+      "note": "Alias: use the common numbered image slot label.",
+      "occurrences": [
+        {
+          "file": "static/template.js",
+          "line": 131,
+          "kind": "frontend-literal"
+        }
+      ]
+    },
+    "static.template.frontend-literal.200": {
+      "aliasOf": "common.ui.image_3",
+      "note": "Alias: use the common numbered image slot label.",
+      "occurrences": [
+        {
+          "file": "static/template.js",
+          "line": 140,
+          "kind": "frontend-literal"
+        }
+      ]
+    },
+    "static.template.frontend-literal.201": {
+      "aliasOf": "common.ui.image_1",
+      "note": "Alias: single-image templates use image slot 1.",
+      "occurrences": [
+        {
+          "file": "static/template.js",
+          "line": 336,
+          "kind": "frontend-literal"
+        },
+        {
+          "file": "static/template.js",
+          "line": 361,
+          "kind": "frontend-literal"
+        }
+      ]
+    },
+    "static.template.frontend-literal.eorzea_collection": {
+      "zh-CN": "Eorzea Collection风格",
+      "zh-TW": "Eorzea Collection 風格",
+      "en": "Eorzea Collection Style",
+      "ja": "Eorzea Collection 風スタイル",
+      "ko": "Eorzea Collection 스타일",
+      "de": "Eorzea Collection-Stil",
+      "fr": "Style Eorzea Collection",
+      "note": "",
+      "occurrences": [
+        {
+          "file": "static/template.js",
+          "line": 345,
+          "kind": "frontend-literal"
+        }
+      ]
+    },
+    "static.template.frontend-literal.203": {
+      "zh-CN": "夜莺不语",
+      "zh-TW": "夜莺不语",
+      "en": "Nightingale Silence",
+      "ja": "Nightingale Silence",
+      "ko": "Nightingale Silence",
+      "de": "Nightingale Silence",
+      "fr": "Nightingale Silence",
+      "note": "",
+      "occurrences": [
+        {
+          "file": "static/template.js",
+          "line": 347,
+          "kind": "frontend-literal"
+        }
+      ]
+    },
+    "static.template.frontend-literal.210": {
+      "zh-CN": "图片",
+      "zh-TW": "圖片",
+      "en": "Image",
+      "ja": "画像",
+      "ko": "이미지",
+      "de": "Bild",
+      "fr": "Image",
+      "note": "",
+      "occurrences": [
+        {
+          "file": "static/template.js",
+          "line": 764,
+          "kind": "frontend-literal"
+        }
+      ]
+    },
+    "static.template.frontend-literal.211": {
+      "zh-CN": "请求失败：{value}",
+      "zh-TW": "請求失敗：{value}",
+      "en": "Request failed: {value}",
+      "ja": "リクエストに失敗しました：{value}",
+      "ko": "요청 실패: {value}",
+      "de": "Anfrage fehlgeschlagen: {value}",
+      "fr": "Échec de la requête : {value}",
+      "note": "",
+      "occurrences": [
+        {
+          "file": "static/template.js",
+          "line": 904,
+          "kind": "frontend-literal"
+        }
+      ]
+    },
+    "static.template.frontend-literal.213": {
+      "zh-CN": "标题",
+      "zh-TW": "標題",
+      "en": "Title",
+      "ja": "タイトル",
+      "ko": "제목",
+      "de": "Titel",
+      "fr": "Titre",
+      "note": "",
+      "occurrences": [
+        {
+          "file": "static/template.js",
+          "line": 1257,
+          "kind": "frontend-literal"
+        },
+        {
+          "file": "static/template.js",
+          "line": 2827,
+          "kind": "frontend-literal"
+        }
+      ]
+    },
+    "static.template.frontend-literal.214": {
+      "zh-CN": "模板作者：",
+      "zh-TW": "模板作者：",
+      "en": "Template author: ",
+      "ja": "テンプレート作者：",
+      "ko": "템플릿 작성자: ",
+      "de": "Vorlagenautor: ",
+      "fr": "Auteur du modèle : ",
+      "note": "Template author label prefix; author names are fixed template metadata and should not be localized.",
+      "occurrences": [
+        {
+          "file": "static/template.js",
+          "line": 1459,
+          "kind": "frontend-literal"
+        },
+        {
+          "file": "static/template.js",
+          "line": 1582,
+          "kind": "frontend-literal"
+        },
+        {
+          "file": "templates/template.html",
+          "line": 61,
+          "kind": "html-text"
+        }
+      ]
+    },
+    "static.template.frontend-literal.215": {
+      "zh-CN": "{value}；支持语言：{value}",
+      "zh-TW": "{value}；支援語言：{value}",
+      "en": "{value}; supported languages: {value}",
+      "ja": "{value}；対応言語：{value}",
+      "ko": "{value}; 지원 언어: {value}",
+      "de": "{value}; unterstützte Sprachen: {value}",
+      "fr": "{value} ; langues prises en charge : {value}",
+      "note": "",
+      "occurrences": [
+        {
+          "file": "static/template.js",
+          "line": 1575,
+          "kind": "frontend-literal"
+        }
+      ]
+    },
+    "static.template.frontend-literal.216": {
+      "zh-CN": "第一页载入",
+      "zh-TW": "第一頁載入",
+      "en": "Import from First Page",
+      "ja": "最初のページからインポート",
+      "ko": "첫 페이지에서 가져오기",
+      "de": "Von der ersten Seite importieren",
+      "fr": "Importer depuis la première page",
+      "note": "",
+      "occurrences": [
+        {
+          "file": "static/template.js",
+          "line": 1783,
+          "kind": "frontend-literal"
+        },
+        {
+          "file": "static/template.js",
+          "line": 3491,
+          "kind": "frontend-literal"
+        }
+      ]
+    },
+    "static.template.frontend-literal.217": {
+      "zh-CN": "从网页导入",
+      "zh-TW": "從網頁載入",
+      "en": "Load from Web",
+      "ja": "Web から読み込み",
+      "ko": "웹에서 불러오기",
+      "de": "Aus dem Web laden",
+      "fr": "Charger depuis le Web",
+      "note": "",
+      "occurrences": [
+        {
+          "file": "templates/template.html",
+          "line": 141,
+          "kind": "html-text"
+        },
+        {
+          "file": "templates/template.html",
+          "line": 197,
+          "kind": "html-text"
+        },
+        {
+          "file": "static/template.js",
+          "line": 1884,
+          "kind": "frontend-literal"
+        }
+      ]
+    },
+    "static.template.frontend-literal.eorzea_collection_2": {
+      "zh-CN": "无法识别，请输入石之家或 Eorzea Collection 幻化链接",
+      "zh-TW": "無法識別，請輸入石之家或 Eorzea Collection 幻化連結",
+      "en": "Unrecognized link. Please enter a Rising Stones or Eorzea Collection glamour link",
+      "ja": "認識できません。石之家または Eorzea Collection のミラプリリンクを入力してください",
+      "ko": "인식할 수 없습니다. 石之家 또는 Eorzea Collection 장비 투영 링크를 입력하세요",
+      "de": "Nicht erkannt. Bitte gib einen Rising-Stones- oder Eorzea-Collection-Glamour-Link ein",
+      "fr": "Lien non reconnu. Veuillez saisir un lien de mirage Rising Stones ou Eorzea Collection",
+      "note": "Backend error/status message returned by API and shown in the UI.",
+      "occurrences": [
+        {
+          "file": "static/template.js",
+          "line": 1909,
+          "kind": "frontend-literal"
+        },
+        {
+          "file": "static/template.js",
+          "line": 1910,
+          "kind": "frontend-literal"
+        },
+        {
+          "file": "scripts/app.py",
+          "line": 1771,
+          "kind": "server-json-error"
+        }
+      ]
+    },
+    "static.template.frontend-literal.219": {
+      "zh-CN": "正在载入网页数据……",
+      "zh-TW": "正在載入網頁資料……",
+      "en": "Loading web data...",
+      "ja": "Web データを読み込み中……",
+      "ko": "웹 데이터를 불러오는 중...",
+      "de": "Webdaten werden geladen...",
+      "fr": "Chargement des données Web...",
+      "note": "",
+      "occurrences": [
+        {
+          "file": "static/template.js",
+          "line": 1918,
+          "kind": "frontend-literal"
+        },
+        {
+          "file": "static/template.js",
+          "line": 1919,
+          "kind": "frontend-literal"
+        }
+      ]
+    },
+    "static.template.frontend-literal.220": {
+      "zh-CN": "未识别到可载入装备",
+      "zh-TW": "未識別到可載入裝備",
+      "en": "No importable equipment was recognized",
+      "ja": "インポート可能な装備を認識できませんでした",
+      "ko": "가져올 수 있는 장비를 인식하지 못했습니다",
+      "de": "Keine importierbare Ausrüstung erkannt",
+      "fr": "Aucun équipement importable n'a été reconnu",
+      "note": "",
+      "occurrences": [
+        {
+          "file": "static/template.js",
+          "line": 1856,
+          "kind": "frontend-literal"
+        }
+      ]
+    },
+    "static.template.frontend-literal.221": {
+      "zh-CN": "已载入 {value} 个装备",
+      "zh-TW": "已載入 {value} 個裝備",
+      "en": "Loaded {value} equipment items",
+      "ja": "{value} 件の装備を読み込みました",
+      "ko": "장비 {value}개를 불러왔습니다",
+      "de": "{value} Ausrüstungsteile geladen",
+      "fr": "{value} pièces d'équipement chargées",
+      "note": "",
+      "occurrences": [
+        {
+          "file": "static/template.js",
+          "line": 1871,
+          "kind": "frontend-literal"
+        },
+        {
+          "file": "static/template.js",
+          "line": 1902,
+          "kind": "frontend-literal"
+        }
+      ]
+    },
+    "static.template.frontend-literal.222": {
+      "zh-CN": "载入网页数据失败",
+      "zh-TW": "載入網頁資料失敗",
+      "en": "Failed to load web data",
+      "ja": "Web データの読み込みに失敗しました",
+      "ko": "웹 데이터를 불러오지 못했습니다",
+      "de": "Webdaten konnten nicht geladen werden",
+      "fr": "Échec du chargement des données Web",
+      "note": "",
+      "occurrences": [
+        {
+          "file": "static/template.js",
+          "line": 1946,
+          "kind": "frontend-literal"
+        },
+        {
+          "file": "static/template.js",
+          "line": 1947,
+          "kind": "frontend-literal"
+        }
+      ]
+    },
+    "static.template.frontend-literal.223": {
+      "zh-CN": "装备数据读取失败",
+      "zh-TW": "裝備資料讀取失敗",
+      "en": "Failed to read equipment data",
+      "ja": "装備データの読み込みに失敗しました",
+      "ko": "장비 데이터를 읽지 못했습니다",
+      "de": "Ausrüstungsdaten konnten nicht gelesen werden",
+      "fr": "Échec de la lecture des données d’équipement",
+      "note": "",
+      "occurrences": [
+        {
+          "file": "static/template.js",
+          "line": 1906,
+          "kind": "frontend-literal"
+        }
+      ]
+    },
+    "static.template.frontend-literal.224": {
+      "zh-CN": "已清空配装",
+      "zh-TW": "已清空配裝",
+      "en": "Glamour cleared",
+      "ja": "ミラプリをクリアしました",
+      "ko": "장비 투영을 지웠습니다",
+      "de": "Projektion geleert",
+      "fr": "Mirage effacé",
+      "note": "Status shown after clearing glamour data.",
+      "occurrences": [
+        {
+          "file": "static/template.js",
+          "line": 1914,
+          "kind": "frontend-literal"
+        }
+      ]
+    },
+    "static.template.frontend-literal.225": {
+      "zh-CN": "至少保留一种模板语言",
+      "zh-TW": "至少保留一種模板語言",
+      "en": "Keep at least one template language",
+      "ja": "テンプレート言語を少なくとも1つ残してください",
+      "ko": "템플릿 언어를 하나 이상 유지하세요",
+      "de": "Mindestens eine Vorlagensprache beibehalten",
+      "fr": "Conserver au moins une langue de modèle",
+      "note": "",
+      "occurrences": [
+        {
+          "file": "static/template.js",
+          "line": 1952,
+          "kind": "frontend-literal"
+        },
+        {
+          "file": "static/template.js",
+          "line": 1991,
+          "kind": "frontend-literal"
+        }
+      ]
+    },
+    "static.template.frontend-literal.226": {
+      "zh-CN": "模板显示语言",
+      "zh-TW": "模板顯示語言",
+      "en": "Template Display Languages",
+      "ja": "テンプレート表示言語",
+      "ko": "템플릿 표시 언어",
+      "de": "Anzeigesprachen der Vorlage",
+      "fr": "Langues d’affichage du modèle",
+      "note": "",
+      "occurrences": [
+        {
+          "file": "static/template.js",
+          "line": 2052,
+          "kind": "frontend-literal"
+        }
+      ]
+    },
+    "static.template.frontend-literal.227": {
+      "zh-CN": "当前编辑",
+      "zh-TW": "目前編輯",
+      "en": "Currently Editing",
+      "ja": "現在編集中",
+      "ko": "현재 편집 중",
+      "de": "Aktuelle Bearbeitung",
+      "fr": "Modification actuelle",
+      "note": "",
+      "occurrences": [
+        {
+          "file": "static/template.js",
+          "line": 2057,
+          "kind": "frontend-literal"
+        }
+      ]
+    },
+    "static.template.frontend-literal.228": {
+      "zh-CN": "输出语言",
+      "zh-TW": "輸出語言",
+      "en": "Output Language",
+      "ja": "出力言語",
+      "ko": "출력 언어",
+      "de": "Ausgabesprache",
+      "fr": "Langue de sortie",
+      "note": "",
+      "occurrences": [
+        {
+          "file": "static/template.js",
+          "line": 2057,
+          "kind": "frontend-literal"
+        }
+      ]
+    },
+    "static.template.frontend-literal.229": {
+      "zh-CN": "当前输出语言",
+      "zh-TW": "目前輸出語言",
+      "en": "Current Output Language",
+      "ja": "現在の出力言語",
+      "ko": "현재 출력 언어",
+      "de": "Aktuelle Ausgabesprache",
+      "fr": "Langue de sortie actuelle",
+      "note": "",
+      "occurrences": [
+        {
+          "file": "static/template.js",
+          "line": 2082,
+          "kind": "frontend-literal"
+        }
+      ]
+    },
+    "static.template.frontend-literal.230": {
+      "zh-CN": "切换输出语言",
+      "zh-TW": "切換輸出語言",
+      "en": "Switch Output Language",
+      "ja": "出力言語を切り替え",
+      "ko": "출력 언어 전환",
+      "de": "Ausgabesprache wechseln",
+      "fr": "Changer la langue de sortie",
+      "note": "",
+      "occurrences": [
+        {
+          "file": "static/template.js",
+          "line": 2082,
+          "kind": "frontend-literal"
+        }
+      ]
+    },
+    "static.template.frontend-literal.231": {
+      "zh-CN": "当前编辑语言，点击可从模板移除",
+      "zh-TW": "目前編輯語言，點擊可從模板移除",
+      "en": "Current editing language. Click to remove it from the template.",
+      "ja": "現在の編集言語です。クリックするとテンプレートから削除します。",
+      "ko": "현재 편집 언어입니다. 클릭하면 템플릿에서 제거합니다.",
+      "de": "Aktuelle Bearbeitungssprache. Klicken, um sie aus der Vorlage zu entfernen.",
+      "fr": "Langue de modification actuelle. Cliquez pour la retirer du modèle.",
+      "note": "",
+      "occurrences": [
+        {
+          "file": "static/template.js",
+          "line": 2086,
+          "kind": "frontend-literal"
+        }
+      ]
+    },
+    "static.template.frontend-literal.232": {
+      "zh-CN": "当前编辑语言，至少保留一种模板语言",
+      "zh-TW": "目前編輯語言，至少保留一種模板語言",
+      "en": "Current editing language. Keep at least one template language.",
+      "ja": "現在の編集言語です。テンプレート言語を少なくとも1つ残してください。",
+      "ko": "현재 편집 언어입니다. 템플릿 언어를 하나 이상 유지하세요.",
+      "de": "Aktuelle Bearbeitungssprache. Mindestens eine Vorlagensprache beibehalten.",
+      "fr": "Langue de modification actuelle. Conservez au moins une langue de modèle.",
+      "note": "",
+      "occurrences": [
+        {
+          "file": "static/template.js",
+          "line": 2087,
+          "kind": "frontend-literal"
+        }
+      ]
+    },
+    "static.template.frontend-literal.233": {
+      "zh-CN": "已在模板中显示，点击切换为当前编辑语言",
+      "zh-TW": "已在模板中顯示，點擊切換為目前編輯語言",
+      "en": "Shown in the template. Click to switch to the current editing language.",
+      "ja": "テンプレートに表示中です。クリックすると現在の編集言語に切り替えます。",
+      "ko": "템플릿에 표시되어 있습니다. 클릭하면 현재 편집 언어로 전환합니다.",
+      "de": "In der Vorlage angezeigt. Klicken, um zur aktuellen Bearbeitungssprache zu wechseln.",
+      "fr": "Affichée dans le modèle. Cliquez pour passer à la langue de modification actuelle.",
+      "note": "",
+      "occurrences": [
+        {
+          "file": "static/template.js",
+          "line": 2088,
+          "kind": "frontend-literal"
+        }
+      ]
+    },
+    "static.template.frontend-literal.234": {
+      "zh-CN": "点击加入模板并切换为当前编辑语言",
+      "zh-TW": "點擊加入模板並切換為目前編輯語言",
+      "en": "Click to add it to the template and switch to the current editing language.",
+      "ja": "クリックするとテンプレートに追加し、現在の編集言語に切り替えます。",
+      "ko": "클릭하면 템플릿에 추가하고 현재 편집 언어로 전환합니다.",
+      "de": "Klicken, um sie zur Vorlage hinzuzufügen und zur aktuellen Bearbeitungssprache zu wechseln.",
+      "fr": "Cliquez pour l’ajouter au modèle et passer à la langue de modification actuelle.",
+      "note": "",
+      "occurrences": [
+        {
+          "file": "static/template.js",
+          "line": 2089,
+          "kind": "frontend-literal"
+        }
+      ]
+    },
+    "static.template.frontend-literal.235": {
+      "zh-CN": "搜索装备名",
+      "zh-TW": "搜尋裝備名",
+      "en": "Search equipment name",
+      "ja": "装備名を検索",
+      "ko": "장비 이름 검색",
+      "de": "Ausrüstungsnamen suchen",
+      "fr": "Rechercher un nom d'équipement",
+      "note": "",
+      "occurrences": [
+        {
+          "file": "static/template.js",
+          "line": 2104,
+          "kind": "frontend-literal"
+        }
+      ]
+    },
+    "static.template.frontend-literal.236": {
+      "zh-CN": "删除当前装备",
+      "zh-TW": "刪除目前裝備",
+      "en": "Delete current equipment",
+      "ja": "現在の装備を削除",
+      "ko": "현재 장비 삭제",
+      "de": "Aktuelle Ausrüstung löschen",
+      "fr": "Supprimer l'équipement actuel",
+      "note": "",
+      "occurrences": [
+        {
+          "file": "static/template.js",
+          "line": 2145,
+          "kind": "frontend-literal"
+        }
+      ]
+    },
+    "static.template.frontend-literal.current_edit_language": {
+      "zh-CN": "当前编辑语言",
+      "zh-TW": "目前編輯語言",
+      "en": "Current Editing Language",
+      "ja": "現在の編集言語",
+      "ko": "현재 편집 언어",
+      "de": "Aktuelle Bearbeitungssprache",
+      "fr": "Langue de modification actuelle",
+      "note": "Tooltip for the current template editing language."
+    },
+    "static.template.frontend-literal.move_up": {
+      "zh-CN": "上移",
+      "zh-TW": "上移",
+      "en": "Move Up",
+      "ja": "上へ移動",
+      "ko": "위로 이동",
+      "de": "Nach oben",
+      "fr": "Déplacer vers le haut",
+      "note": "Template language order button title."
+    },
+    "static.template.frontend-literal.move_down": {
+      "zh-CN": "下移",
+      "zh-TW": "下移",
+      "en": "Move Down",
+      "ja": "下へ移動",
+      "ko": "아래로 이동",
+      "de": "Nach unten",
+      "fr": "Déplacer vers le bas",
+      "note": "Template language order button title."
+    },
+    "static.template.frontend-literal.value_move_up": {
+      "zh-CN": "{value} 上移",
+      "zh-TW": "{value} 上移",
+      "en": "Move {value} up",
+      "ja": "{value} を上へ移動",
+      "ko": "{value} 위로 이동",
+      "de": "{value} nach oben verschieben",
+      "fr": "Déplacer {value} vers le haut",
+      "note": "Template language order button aria label."
+    },
+    "static.template.frontend-literal.value_move_down": {
+      "zh-CN": "{value} 下移",
+      "zh-TW": "{value} 下移",
+      "en": "Move {value} down",
+      "ja": "{value} を下へ移動",
+      "ko": "{value} 아래로 이동",
+      "de": "{value} nach unten verschieben",
+      "fr": "Déplacer {value} vers le bas",
+      "note": "Template language order button aria label."
+    },
+    "static.template.frontend-literal.remove": {
+      "zh-CN": "移除",
+      "zh-TW": "移除",
+      "en": "Remove",
+      "ja": "削除",
+      "ko": "제거",
+      "de": "Entfernen",
+      "fr": "Retirer",
+      "note": "Template language remove button title."
+    },
+    "static.template.frontend-literal.value_remove": {
+      "zh-CN": "{value} 移除",
+      "zh-TW": "移除 {value}",
+      "en": "Remove {value}",
+      "ja": "{value} を削除",
+      "ko": "{value} 제거",
+      "de": "{value} entfernen",
+      "fr": "Retirer {value}",
+      "note": "Template language remove button aria label."
+    },
+    "static.template.frontend-literal.current_ui_no_templates": {
+      "zh-CN": "当前界面语言没有可用模板",
+      "zh-TW": "目前介面語言沒有可用範本",
+      "en": "No templates are available for the current interface language",
+      "ja": "現在のUI言語で使用できるテンプレートはありません",
+      "ko": "현재 인터페이스 언어에서 사용할 수 있는 템플릿이 없습니다",
+      "de": "Für die aktuelle Oberflächensprache sind keine Vorlagen verfügbar",
+      "fr": "Aucun modèle n'est disponible pour la langue d'interface actuelle",
+      "note": "Empty state in the template selector."
+    },
+    "static.template.frontend-literal.unsupported_template_language": {
+      "zh-CN": "当前界面语言不支持此模板",
+      "zh-TW": "目前介面語言不支援此範本",
+      "en": "The current interface language does not support this template",
+      "ja": "現在のUI言語はこのテンプレートに対応していません",
+      "ko": "현재 인터페이스 언어는 이 템플릿을 지원하지 않습니다",
+      "de": "Die aktuelle Oberflächensprache unterstützt diese Vorlage nicht",
+      "fr": "La langue d'interface actuelle ne prend pas en charge ce modèle",
+      "note": "Template switch error status."
+    },
+    "static.template.frontend-literal.unrecognized_importable_equipment": {
+      "zh-CN": "未识别到可导入装备",
+      "zh-TW": "未識別到可匯入裝備",
+      "en": "No importable equipment was detected",
+      "ja": "インポート可能な装備が見つかりませんでした",
+      "ko": "가져올 수 있는 장비를 인식하지 못했습니다",
+      "de": "Keine importierbare Ausrüstung erkannt",
+      "fr": "Aucun équipement importable détecté",
+      "note": "Import error when parsed payload has no equipment entries."
+    },
+    "static.template.frontend-literal.draft_read_failed": {
+      "zh-CN": "配装读取失败",
+      "zh-TW": "配裝讀取失敗",
+      "en": "Failed to read glamour data",
+      "ja": "ミラプリデータの読み込みに失敗しました",
+      "ko": "장비 투영 데이터를 읽지 못했습니다",
+      "de": "Projektionsdaten konnten nicht gelesen werden",
+      "fr": "Échec de la lecture des données de mirage",
+      "note": "Template draft read failure status."
+    },
+    "static.template.slot.main_hand": {
+      "zh-CN": "主手",
+      "zh-TW": "主手",
+      "en": "Main Hand",
+      "ja": "メインアーム",
+      "ko": "주 무기",
+      "de": "Haupthand",
+      "fr": "Main principale",
+      "note": "Template editor equipment slot label."
+    },
+    "static.template.slot.off_hand": {
+      "zh-CN": "副手",
+      "zh-TW": "副手",
+      "en": "Off Hand",
+      "ja": "サブアーム",
+      "ko": "보조 무기",
+      "de": "Nebenhand",
+      "fr": "Main secondaire",
+      "note": "Template editor equipment slot label."
+    },
+    "static.template.slot.head": {
+      "zh-CN": "头部",
+      "zh-TW": "頭部",
+      "en": "Head",
+      "ja": "頭防具",
+      "ko": "머리",
+      "de": "Kopf",
+      "fr": "Tête",
+      "note": "Template editor equipment slot label."
+    },
+    "static.template.slot.ears": {
+      "zh-CN": "耳饰",
+      "zh-TW": "耳飾",
+      "en": "Earrings",
+      "ja": "耳飾り",
+      "ko": "귀걸이",
+      "de": "Ohrringe",
+      "fr": "Boucles d'oreilles",
+      "note": "Template editor equipment slot label."
+    },
+    "static.template.slot.body": {
+      "zh-CN": "身体",
+      "zh-TW": "身體",
+      "en": "Body",
+      "ja": "胴防具",
+      "ko": "몸통",
+      "de": "Rumpf",
+      "fr": "Torse",
+      "note": "Template editor equipment slot label."
+    },
+    "static.template.slot.neck": {
+      "zh-CN": "项链",
+      "zh-TW": "項鍊",
+      "en": "Necklace",
+      "ja": "首飾り",
+      "ko": "목걸이",
+      "de": "Halskette",
+      "fr": "Collier",
+      "note": "Template editor equipment slot label."
+    },
+    "static.template.slot.hands": {
+      "zh-CN": "手臂",
+      "zh-TW": "手臂",
+      "en": "Hands",
+      "ja": "手防具",
+      "ko": "손",
+      "de": "Hände",
+      "fr": "Mains",
+      "note": "Template editor equipment slot label."
+    },
+    "static.template.slot.wrists": {
+      "zh-CN": "手镯",
+      "zh-TW": "手鐲",
+      "en": "Bracelets",
+      "ja": "腕輪",
+      "ko": "팔찌",
+      "de": "Armreife",
+      "fr": "Bracelets",
+      "note": "Template editor equipment slot label."
+    },
+    "static.template.slot.legs": {
+      "zh-CN": "腿部",
+      "zh-TW": "腿部",
+      "en": "Legs",
+      "ja": "脚防具",
+      "ko": "다리",
+      "de": "Beine",
+      "fr": "Jambes",
+      "note": "Template editor equipment slot label."
+    },
+    "static.template.slot.right_ring": {
+      "zh-CN": "右指",
+      "zh-TW": "右指",
+      "en": "Right Ring",
+      "ja": "右指輪",
+      "ko": "오른쪽 반지",
+      "de": "Rechter Ring",
+      "fr": "Bague droite",
+      "note": "Template editor equipment slot label."
+    },
+    "static.template.slot.feet": {
+      "zh-CN": "脚部",
+      "zh-TW": "腳部",
+      "en": "Feet",
+      "ja": "足防具",
+      "ko": "발",
+      "de": "Füße",
+      "fr": "Pieds",
+      "note": "Template editor equipment slot label."
+    },
+    "static.template.slot.left_ring": {
+      "zh-CN": "左指",
+      "zh-TW": "左指",
+      "en": "Left Ring",
+      "ja": "左指輪",
+      "ko": "왼쪽 반지",
+      "de": "Linker Ring",
+      "fr": "Bague gauche",
+      "note": "Template editor equipment slot label."
+    },
+    "static.template.slot.glasses": {
+      "zh-CN": "面部配饰",
+      "zh-TW": "臉部配飾",
+      "en": "Facewear",
+      "ja": "フェイスアクセサリー",
+      "ko": "얼굴 장식",
+      "de": "Gesichtsschmuck",
+      "fr": "Accessoire facial",
+      "note": "Template editor equipment slot label."
+    },
+    "static.template.slot.fashion_accessory": {
+      "zh-CN": "时尚配饰",
+      "zh-TW": "時尚配飾",
+      "en": "Fashion Accessory",
+      "ja": "ファッションアクセサリー",
+      "ko": "패션 소품",
+      "de": "Modisches Accessoire",
+      "fr": "Accessoire de mode",
+      "note": "Template editor equipment slot label."
+    },
+    "static.template.frontend-literal.237": {
+      "zh-CN": "分组 {value}",
+      "zh-TW": "分組 {value}",
+      "en": "Group {value}",
+      "ja": "グループ {value}",
+      "ko": "그룹 {value}",
+      "de": "Gruppe {value}",
+      "fr": "Groupe {value}",
+      "note": "",
+      "occurrences": [
+        {
+          "file": "static/template.js",
+          "line": 2168,
+          "kind": "frontend-literal"
+        }
+      ]
+    },
+    "static.template.frontend-literal.238": {
+      "zh-CN": "其他",
+      "zh-TW": "其他",
+      "en": "Other",
+      "ja": "その他",
+      "ko": "기타",
+      "de": "Sonstiges",
+      "fr": "Autre",
+      "note": "",
+      "occurrences": [
+        {
+          "file": "static/template.js",
+          "line": 2168,
+          "kind": "frontend-literal"
+        }
+      ]
+    },
+    "static.template.frontend-literal.239": {
+      "zh-CN": "染色{value}",
+      "zh-TW": "染色{value}",
+      "en": "Dye {value}",
+      "ja": "染色{value}",
+      "ko": "염색 {value}",
+      "de": "Färbung {value}",
+      "fr": "Teinture {value}",
+      "note": "",
+      "occurrences": [
+        {
+          "file": "static/template.js",
+          "line": 2235,
+          "kind": "frontend-literal"
+        }
+      ]
+    },
+    "static.template.frontend-literal.240": {
+      "zh-CN": "无搜索结果",
+      "zh-TW": "無搜尋結果",
+      "en": "No search results",
+      "ja": "検索結果なし",
+      "ko": "검색 결과 없음",
+      "de": "Keine Suchergebnisse",
+      "fr": "Aucun résultat de recherche",
+      "note": "",
+      "occurrences": [
+        {
+          "file": "static/template.js",
+          "line": 2259,
+          "kind": "frontend-literal"
+        }
+      ]
+    },
+    "static.template.frontend-literal.242": {
+      "zh-CN": "图片读取失败",
+      "zh-TW": "圖片讀取失敗",
+      "en": "Failed to read image",
+      "ja": "画像の読み込みに失敗しました",
+      "ko": "이미지를 읽지 못했습니다",
+      "de": "Bild konnte nicht gelesen werden",
+      "fr": "Échec de la lecture de l'image",
+      "note": "",
+      "occurrences": [
+        {
+          "file": "static/template.js",
+          "line": 2357,
+          "kind": "frontend-literal"
+        }
+      ]
+    },
+    "static.template.frontend-literal.243": {
+      "zh-CN": "裁剪控件加载失败，已直接使用原图: {value}",
+      "zh-TW": "裁剪控制項載入失敗，已直接使用原圖: {value}",
+      "en": "Crop control failed to load; using the original image directly: {value}",
+      "ja": "トリミングコントロールの読み込みに失敗したため、元画像をそのまま使用します: {value}",
+      "ko": "자르기 컨트롤을 불러오지 못해 원본 이미지를 바로 사용합니다: {value}",
+      "de": "Zuschneide-Steuerelement konnte nicht geladen werden; Originalbild wird direkt verwendet: {value}",
+      "fr": "Échec du chargement du contrôle de recadrage ; utilisation directe de l'image originale : {value}",
+      "note": "",
+      "occurrences": [
+        {
+          "file": "static/template.js",
+          "line": 2374,
+          "kind": "frontend-literal"
+        }
+      ]
+    },
+    "static.template.frontend-literal.244": {
+      "zh-CN": "正在裁剪{value}，确认后点击使用裁剪",
+      "zh-TW": "正在裁剪{value}，確認後點擊使用裁剪",
+      "en": "Cropping {value}. After confirming, click Use Crop",
+      "ja": "{value} をトリミング中です。確認後、「トリミングを使用」をクリックしてください",
+      "ko": "{value} 자르는 중입니다. 확인 후 자르기 사용을 클릭하세요",
+      "de": "{value} wird zugeschnitten. Nach der Bestätigung auf Zuschnitt verwenden klicken",
+      "fr": "Recadrage de {value}. Après confirmation, cliquez sur Utiliser le recadrage",
+      "note": "",
+      "occurrences": [
+        {
+          "file": "static/template.js",
+          "line": 2403,
+          "kind": "frontend-literal"
+        }
+      ]
+    },
+    "static.template.frontend-literal.245": {
+      "zh-CN": "裁剪器还在加载，请稍后再试",
+      "zh-TW": "裁剪器仍在載入，請稍後再試",
+      "en": "Cropper is still loading. Please try again later",
+      "ja": "トリミングツールはまだ読み込み中です。しばらくしてからもう一度お試しください",
+      "ko": "자르기 도구가 아직 불러오는 중입니다. 잠시 후 다시 시도하세요",
+      "de": "Zuschneider wird noch geladen. Bitte versuche es später erneut",
+      "fr": "L'outil de recadrage est encore en cours de chargement. Veuillez réessayer plus tard",
+      "note": "",
+      "occurrences": [
+        {
+          "file": "static/template.js",
+          "line": 2438,
+          "kind": "frontend-literal"
+        }
+      ]
+    },
+    "static.template.frontend-literal.246": {
+      "zh-CN": "已裁剪{value}: {value}",
+      "zh-TW": "已裁剪{value}: {value}",
+      "en": "Cropped {value}: {value}",
+      "ja": "{value} をトリミングしました: {value}",
+      "ko": "{value} 잘림: {value}",
+      "de": "{value} zugeschnitten: {value}",
+      "fr": "{value} recadré : {value}",
+      "note": "",
+      "occurrences": [
+        {
+          "file": "static/template.js",
+          "line": 2447,
+          "kind": "frontend-literal"
+        }
+      ]
+    },
+    "static.template.frontend-literal.250": {
+      "zh-CN": "正在加载本机字体...",
+      "zh-TW": "正在載入本機字體...",
+      "en": "Loading local fonts...",
+      "ja": "ローカルフォントを読み込み中...",
+      "ko": "로컬 글꼴을 불러오는 중...",
+      "de": "Lokale Schriften werden geladen...",
+      "fr": "Chargement des polices locales...",
+      "note": "",
+      "occurrences": [
+        {
+          "file": "static/template.js",
+          "line": 4141,
+          "kind": "frontend-literal"
+        }
+      ]
+    },
+    "static.template.frontend-literal.251": {
+      "zh-CN": "图片生成失败",
+      "zh-TW": "圖片生成失敗",
+      "en": "Image generation failed",
+      "ja": "画像生成に失敗しました",
+      "ko": "이미지 생성 실패",
+      "de": "Bilderzeugung fehlgeschlagen",
+      "fr": "Échec de la génération de l'image",
+      "note": "",
+      "occurrences": [
+        {
+          "file": "static/template.js",
+          "line": 4147,
+          "kind": "frontend-literal"
+        }
+      ]
+    },
+    "static.template.frontend-literal.252": {
+      "zh-CN": "已保存图片",
+      "zh-TW": "已儲存圖片",
+      "en": "Image saved",
+      "ja": "画像を保存しました",
+      "ko": "이미지를 저장했습니다",
+      "de": "Bild gespeichert",
+      "fr": "Image enregistrée",
+      "note": "",
+      "occurrences": [
+        {
+          "file": "static/template.js",
+          "line": 4158,
+          "kind": "frontend-literal"
+        }
+      ]
+    },
+    "static.template.frontend-literal.254": {
+      "zh-CN": "没有可载入的装备数据",
+      "zh-TW": "沒有可載入的裝備資料",
+      "en": "No importable equipment data",
+      "ja": "インポート可能な装備データがありません",
+      "ko": "가져올 수 있는 장비 데이터가 없습니다",
+      "de": "Keine importierbaren Ausrüstungsdaten",
+      "fr": "Aucune donnée d'équipement importable",
+      "note": "",
+      "occurrences": [
+        {
+          "file": "static/template.js",
+          "line": 4336,
+          "kind": "frontend-literal"
+        }
+      ]
+    },
+    "template.index.frontend-literal.279": {
+      "aliasOf": "common.ui.language",
+      "note": "Alias: use the common UI label.",
+      "occurrences": [
+        {
+          "file": "templates/template.html",
+          "line": 15,
+          "kind": "frontend-literal"
+        },
+        {
+          "file": "templates/template.html",
+          "line": 15,
+          "kind": "html-title"
+        },
+        {
+          "file": "templates/template.html",
+          "line": 15,
+          "kind": "html-aria-label"
+        }
+      ]
+    },
+    "template.index.frontend-literal.280": {
+      "aliasOf": "common.ui.interface_language",
+      "note": "Alias: use the common UI label.",
+      "occurrences": [
+        {
+          "file": "templates/template.html",
+          "line": 18,
+          "kind": "frontend-literal"
+        },
+        {
+          "file": "templates/template.html",
+          "line": 18,
+          "kind": "html-aria-label"
+        }
+      ]
+    },
+    "template.index.frontend-literal.284": {
+      "aliasOf": "common.ui.settings",
+      "note": "Alias: use the common UI label.",
+      "occurrences": [
+        {
+          "file": "templates/template.html",
+          "line": 26,
+          "kind": "frontend-literal"
+        },
+        {
+          "file": "templates/template.html",
+          "line": 26,
+          "kind": "html-title"
+        },
+        {
+          "file": "templates/template.html",
+          "line": 26,
+          "kind": "html-aria-label"
+        }
+      ]
+    },
+    "template.index.frontend-literal.286": {
+      "zh-CN": "切换为白昼",
+      "zh-TW": "切換為白晝",
+      "en": "Switch to Light Mode",
+      "ja": "ライトモードに切り替え",
+      "ko": "라이트 모드로 전환",
+      "de": "In den Hellmodus wechseln",
+      "fr": "Passer en mode clair",
+      "note": "",
+      "occurrences": [
+        {
+          "file": "templates/template.html",
+          "line": 29,
+          "kind": "frontend-literal"
+        },
+        {
+          "file": "templates/template.html",
+          "line": 29,
+          "kind": "html-title"
+        },
+        {
+          "file": "templates/template.html",
+          "line": 29,
+          "kind": "html-aria-label"
+        },
+        {
+          "file": "static/template.js",
+          "line": 622,
+          "kind": "frontend-literal"
+        }
+      ]
+    },
+    "template.index.frontend-literal.307": {
+      "zh-CN": "装备名语言",
+      "zh-TW": "裝備名語言",
+      "en": "Equipment name language",
+      "ja": "装備名の言語",
+      "ko": "장비 이름 언어",
+      "de": "Sprache der Ausrüstungsnamen",
+      "fr": "Langue des noms d'équipement",
+      "note": "",
+      "occurrences": [
+        {
+          "file": "templates/template.html",
+          "line": 95,
+          "kind": "frontend-literal"
+        },
+        {
+          "file": "templates/template.html",
+          "line": 95,
+          "kind": "html-aria-label"
+        }
+      ]
+    },
+    "template.index.html-text.321": {
+      "aliasOf": "common.ui.dye",
+      "note": "Alias: token panel dye section uses the common UI label.",
+      "occurrences": [
+        {
+          "file": "static/template.js",
+          "line": 2235,
+          "kind": "frontend-literal"
+        }
+      ]
+    },
+    "template.index.html-text.335": {
+      "zh-CN": "关闭",
+      "zh-TW": "關閉",
+      "en": "Close",
+      "ja": "閉じる",
+      "ko": "닫기",
+      "de": "Schließen",
+      "fr": "Fermer",
+      "note": "",
+      "occurrences": [
+        {
+          "file": "templates/template.html",
+          "line": 135,
+          "kind": "html-text"
+        }
+      ]
+    },
+    "template.template.html-text.340": {
+      "zh-CN": "上传图片",
+      "zh-TW": "上傳圖片",
+      "en": "Upload Image",
+      "ja": "画像をアップロード",
+      "ko": "이미지 업로드",
+      "de": "Bild hochladen",
+      "fr": "Téléverser une image",
+      "note": "",
+      "occurrences": [
+        {
+          "file": "templates/template.html",
+          "line": 43,
+          "kind": "html-text"
+        },
+        {
+          "file": "static/template.js",
+          "line": 122,
+          "kind": "frontend-literal"
+        },
+        {
+          "file": "static/template.js",
+          "line": 132,
+          "kind": "frontend-literal"
+        },
+        {
+          "file": "static/template.js",
+          "line": 141,
+          "kind": "frontend-literal"
+        },
+        {
+          "file": "static/template.js",
+          "line": 337,
+          "kind": "frontend-literal"
+        },
+        {
+          "file": "static/template.js",
+          "line": 362,
+          "kind": "frontend-literal"
+        },
+        {
+          "file": "static/template.js",
+          "line": 751,
+          "kind": "frontend-literal"
+        },
+        {
+          "file": "static/template.js",
+          "line": 765,
+          "kind": "frontend-literal"
+        }
+      ]
+    },
+    "template.template.html-text.341": {
+      "zh-CN": "加载中……",
+      "zh-TW": "載入中……",
+      "en": "Loading...",
+      "ja": "読み込み中……",
+      "ko": "불러오는 중...",
+      "de": "Wird geladen...",
+      "fr": "Chargement...",
+      "note": "",
+      "occurrences": [
+        {
+          "file": "templates/template.html",
+          "line": 48,
+          "kind": "html-text"
+        }
+      ]
+    },
+    "template.template.html-text.342": {
+      "zh-CN": "模板设置",
+      "zh-TW": "範本設定",
+      "en": "Template Settings",
+      "ja": "テンプレート設定",
+      "ko": "템플릿 설정",
+      "de": "Vorlageneinstellungen",
+      "fr": "Paramètres du modèle",
+      "note": "",
+      "occurrences": [
+        {
+          "file": "templates/template.html",
+          "line": 56,
+          "kind": "html-text"
+        }
+      ]
+    },
+    "template.template.frontend-literal.343": {
+      "zh-CN": "模板选择",
+      "zh-TW": "範本選擇",
+      "en": "Template Selection",
+      "ja": "テンプレート選択",
+      "ko": "템플릿 선택",
+      "de": "Vorlagenauswahl",
+      "fr": "Sélection du modèle",
+      "note": "",
+      "occurrences": [
+        {
+          "file": "templates/template.html",
+          "line": 57,
+          "kind": "frontend-literal"
+        },
+        {
+          "file": "templates/template.html",
+          "line": 57,
+          "kind": "html-aria-label"
+        }
+      ]
+    },
+    "template.template.html-text.change_template": {
+      "zh-CN": "更换模板",
+      "zh-TW": "更換範本",
+      "en": "Change Template",
+      "ja": "テンプレートを変更",
+      "ko": "템플릿 변경",
+      "de": "Vorlage wechseln",
+      "fr": "Changer de modèle",
+      "note": "Button opening the template selector.",
+      "occurrences": [
+        {
+          "file": "templates/template.html",
+          "line": 64,
+          "kind": "html-text"
+        }
+      ]
+    },
+    "template.template.html-text.title_text": {
+      "zh-CN": "标题文字",
+      "zh-TW": "標題文字",
+      "en": "Title Text",
+      "ja": "タイトル文字",
+      "ko": "제목 텍스트",
+      "de": "Titeltext",
+      "fr": "Texte du titre",
+      "note": "Template title input label.",
+      "occurrences": [
+        {
+          "file": "templates/template.html",
+          "line": 67,
+          "kind": "html-text"
+        }
+      ]
+    },
+    "template.template.html-text.name_server": {
+      "zh-CN": "名字与服务器",
+      "zh-TW": "名字與伺服器",
+      "en": "Name and Server",
+      "ja": "名前とサーバー",
+      "ko": "이름 및 서버",
+      "de": "Name und Server",
+      "fr": "Nom et serveur",
+      "note": "Template subtitle field label.",
+      "occurrences": [
+        {
+          "file": "templates/template.html",
+          "line": 71,
+          "kind": "html-text"
+        },
+        {
+          "file": "templates/template.html",
+          "line": 72,
+          "kind": "html-aria-label"
+        }
+      ]
+    },
+    "template.template.frontend-literal.347": {
+      "zh-CN": "角色信息",
+      "zh-TW": "角色資訊",
+      "en": "Character Information",
+      "ja": "キャラクター情報",
+      "ko": "캐릭터 정보",
+      "de": "Charakterinformation",
+      "fr": "Informations de personnage",
+      "note": "",
+      "occurrences": [
+        {
+          "file": "templates/template.html",
+          "line": 69,
+          "kind": "frontend-literal"
+        },
+        {
+          "file": "templates/template.html",
+          "line": 68,
+          "kind": "html-text"
+        },
+        {
+          "file": "templates/template.html",
+          "line": 69,
+          "kind": "html-aria-label"
+        }
+      ]
+    },
+    "template.template.frontend-literal.348": {
+      "zh-CN": "特殊符号",
+      "zh-TW": "特殊符號",
+      "en": "Special Symbol",
+      "ja": "特殊記号",
+      "ko": "특수 기호",
+      "de": "Sondersymbol",
+      "fr": "Symbole spécial",
+      "note": "",
+      "occurrences": [
+        {
+          "file": "templates/template.html",
+          "line": 71,
+          "kind": "frontend-literal"
+        },
+        {
+          "file": "templates/template.html",
+          "line": 71,
+          "kind": "html-aria-label"
+        }
+      ]
+    },
+    "template.template.html-text.psd": {
+      "zh-CN": "染剂样式1",
+      "zh-TW": "染劑樣式1",
+      "en": "Dye Style 1",
+      "ja": "染料スタイル1",
+      "ko": "염료 스타일 1",
+      "de": "Farbstoff-Stil 1",
+      "fr": "Style de teinture 1",
+      "note": "Dye frame style option.",
+      "occurrences": [
+        {
+          "file": "templates/template.html",
+          "line": 78,
+          "kind": "html-text"
+        }
+      ]
+    },
+    "template.template.html-text.351": {
+      "zh-CN": "染剂样式2",
+      "zh-TW": "染劑樣式2",
+      "en": "Dye Style 2",
+      "ja": "染料スタイル2",
+      "ko": "염료 스타일 2",
+      "de": "Farbstoff-Stil 2",
+      "fr": "Style de teinture 2",
+      "note": "Dye frame style option.",
+      "occurrences": [
+        {
+          "file": "templates/template.html",
+          "line": 79,
+          "kind": "html-text"
+        }
+      ]
+    },
+    "template.template.html-text.352": {
+      "zh-CN": "色块颜色",
+      "zh-TW": "色塊顏色",
+      "en": "Swatch Color",
+      "ja": "スウォッチの色",
+      "ko": "색상 견본 색상",
+      "de": "Farbfeldfarbe",
+      "fr": "Couleur du nuancier",
+      "note": "",
+      "occurrences": [
+        {
+          "file": "templates/template.html",
+          "line": 83,
+          "kind": "html-text"
+        }
+      ]
+    },
+    "template.template.html-aria.story_swatch_color": {
+      "zh-CN": "小故事色块颜色",
+      "zh-TW": "小故事色塊顏色",
+      "en": "Story swatch color",
+      "ja": "ストーリー用スウォッチの色",
+      "ko": "스토리 색상 견본 색상",
+      "de": "Farbfeldfarbe für Story",
+      "fr": "Couleur du nuancier Story",
+      "note": "Aria label for story-template swatch color controls.",
+      "occurrences": [
+        {
+          "file": "templates/template.html",
+          "line": 86,
+          "kind": "html-aria-label"
+        }
+      ]
+    },
+    "template.template.html-text.355": {
+      "zh-CN": "清空配装",
+      "zh-TW": "清空配裝",
+      "en": "Clear Glamour",
+      "ja": "ミラプリをクリア",
+      "ko": "장비 투영 지우기",
+      "de": "Projektion leeren",
+      "fr": "Effacer le mirage",
+      "note": "",
+      "occurrences": [
+        {
+          "file": "templates/template.html",
+          "line": 143,
+          "kind": "html-text"
+        }
+      ]
+    },
+    "template.template.html-text.equipment_data": {
+      "zh-CN": "装备数据",
+      "zh-TW": "裝備資料",
+      "en": "Equipment Data",
+      "ja": "装備データ",
+      "ko": "장비 데이터",
+      "de": "Ausrüstungsdaten",
+      "fr": "Données d'équipement",
+      "note": "Template editor equipment data section title.",
+      "occurrences": [
+        {
+          "file": "templates/template.html",
+          "line": 138,
+          "kind": "html-text"
+        }
+      ]
+    },
+    "template.template.frontend-literal.356": {
+      "zh-CN": "模板语言顺序",
+      "zh-TW": "範本語言順序",
+      "en": "Template language order",
+      "ja": "テンプレート言語順",
+      "ko": "템플릿 언어 순서",
+      "de": "Reihenfolge der Vorlagensprachen",
+      "fr": "Ordre des langues du modèle",
+      "note": "Template language order setting label.",
+      "occurrences": [
+        {
+          "file": "templates/template.html",
+          "line": 98,
+          "kind": "frontend-literal"
+        },
+        {
+          "file": "templates/template.html",
+          "line": 98,
+          "kind": "html-aria-label"
+        }
+      ]
+    },
+    "template.template.html-text.357": {
+      "zh-CN": "裁剪图片",
+      "zh-TW": "裁剪圖片",
+      "en": "Crop Image",
+      "ja": "画像をトリミング",
+      "ko": "이미지 자르기",
+      "de": "Bild zuschneiden",
+      "fr": "Recadrer l'image",
+      "note": "",
+      "occurrences": [
+        {
+          "file": "templates/template.html",
+          "line": 116,
+          "kind": "html-text"
+        }
+      ]
+    },
+    "template.template.html-text.358": {
+      "zh-CN": "调整图片区域",
+      "zh-TW": "調整圖片區域",
+      "en": "Adjust Image Area",
+      "ja": "画像範囲を調整",
+      "ko": "이미지 영역 조정",
+      "de": "Bildbereich anpassen",
+      "fr": "Ajuster la zone de l'image",
+      "note": "",
+      "occurrences": [
+        {
+          "file": "templates/template.html",
+          "line": 117,
+          "kind": "html-text"
+        }
+      ]
+    },
+    "template.template.html-text.359": {
+      "zh-CN": "取消",
+      "zh-TW": "取消",
+      "en": "Cancel",
+      "ja": "キャンセル",
+      "ko": "취소",
+      "de": "Abbrechen",
+      "fr": "Annuler",
+      "note": "",
+      "occurrences": [
+        {
+          "file": "templates/template.html",
+          "line": 119,
+          "kind": "html-text"
+        }
+      ]
+    },
+    "template.template.html-text.360": {
+      "zh-CN": "重置",
+      "zh-TW": "重設",
+      "en": "Reset",
+      "ja": "リセット",
+      "ko": "초기화",
+      "de": "Zurücksetzen",
+      "fr": "Réinitialiser",
+      "note": "",
+      "occurrences": [
+        {
+          "file": "templates/template.html",
+          "line": 125,
+          "kind": "html-text"
+        }
+      ]
+    },
+    "template.template.html-text.361": {
+      "zh-CN": "裁剪",
+      "zh-TW": "裁剪",
+      "en": "Crop",
+      "ja": "トリミング",
+      "ko": "자르기",
+      "de": "Zuschneiden",
+      "fr": "Recadrer",
+      "note": "",
+      "occurrences": [
+        {
+          "file": "templates/template.html",
+          "line": 126,
+          "kind": "html-text"
+        }
+      ]
+    },
+    "template.template.html-text.select_template": {
+      "zh-CN": "选择模板",
+      "zh-TW": "選擇範本",
+      "en": "Select Template",
+      "ja": "テンプレートを選択",
+      "ko": "템플릿 선택",
+      "de": "Vorlage auswählen",
+      "fr": "Sélectionner un modèle",
+      "note": "Template selector dialog title.",
+      "occurrences": [
+        {
+          "file": "templates/template.html",
+          "line": 163,
+          "kind": "html-text"
+        }
+      ]
+    },
+    "template.template.html-text.template_language_filter_hint": {
+      "zh-CN": "按可生成语言筛选模板。",
+      "zh-TW": "依可生成語言篩選範本。",
+      "en": "Filter templates by available output language.",
+      "ja": "生成可能な言語でテンプレートを絞り込みます。",
+      "ko": "생성 가능한 언어로 템플릿을 필터링합니다.",
+      "de": "Vorlagen nach verfügbarer Ausgabesprache filtern.",
+      "fr": "Filtrer les modèles par langue de sortie disponible.",
+      "note": "Template selector filter hint.",
+      "occurrences": [
+        {
+          "file": "templates/template.html",
+          "line": 164,
+          "kind": "html-text"
+        }
+      ]
+    },
+    "template.template.html-aria.template_language_filter": {
+      "zh-CN": "模板语言筛选",
+      "zh-TW": "範本語言篩選",
+      "en": "Template Language Filter",
+      "ja": "テンプレート言語フィルター",
+      "ko": "템플릿 언어 필터",
+      "de": "Vorlagen-Sprachfilter",
+      "fr": "Filtre de langue du modèle",
+      "note": "Template selector filter aria label.",
+      "occurrences": [
+        {
+          "file": "templates/template.html",
+          "line": 168,
+          "kind": "html-aria-label"
+        }
+      ]
+    },
+    "template.template.html-text.crop_hint": {
+      "zh-CN": "调整取景后用于对应图片区域。",
+      "zh-TW": "調整取景後用於對應圖片區域。",
+      "en": "Adjust the crop for the corresponding image area.",
+      "ja": "対応する画像範囲に使うトリミングを調整します。",
+      "ko": "해당 이미지 영역에 사용할 구도를 조정합니다.",
+      "de": "Passe den Ausschnitt für den entsprechenden Bildbereich an.",
+      "fr": "Ajustez le cadrage pour la zone d'image correspondante.",
+      "note": "Template crop dialog hint.",
+      "occurrences": [
+        {
+          "file": "templates/template.html",
+          "line": 178,
+          "kind": "html-text"
+        }
+      ]
+    },
+    "template.template.html-text.use_crop": {
+      "zh-CN": "使用裁剪",
+      "zh-TW": "使用裁剪",
+      "en": "Use Crop",
+      "ja": "トリミングを使用",
+      "ko": "자르기 사용",
+      "de": "Zuschnitt verwenden",
+      "fr": "Utiliser le recadrage",
+      "note": "Template crop dialog apply button.",
+      "occurrences": [
+        {
+          "file": "templates/template.html",
+          "line": 187,
+          "kind": "html-text"
+        }
+      ]
+    },
+    "template.template.html-text.362": {
+      "zh-CN": "幻化链接",
+      "zh-TW": "幻化連結",
+      "en": "Glamour Link",
+      "ja": "ミラプリリンク",
+      "ko": "장비 투영 링크",
+      "de": "Glamour-Link",
+      "fr": "Lien de mirage",
+      "note": "",
+      "occurrences": [
+        {
+          "file": "templates/template.html",
+          "line": 138,
+          "kind": "html-text"
+        }
+      ]
+    },
+    "template.template.html-text.eorzea_collection": {
+      "zh-CN": "请输入石之家或 Eorzea Collection 幻化链接",
+      "zh-TW": "請輸入石之家或 Eorzea Collection 幻化連結",
+      "en": "Please enter a Rising Stones or Eorzea Collection glamour link",
+      "ja": "石之家または Eorzea Collection のミラプリリンクを入力してください",
+      "ko": "石之家 또는 Eorzea Collection 장비 투영 링크를 입력하세요",
+      "de": "Bitte gib einen Rising-Stones- oder Eorzea-Collection-Glamour-Link ein",
+      "fr": "Veuillez saisir un lien de mirage Rising Stones ou Eorzea Collection",
+      "note": "",
+      "occurrences": [
+        {
+          "file": "templates/template.html",
+          "line": 140,
+          "kind": "html-text"
+        },
+        {
+          "file": "static/template.js",
+          "line": 938,
+          "kind": "frontend-literal"
+        },
+        {
+          "file": "static/template.js",
+          "line": 1831,
+          "kind": "frontend-literal"
+        },
+        {
+          "file": "static/template.js",
+          "line": 1832,
+          "kind": "frontend-literal"
+        }
+      ]
+    },
+    "template.template.html-text.364": {
+      "zh-CN": "载入",
+      "zh-TW": "載入",
+      "en": "Load",
+      "ja": "読み込み",
+      "ko": "불러오기",
+      "de": "Laden",
+      "fr": "Charger",
+      "note": "",
+      "occurrences": [
+        {
+          "file": "templates/template.html",
+          "line": 142,
+          "kind": "html-text"
+        }
+      ]
+    },
+    "common.action.save_image": {
+      "zh-CN": "保存图片",
+      "zh-TW": "儲存圖片",
+      "en": "Save Image",
+      "ja": "画像を保存",
+      "ko": "이미지 저장",
+      "de": "Bild speichern",
+      "fr": "Enregistrer l'image",
+      "note": "Use Save for generated local image output instead of Download.",
+      "occurrences": [
+        {
+          "file": "templates/template.html",
+          "line": 71,
+          "kind": "html-text"
+        }
+      ]
+    },
+    "common.action.save_config": {
+      "zh-CN": "保存配置",
+      "zh-TW": "儲存配置",
+      "en": "Save Loadout",
+      "ja": "配装を保存",
+      "ko": "장비 구성 저장",
+      "de": "Ausrüstungsset speichern",
+      "fr": "Enregistrer la tenue",
+      "note": "Label for saving the current equipment loadout to recent entries.",
+      "occurrences": [
+        {
+          "file": "templates/equipinfo.html",
+          "line": 94,
+          "kind": "html-text"
+        }
+      ]
+    },
+    "common.prompt.config_name": {
+      "zh-CN": "配置名称",
+      "zh-TW": "配置名稱",
+      "en": "Loadout name",
+      "ja": "配装名",
+      "ko": "장비 구성 이름",
+      "de": "Name des Ausrüstungssets",
+      "fr": "Nom de la tenue",
+      "note": "Prompt label for naming a saved equipment loadout.",
+      "occurrences": [
+        {
+          "file": "static/equipinfo.js",
+          "line": 221,
+          "kind": "frontend-literal"
+        }
+      ]
+    },
+    "common.status.no_equipment_config_to_save": {
+      "zh-CN": "没有可保存的装备配置",
+      "zh-TW": "沒有可儲存的裝備配置",
+      "en": "No equipment loadout to save",
+      "ja": "保存できる配装がありません",
+      "ko": "저장할 장비 구성이 없습니다",
+      "de": "Kein Ausrüstungsset zum Speichern vorhanden",
+      "fr": "Aucune tenue d'équipement à enregistrer",
+      "note": "Save-loadout empty-state status.",
+      "occurrences": [
+        {
+          "file": "static/equipinfo.js",
+          "line": 230,
+          "kind": "frontend-literal"
+        }
+      ]
+    },
+    "common.status.saved_config_value": {
+      "zh-CN": "已保存配置: {value}",
+      "zh-TW": "已儲存配置: {value}",
+      "en": "Saved loadout: {value}",
+      "ja": "配装を保存しました: {value}",
+      "ko": "장비 구성 저장됨: {value}",
+      "de": "Ausrüstungsset gespeichert: {value}",
+      "fr": "Tenue enregistrée : {value}",
+      "note": "Save-loadout success status.",
+      "occurrences": [
+        {
+          "file": "static/equipinfo.js",
+          "line": 242,
+          "kind": "frontend-literal"
+        }
+      ]
+    },
+    "common.action.save_png": {
+      "zh-CN": "保存 PNG",
+      "zh-TW": "儲存 PNG",
+      "en": "Save PNG",
+      "ja": "PNGを保存",
+      "ko": "PNG 저장",
+      "de": "PNG speichern",
+      "fr": "Enregistrer le PNG",
+      "note": "Use Save for generated local PNG output instead of Download.",
+      "occurrences": []
+    },
+    "common.action.save_zip": {
+      "zh-CN": "保存 ZIP",
+      "zh-TW": "儲存 ZIP",
+      "en": "Save ZIP",
+      "ja": "ZIPを保存",
+      "ko": "ZIP 저장",
+      "de": "ZIP speichern",
+      "fr": "Enregistrer le ZIP",
+      "note": "Use Save for generated local ZIP output instead of Download.",
+      "occurrences": []
+    },
+    "common.status.saved_value": {
+      "zh-CN": "已保存 {value}",
+      "zh-TW": "已儲存 {value}",
+      "en": "Saved {value}",
+      "ja": "{value}を保存しました",
+      "ko": "{value} 저장됨",
+      "de": "{value} gespeichert",
+      "fr": "{value} enregistré",
+      "note": "Generic generated-file save status.",
+      "occurrences": []
+    },
+    "common.status.png_save_failed": {
+      "zh-CN": "PNG 保存失败，请重试",
+      "zh-TW": "PNG 儲存失敗，請重試",
+      "en": "Failed to save PNG. Please try again.",
+      "ja": "PNGの保存に失敗しました。もう一度お試しください",
+      "ko": "PNG 저장 실패. 다시 시도하세요",
+      "de": "PNG konnte nicht gespeichert werden. Bitte erneut versuchen.",
+      "fr": "Échec de l'enregistrement du PNG. Veuillez réessayer.",
+      "note": "",
+      "occurrences": []
+    },
+    "common.status.no_saveable_png": {
+      "zh-CN": "没有可保存的 PNG",
+      "zh-TW": "沒有可儲存的 PNG",
+      "en": "No PNG available to save",
+      "ja": "保存できるPNGがありません",
+      "ko": "저장할 수 있는 PNG가 없습니다",
+      "de": "Kein speicherbares PNG vorhanden",
+      "fr": "Aucun PNG à enregistrer",
+      "note": "",
+      "occurrences": []
+    },
+    "common.status.saved_zip_count": {
+      "zh-CN": "已保存 ZIP（{value} 张 PNG）",
+      "zh-TW": "已儲存 ZIP（{value} 張 PNG）",
+      "en": "Saved ZIP ({value} PNGs)",
+      "ja": "ZIPを保存しました（PNG {value}枚）",
+      "ko": "ZIP 저장됨(PNG {value}장)",
+      "de": "ZIP gespeichert ({value} PNGs)",
+      "fr": "ZIP enregistré ({value} PNG)",
+      "note": "",
+      "occurrences": []
+    },
+    "common.status.zip_save_failed": {
+      "zh-CN": "ZIP 保存失败，请尝试单张保存",
+      "zh-TW": "ZIP 儲存失敗，請嘗試單張儲存",
+      "en": "Failed to save ZIP. Try saving images one by one.",
+      "ja": "ZIPの保存に失敗しました。1枚ずつ保存してみてください",
+      "ko": "ZIP 저장 실패. 이미지를 한 장씩 저장해 보세요",
+      "de": "ZIP konnte nicht gespeichert werden. Versuche, die Bilder einzeln zu speichern.",
+      "fr": "Échec de l'enregistrement du ZIP. Essayez d'enregistrer les images une par une.",
+      "note": "",
+      "occurrences": []
+    }
+  },
+  "scope": [
+    "templates/template.html",
+    "static/template.js",
+    "templates/equipinfo.html",
+    "static/equipinfo.js",
+    "backend API errors surfaced by template/equipinfo import/search workflows",
+    "template/equipinfo pages",
+    "runtime dye group labels displayed by template/equipinfo dye pickers"
+  ]
+}

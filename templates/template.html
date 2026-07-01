@@ -1,0 +1,205 @@
+<!doctype html>
+<html lang="zh-CN" data-theme="light">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>幻化工房</title>
+    <link rel="icon" type="image/svg+xml" href="{{ url_for('static', filename='icons/WebIcon.svg', v='20260629-1') }}">
+    <link rel="icon" type="image/png" sizes="429x429" href="{{ url_for('static', filename='icons/WebIcon.png', v='20260629-1') }}">
+    <link rel="shortcut icon" href="{{ url_for('static', filename='icons/WebIcon.png', v='20260629-1') }}">
+    <link rel="apple-touch-icon" href="{{ url_for('static', filename='icons/WebIcon.png', v='20260629-1') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='vendor/cropperjs/cropper.min.css', v='1.6.2') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='app.css', v='20260630-2') }}">
+  </head>
+  <body>
+    <header class="app-header">
+      <h1>幻化工房</h1>
+      <div class="header-actions">
+        <button type="button" class="header-icon-btn" id="templateRecentButton" title="最近载入" aria-label="最近载入">
+          <img src="{{ url_for('static', filename='icons/recent.svg') }}" alt="" aria-hidden="true">
+        </button>
+        <div class="header-language-menu">
+          <button type="button" class="header-icon-btn" id="uiLanguageButton" title="语言" aria-label="语言" aria-haspopup="true" aria-expanded="false" aria-controls="uiLanguageMenu" data-ui-language-toggle>
+            <img src="{{ url_for('static', filename='icons/language.svg') }}" alt="" aria-hidden="true">
+          </button>
+          <div id="uiLanguageMenu" class="ui-language-popover hidden" role="menu" aria-label="界面语言" aria-hidden="true" data-ui-language-menu>
+            <button type="button" role="menuitemradio" data-ui-lang="zh-CN" aria-checked="true">简体中文</button>
+            {# <button type="button" role="menuitemradio" data-ui-lang="zh-TW" aria-checked="false">繁體中文</button> #}
+            <button type="button" role="menuitemradio" data-ui-lang="en" aria-checked="false">English</button>
+            <button type="button" role="menuitemradio" data-ui-lang="ja" aria-checked="false">日本語</button>
+            <button type="button" role="menuitemradio" data-ui-lang="ko" aria-checked="false">한국어</button>
+            <button type="button" role="menuitemradio" data-ui-lang="de" aria-checked="false">Deutsch</button>
+            <button type="button" role="menuitemradio" data-ui-lang="fr" aria-checked="false">Français</button>
+          </div>
+        </div>
+        <button type="button" class="header-icon-btn" id="themeToggleBtn" title="切换为白昼" aria-label="切换为白昼">
+          <img id="themeToggleIcon" alt="" aria-hidden="true">
+        </button>
+      </div>
+    </header>
+    <a class="page-turn-button page-turn-next" href="{{ url_for('equipinfo_workspace') }}" title="装备信息" aria-label="装备信息">
+      <span aria-hidden="true">&rsaquo;</span>
+      <small data-i18n-key="common.page.equipment_info">装备信息</small>
+    </a>
+    <section id="templateRecentPanel" class="recent-panel hidden" aria-label="最近载入">
+      <div class="recent-panel-head">
+        <strong>最近载入</strong>
+        <button id="templateClearRecentButton" type="button" class="recent-clear">清空</button>
+      </div>
+      <div id="templateRecentList" class="recent-list"></div>
+    </section>
+
+    <main class="main template-workspace-main">
+      <section class="template-workspace-layout">
+        <div class="template-preview-panel">
+          <p id="templateStatus" class="status template-status-visually-hidden"></p>
+          <input id="templateImageInput" type="file" accept="image/png,image/jpeg,image/webp,image/gif,image/avif,image/bmp" multiple hidden>
+          <div id="templateCanvasShell" class="template-canvas-shell" tabindex="0" aria-label="上传图片">
+            <canvas id="templateCanvas" class="template-canvas" width="1200" height="720"></canvas>
+            <button id="templateCanvasUploadLayer" type="button" class="template-canvas-upload-layer" data-template-image-slot="main">
+              <span>上传图片</span>
+            </button>
+            <div id="templateLoadingOverlay" class="template-loading-overlay hidden" role="status" aria-live="polite" aria-hidden="true">
+              <div class="template-loading-card">
+                <span class="template-loading-spinner" aria-hidden="true"></span>
+                <span class="template-loading-text">加载中……</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <aside class="template-config-panel">
+          <section class="template-config-section">
+            <div class="bar-title">模板设置</div>
+            <div class="template-meta-panel" aria-label="模板作者">
+              <span id="templateAuthor" class="template-meta-author">模板作者：</span>
+              <div class="template-meta-actions">
+                <button id="templateSelectorOpenButton" type="button" class="secondary template-selector-open-button">更换模板</button>
+                <button id="templateDownloadButton" type="button" class="secondary template-download-button">保存图片</button>
+              </div>
+            </div>
+            <label class="png-setting-field template-title-field">
+              <span>标题文字</span>
+              <input id="templateTopTextInput" class="template-text-input" type="text" spellcheck="false">
+            </label>
+            <label class="png-setting-field template-character-name-field hidden">
+              <span>角色名</span>
+              <input id="templateCharacterNameInput" class="template-text-input" type="text" spellcheck="false">
+            </label>
+            <label class="png-setting-field template-ec-subtitle-field hidden">
+              <span>名字与服务器</span>
+              <div class="template-ec-subtitle-grid" aria-label="名字与服务器">
+                <input id="templateEcSubtitleLeftInput" class="template-text-input" type="text" spellcheck="false" placeholder="名字">
+                <input id="templateEcSubtitleSymbolInput" class="template-text-input template-ec-subtitle-symbol-input" type="text" spellcheck="false" maxlength="4" value="♦" aria-label="特殊符号">
+                <input id="templateEcSubtitleRightInput" class="template-text-input" type="text" spellcheck="false" placeholder="服务器">
+              </div>
+            </label>
+            <label class="png-setting-field template-dye-frame-field">
+              <div id="templateDyeFrameControls" class="segmented-control template-dye-frame-controls">
+                <button type="button" class="segmented-button active" data-template-dye-frame="psd">染剂样式1</button>
+                <button type="button" class="segmented-button" data-template-dye-frame="color">染剂样式2</button>
+              </div>
+            </label>
+            <div class="png-setting-field template-story-swatch-field hidden">
+              <span>色块颜色</span>
+              <div id="storySwatchControls" class="template-story-swatch-grid" aria-label="小故事色块颜色"></div>
+            </div>
+          </section>
+
+          <section class="template-config-section">
+            <div class="template-section-title-row">
+              <div class="bar-title">装备数据</div>
+              <button id="templateImportLinkButton" type="button" class="secondary" data-i18n-key="static.template.frontend-literal.217">从网页导入</button>
+            </div>
+            <div class="template-config-toolbar">
+              <div id="templateLanguageControls" class="language-controls" aria-label="排版语言"></div>
+              <button id="templateClearDraftButton" type="button" class="secondary">清空配装</button>
+            </div>
+            <div id="templateLanguageSettings" class="template-language-settings" aria-label="模板语言顺序"></div>
+            <div id="templateEditor" class="card-editor template-editor"></div>
+          </section>
+        </aside>
+      </section>
+    </main>
+
+    <template id="templateEditorRowTemplate">
+      <article class="editor-row">
+        <h3 class="editor-slot-name"></h3>
+        <div class="editor-item"></div>
+      </article>
+    </template>
+
+    <div id="templateSelectorOverlay" class="template-selector-overlay hidden" aria-hidden="true">
+      <section class="template-selector-dialog" role="dialog" aria-modal="true" aria-labelledby="templateSelectorTitle">
+        <div class="template-selector-dialog-head">
+          <div>
+            <h2 id="templateSelectorTitle">选择模板</h2>
+            <p>按可生成语言筛选模板。</p>
+          </div>
+          <button id="templateSelectorCloseButton" type="button" class="secondary">关闭</button>
+        </div>
+        <div id="templateSelectorFilterControls" class="template-selector-filter-controls" aria-label="模板语言筛选"></div>
+        <div id="templateSelectorControls" class="template-selector-list" role="listbox" aria-label="模板选择"></div>
+      </section>
+    </div>
+
+    <div id="templateCropOverlay" class="template-crop-overlay hidden" aria-hidden="true">
+      <section class="template-crop-dialog" role="dialog" aria-modal="true" aria-labelledby="templateCropTitle">
+        <div class="template-crop-head">
+          <div>
+            <h2 id="templateCropTitle">裁剪图片</h2>
+            <p>调整取景后用于对应图片区域。</p>
+          </div>
+          <button id="templateCropCancelButton" type="button" class="secondary">取消</button>
+        </div>
+        <div class="template-crop-stage">
+          <img id="templateCropImage" class="template-crop-image" alt="">
+        </div>
+        <div class="template-crop-zoom">
+          <label for="templateCropZoomRange">缩放</label>
+          <input id="templateCropZoomRange" type="range" min="10" max="500" step="1" value="100">
+          <input id="templateCropZoomInput" type="number" min="10" max="500" step="1" value="100" aria-label="缩放百分比">
+          <span>%</span>
+        </div>
+        <div class="template-crop-actions">
+          <button id="templateCropResetButton" type="button" class="secondary">重置</button>
+          <button id="templateCropApplyButton" type="button">使用裁剪</button>
+        </div>
+      </section>
+    </div>
+
+    <div id="templateImportOverlay" class="template-import-overlay hidden" aria-hidden="true">
+      <section class="template-import-dialog" role="dialog" aria-modal="true" aria-labelledby="templateImportTitle">
+        <div class="template-import-head">
+          <h2 id="templateImportTitle" data-i18n-key="static.template.frontend-literal.217">从网页导入</h2>
+          <button id="templateImportCloseButton" type="button" class="secondary">关闭</button>
+        </div>
+        <form id="templateImportForm" class="template-import-form">
+          <label for="templateImportUrlInput" data-i18n-key="template.template.html-text.362">幻化链接</label>
+          <input id="templateImportUrlInput" type="url" spellcheck="false" placeholder="https://...">
+          <p id="templateImportHint" data-i18n-key="template.template.html-text.eorzea_collection">请输入石之家或 Eorzea Collection 幻化链接</p>
+          <div class="template-import-actions">
+            <button id="templateImportSubmitButton" type="submit">载入</button>
+          </div>
+        </form>
+      </section>
+    </div>
+
+    <script src="{{ url_for('static', filename='vendor/cropperjs/cropper.min.js', v='1.6.2') }}"></script>
+  <script src="{{ url_for('static', filename='common.js', v='20260630-1') }}"></script>
+  <script src="{{ url_for('static', filename='store.js', v='20260630-1') }}"></script>
+  <script src="{{ url_for('static', filename='ui-language.js', v='20260630-1') }}"></script>
+  <script src="{{ url_for('static', filename='template-dye-policy.js', v='20260626-1') }}"></script>
+  <script src="{{ url_for('static', filename='template-definitions.js', v='20260630-1') }}"></script>
+  <script src="{{ url_for('static', filename='template-renderers.js', v='20260630-1') }}"></script>
+  <script src="{{ url_for('static', filename='template-renderer-eorzea.js', v='20260630-1') }}"></script>
+  <script src="{{ url_for('static', filename='template-renderer-horizontal.js', v='20260626-3') }}"></script>
+  <script src="{{ url_for('static', filename='template-renderer-story.js', v='20260629-1') }}"></script>
+  <script src="{{ url_for('static', filename='template-renderer-ec.js', v='20260630-1') }}"></script>
+  <script src="{{ url_for('static', filename='template-renderer-risingstones.js', v='20260629-3') }}"></script>
+  <script src="{{ url_for('static', filename='template-renderer-silence-fashion.js', v='20260629-9') }}"></script>
+  <script src="{{ url_for('static', filename='vendor/idb-keyval/idb-keyval-iife.min.js', v='6.2.5') }}"></script>
+  <script src="{{ url_for('static', filename='template-image-store.js', v='20260627-3') }}"></script>
+  <script src="{{ url_for('static', filename='template.js', v='20260701-1') }}"></script>
+  </body>
+</html>

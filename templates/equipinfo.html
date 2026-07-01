@@ -1,0 +1,252 @@
+<!doctype html>
+<html lang="zh-CN" data-theme="light">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>装备信息 - 幻化工房</title>
+    <link rel="icon" type="image/svg+xml" href="{{ url_for('static', filename='icons/WebIcon.svg', v='20260629-1') }}">
+    <link rel="icon" type="image/png" sizes="429x429" href="{{ url_for('static', filename='icons/WebIcon.png', v='20260629-1') }}">
+    <link rel="shortcut icon" href="{{ url_for('static', filename='icons/WebIcon.png', v='20260629-1') }}">
+    <link rel="apple-touch-icon" href="{{ url_for('static', filename='icons/WebIcon.png', v='20260629-1') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='app.css', v='20260630-2') }}">
+  </head>
+  <body>
+    <header class="app-header">
+      <h1>幻化工房</h1>
+      <div class="header-actions">
+        <button type="button" class="header-icon-btn" id="equipinfoRecentButton" title="最近载入" aria-label="最近载入">
+          <img src="{{ url_for('static', filename='icons/recent.svg') }}" alt="" aria-hidden="true">
+        </button>
+        <div class="header-language-menu">
+          <button type="button" class="header-icon-btn" id="uiLanguageButton" title="语言" aria-label="语言" aria-haspopup="true" aria-expanded="false" aria-controls="uiLanguageMenu" data-ui-language-toggle>
+            <img src="{{ url_for('static', filename='icons/language.svg') }}" alt="" aria-hidden="true">
+          </button>
+          <div id="uiLanguageMenu" class="ui-language-popover hidden" role="menu" aria-label="界面语言" aria-hidden="true" data-ui-language-menu>
+            <button type="button" role="menuitemradio" data-ui-lang="zh-CN" aria-checked="true">简体中文</button>
+            <button type="button" role="menuitemradio" data-ui-lang="zh-TW" aria-checked="false">繁體中文</button>
+            <button type="button" role="menuitemradio" data-ui-lang="en" aria-checked="false">English</button>
+            <button type="button" role="menuitemradio" data-ui-lang="ja" aria-checked="false">日本語</button>
+            <button type="button" role="menuitemradio" data-ui-lang="ko" aria-checked="false">한국어</button>
+            <button type="button" role="menuitemradio" data-ui-lang="de" aria-checked="false">Deutsch</button>
+            <button type="button" role="menuitemradio" data-ui-lang="fr" aria-checked="false">Français</button>
+          </div>
+        </div>
+        <button type="button" class="header-icon-btn" id="themeToggleBtn" title="切换为白昼" aria-label="切换为白昼">
+          <img id="themeToggleIcon" alt="" aria-hidden="true">
+        </button>
+      </div>
+    </header>
+    <a class="page-turn-button page-turn-prev" href="{{ url_for('template_workspace') }}" title="模板" aria-label="模板">
+      <span aria-hidden="true">&lsaquo;</span>
+      <small>模板</small>
+    </a>
+    <section id="equipinfoRecentPanel" class="recent-panel hidden" aria-label="最近载入">
+      <div class="recent-panel-head">
+        <strong>最近载入</strong>
+        <button id="equipinfoClearRecentButton" type="button" class="recent-clear">清空</button>
+      </div>
+      <div id="equipinfoRecentList" class="recent-list"></div>
+    </section>
+
+    <main class="main equipinfo-main">
+      <section class="panel equipinfo-panel">
+        <div class="bar-title">装备信息</div>
+        <div class="equipinfo-source-grid">
+          <form id="equipinfoLinkForm" class="equipinfo-form equipinfo-link-form" autocomplete="off">
+            <div class="equipinfo-form-head">
+              <label for="equipinfoUrlInput">网页链接</label>
+              <button id="equipinfoImportLinkButton" type="submit">读取</button>
+            </div>
+            <div class="equipinfo-link-input-wrap">
+              <input id="equipinfoUrlInput" type="url" spellcheck="false" placeholder="石之家或 Eorzea Collection 幻化链接">
+              <div id="equipinfoCharaDropOverlay" class="equipinfo-chara-drop-overlay" aria-hidden="true"></div>
+            </div>
+          </form>
+
+          <form id="equipinfoTextForm" class="equipinfo-form equipinfo-text-form">
+            <div class="equipinfo-form-head">
+              <label for="equipinfoTextInput">文字信息识别</label>
+              <div class="equipinfo-action-buttons">
+                <label class="equipinfo-locale-field">
+                  <span>语言</span>
+                  <select id="equipinfoSourceLocaleSelect"></select>
+                </label>
+                <button id="equipinfoClearButton" type="button" class="secondary">清空</button>
+                <button id="equipinfoParseTextButton" type="submit">识别</button>
+              </div>
+            </div>
+            <div class="equipinfo-code-input">
+              <div id="equipinfoTextLineNumbers" class="equipinfo-line-numbers" aria-hidden="true">1</div>
+              <textarea id="equipinfoTextInput" spellcheck="false" wrap="off" placeholder="例如：&#10;主手：过期青铜步兵剑&#10;身体：梦幻装（无染色/煤玉黑）&#10;耳饰：日长石耳坠"></textarea>
+            </div>
+            <div id="equipinfoWarnings" class="equipinfo-warnings"></div>
+            <p id="equipinfoStatus" class="status">等待输入</p>
+          </form>
+        </div>
+      </section>
+
+      <section id="equipinfoResultSection" class="result-section">
+        <div class="bar-title">装备信息</div>
+        <div class="result-header">
+          <div class="result-title">
+            <h2 id="equipinfoSourceName">-</h2>
+            <p id="equipinfoMeta" class="character-meta"></p>
+          </div>
+          <div class="meta">
+            <div id="equipinfoLanguageControls" class="language-controls" aria-label="装备名语言"></div>
+            <button id="equipinfoSaveConfigButton" type="button" class="secondary" data-i18n-key="common.action.save_config">保存配置</button>
+          </div>
+        </div>
+        <div id="equipinfoSlotGrid" class="card-editor equipinfo-card-editor"></div>
+      </section>
+
+      <section id="equipinfoCopySection" class="result-section">
+        <div class="bar-title">文案生成</div>
+        <div class="copy-layout">
+          <div id="equipinfoCopyFormatControls" class="segmented-control copy-format-controls" aria-label="文案格式">
+            <button type="button" class="segmented-button active" data-copy-format="format1">格式一</button>
+            <button type="button" class="segmented-button" data-copy-format="format2">格式二</button>
+            <button type="button" class="segmented-button" data-copy-format="format3">格式三</button>
+            <button type="button" class="segmented-button" data-copy-format="format4">格式四</button>
+            <button type="button" class="segmented-button" data-copy-format="custom">自定义</button>
+          </div>
+          <div id="equipinfoCustomTemplatePanel" class="custom-template-panel hidden">
+            <div class="custom-template-head">
+              <label for="equipinfoCustomTemplateInput">模板</label>
+              <button id="equipinfoResetTemplateButton" type="button" class="secondary">恢复默认模板</button>
+            </div>
+            <textarea id="equipinfoCustomTemplateInput" class="template-input" spellcheck="false"></textarea>
+            {% raw %}
+            <div id="equipinfoTemplateReference" class="template-reference" aria-label="模板参数">
+              <div class="template-reference-group">
+                <span>循环</span>
+                <button type="button" class="token-chip" data-ui-i18n-skip-text data-token="{{#items}}{换行}{{/items}}">{{#items}}...{{/items}}</button>
+                <button type="button" class="token-chip" data-ui-i18n-skip-text data-token="{{#染剂}}{{^首个染剂}} | {{/首个染剂}}{染剂}{{/染剂}}">{{#染剂}}...{{/染剂}}</button>
+              </div>
+              <div class="template-reference-group">
+                <span>条件</span>
+                <button type="button" class="token-chip" data-ui-i18n-skip-text data-token="{{#可染色}}{{/可染色}}">{{#可染色}}</button>
+                <button type="button" class="token-chip" data-ui-i18n-skip-text data-token="{{^可染色}}{{/可染色}}">{{^可染色}}</button>
+                <button type="button" class="token-chip" data-ui-i18n-skip-text data-token="{{#不可染色}}{{/不可染色}}">{{#不可染色}}</button>
+                <button type="button" class="token-chip" data-ui-i18n-skip-text data-token="{{#皇帝套}}{{/皇帝套}}">{{#皇帝套}}</button>
+                <button type="button" class="token-chip" data-ui-i18n-skip-text data-token="{{^皇帝套}}{{/皇帝套}}">{{^皇帝套}}</button>
+                <button type="button" class="token-chip" data-ui-i18n-skip-text data-token="{{#非皇帝套}}{{/非皇帝套}}">{{#非皇帝套}}</button>
+                <button type="button" class="token-chip" data-ui-i18n-skip-text data-token="{{#首项}}{{/首项}}">{{#首项}}</button>
+                <button type="button" class="token-chip" data-ui-i18n-skip-text data-token="{{^首项}}{{/首项}}">{{^首项}}</button>
+                <button type="button" class="token-chip" data-ui-i18n-skip-text data-token="{{#末项}}{{/末项}}">{{#末项}}</button>
+                <button type="button" class="token-chip" data-ui-i18n-skip-text data-token="{{^末项}}{{/末项}}">{{^末项}}</button>
+                <button type="button" class="token-chip" data-ui-i18n-skip-text data-token="{{#首个染剂}}{{/首个染剂}}">{{#首个染剂}}</button>
+                <button type="button" class="token-chip" data-ui-i18n-skip-text data-token="{{^首个染剂}}{{/首个染剂}}">{{^首个染剂}}</button>
+                <button type="button" class="token-chip" data-ui-i18n-skip-text data-token="{{#末个染剂}}{{/末个染剂}}">{{#末个染剂}}</button>
+                <button type="button" class="token-chip" data-ui-i18n-skip-text data-token="{{^末个染剂}}{{/末个染剂}}">{{^末个染剂}}</button>
+              </div>
+              <div class="template-reference-group">
+                <span>全局</span>
+                <button type="button" class="token-chip" data-ui-i18n-skip-text data-token="{文件名}">{文件名}</button>
+                <button type="button" class="token-chip" data-ui-i18n-skip-text data-token="{文件类型}">{文件类型}</button>
+                <button type="button" class="token-chip" data-ui-i18n-skip-text data-token="{种族}">{种族}</button>
+                <button type="button" class="token-chip" data-ui-i18n-skip-text data-token="{性别}">{性别}</button>
+                <button type="button" class="token-chip" data-ui-i18n-skip-text data-token="{语言}">{语言}</button>
+                <button type="button" class="token-chip" data-ui-i18n-skip-text data-token="{语言代码}">{语言代码}</button>
+                <button type="button" class="token-chip" data-ui-i18n-skip-text data-token="{装备总数}">{装备总数}</button>
+                <button type="button" class="token-chip" data-ui-i18n-skip-text data-token="{染色标签}">{染色标签}</button>
+                <button type="button" class="token-chip" data-ui-i18n-skip-text data-token="{换行}">{换行}</button>
+                <button type="button" class="token-chip" data-ui-i18n-skip-text data-token="{原始JSON}">{原始JSON}</button>
+              </div>
+              <div class="template-reference-group">
+                <span>装备</span>
+                <button type="button" class="token-chip" data-ui-i18n-skip-text data-token="{序号}">{序号}</button>
+                <button type="button" class="token-chip" data-ui-i18n-skip-text data-token="{首项}">{首项}</button>
+                <button type="button" class="token-chip" data-ui-i18n-skip-text data-token="{末项}">{末项}</button>
+                <button type="button" class="token-chip" data-ui-i18n-skip-text data-token="{部位}">{部位}</button>
+                <button type="button" class="token-chip" data-ui-i18n-skip-text data-token="{部位代码}">{部位代码}</button>
+                <button type="button" class="token-chip" data-ui-i18n-skip-text data-token="{部位类型}">{部位类型}</button>
+                <button type="button" class="token-chip" data-ui-i18n-skip-text data-token="{查找键}">{查找键}</button>
+                <button type="button" class="token-chip" data-ui-i18n-skip-text data-token="{模型编号}">{模型编号}</button>
+                <button type="button" class="token-chip" data-ui-i18n-skip-text data-token="{模型ID}">{模型ID}</button>
+                <button type="button" class="token-chip" data-ui-i18n-skip-text data-token="{模型套装}">{模型套装}</button>
+                <button type="button" class="token-chip" data-ui-i18n-skip-text data-token="{模型基础}">{模型基础}</button>
+                <button type="button" class="token-chip" data-ui-i18n-skip-text data-token="{模型变体}">{模型变体}</button>
+                <button type="button" class="token-chip" data-ui-i18n-skip-text data-token="{装备}">{装备}</button>
+                <button type="button" class="token-chip" data-ui-i18n-skip-text data-token="{装备ID}">{装备ID}</button>
+                <button type="button" class="token-chip" data-ui-i18n-skip-text data-token="{物品ID标签}">{物品ID标签}</button>
+                <button type="button" class="token-chip" data-ui-i18n-skip-text data-token="{图标ID}">{图标ID}</button>
+                <button type="button" class="token-chip" data-ui-i18n-skip-text data-token="{装备部位类型}">{装备部位类型}</button>
+                <button type="button" class="token-chip" data-ui-i18n-skip-text data-token="{装备部位分类}">{装备部位分类}</button>
+                <button type="button" class="token-chip" data-ui-i18n-skip-text data-token="{模型主值}">{模型主值}</button>
+                <button type="button" class="token-chip" data-ui-i18n-skip-text data-token="{模型副值}">{模型副值}</button>
+                <button type="button" class="token-chip" data-ui-i18n-skip-text data-token="{模型三值}">{模型三值}</button>
+                <button type="button" class="token-chip" data-ui-i18n-skip-text data-token="{模型四值}">{模型四值}</button>
+                <button type="button" class="token-chip" data-ui-i18n-skip-text data-token="{模型原始值}">{模型原始值}</button>
+                <button type="button" class="token-chip" data-ui-i18n-skip-text data-token="{候选数量}">{候选数量}</button>
+                <button type="button" class="token-chip" data-ui-i18n-skip-text data-token="{部位原始JSON}">{部位原始JSON}</button>
+                <button type="button" class="token-chip" data-ui-i18n-skip-text data-token="{装备原始JSON}">{装备原始JSON}</button>
+              </div>
+              <div class="template-reference-group">
+                <span>染色</span>
+                <button type="button" class="token-chip" data-ui-i18n-skip-text data-token="{可染色}">{可染色}</button>
+                <button type="button" class="token-chip" data-ui-i18n-skip-text data-token="{不可染色}">{不可染色}</button>
+                <button type="button" class="token-chip" data-ui-i18n-skip-text data-token="{染色数量}">{染色数量}</button>
+                <button type="button" class="token-chip" data-ui-i18n-skip-text data-token="{染色ID1}">{染色ID1}</button>
+                <button type="button" class="token-chip" data-ui-i18n-skip-text data-token="{染色ID2}">{染色ID2}</button>
+                <button type="button" class="token-chip" data-ui-i18n-skip-text data-token="{后端染色文本}">{后端染色文本}</button>
+                <button type="button" class="token-chip" data-ui-i18n-skip-text data-token="{染色1}">{染色1}</button>
+                <button type="button" class="token-chip" data-ui-i18n-skip-text data-token="{染剂1}">{染剂1}</button>
+                <button type="button" class="token-chip" data-ui-i18n-skip-text data-token="{染色1ID}">{染色1ID}</button>
+                <button type="button" class="token-chip" data-ui-i18n-skip-text data-token="{染剂1ID}">{染剂1ID}</button>
+                <button type="button" class="token-chip" data-ui-i18n-skip-text data-token="{染色1色值}">{染色1色值}</button>
+                <button type="button" class="token-chip" data-ui-i18n-skip-text data-token="{染剂1色值}">{染剂1色值}</button>
+                <button type="button" class="token-chip" data-ui-i18n-skip-text data-token="{染色2}">{染色2}</button>
+                <button type="button" class="token-chip" data-ui-i18n-skip-text data-token="{染剂2}">{染剂2}</button>
+                <button type="button" class="token-chip" data-ui-i18n-skip-text data-token="{染色2ID}">{染色2ID}</button>
+                <button type="button" class="token-chip" data-ui-i18n-skip-text data-token="{染剂2ID}">{染剂2ID}</button>
+                <button type="button" class="token-chip" data-ui-i18n-skip-text data-token="{染色2色值}">{染色2色值}</button>
+                <button type="button" class="token-chip" data-ui-i18n-skip-text data-token="{染剂2色值}">{染剂2色值}</button>
+                <button type="button" class="token-chip" data-ui-i18n-skip-text data-token="{无染色文本}">{无染色文本}</button>
+              </div>
+              <div class="template-reference-group">
+                <span>状态</span>
+                <button type="button" class="token-chip" data-ui-i18n-skip-text data-token="{皇帝套}">{皇帝套}</button>
+                <button type="button" class="token-chip" data-ui-i18n-skip-text data-token="{非皇帝套}">{非皇帝套}</button>
+              </div>
+              <div class="template-reference-group">
+                <span>染剂循环</span>
+                <button type="button" class="token-chip" data-ui-i18n-skip-text data-token="{染剂序号}">{染剂序号}</button>
+                <button type="button" class="token-chip" data-ui-i18n-skip-text data-token="{首个染剂}">{首个染剂}</button>
+                <button type="button" class="token-chip" data-ui-i18n-skip-text data-token="{末个染剂}">{末个染剂}</button>
+                <button type="button" class="token-chip" data-ui-i18n-skip-text data-token="{染剂}">{染剂}</button>
+                <button type="button" class="token-chip" data-ui-i18n-skip-text data-token="{染剂ID}">{染剂ID}</button>
+                <button type="button" class="token-chip" data-ui-i18n-skip-text data-token="{染剂色值}">{染剂色值}</button>
+                <button type="button" class="token-chip" data-ui-i18n-skip-text data-token="{染剂RGB}">{染剂RGB}</button>
+                <button type="button" class="token-chip" data-ui-i18n-skip-text data-token="{染剂分组}">{染剂分组}</button>
+                <button type="button" class="token-chip" data-ui-i18n-skip-text data-token="{染剂分组名}">{染剂分组名}</button>
+                <button type="button" class="token-chip" data-ui-i18n-skip-text data-token="{染剂排序}">{染剂排序}</button>
+                <button type="button" class="token-chip" data-ui-i18n-skip-text data-token="{染剂原始JSON}">{染剂原始JSON}</button>
+              </div>
+            </div>
+            {% endraw %}
+          </div>
+          <textarea id="equipinfoCopyOutput" class="copy-output" spellcheck="false"></textarea>
+        </div>
+      </section>
+    </main>
+
+    <template id="equipinfoSlotTemplate">
+      <article class="editor-row">
+        <h3 class="editor-slot-name"></h3>
+        <div class="editor-item"></div>
+      </article>
+    </template>
+
+    <script>
+      window.NSGLAMOUR_CONFIG = {
+        charaImportEnabled: {{ chara_import_enabled | tojson }},
+        maxUploadBytes: {{ (max_chara_upload_mb * 1024 * 1024) | tojson }}
+      };
+    </script>
+    <script src="{{ url_for('static', filename='common.js', v='20260630-1') }}"></script>
+    <script src="{{ url_for('static', filename='store.js', v='20260630-1') }}"></script>
+    <script src="{{ url_for('static', filename='ui-language.js', v='20260630-1') }}"></script>
+    <script src="{{ url_for('static', filename='equipinfo.js', v='20260701-4') }}"></script>
+  </body>
+</html>

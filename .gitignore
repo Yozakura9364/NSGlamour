@@ -1,0 +1,28 @@
+.runtime/
+.env.local
+.env.*.local
+.venv/
+venv/
+deploy/
+dist/
+_snapshots/
+data/resolved_*.json
+__pycache__/
+*.py[cod]
+*.log
+*.tmp
+*.bak
+.DS_Store
+
+# Local/private assistant and workspace state.
+.agents/
+.claude/
+CLAUDE.md
+
+# Large development-only source material.
+Anamnesis/
+MemoryLab/
+NSGameExplorer/
+templates/**/*.psd
+templates/**/*.psd.svg
+templates/psd2svg-output/
