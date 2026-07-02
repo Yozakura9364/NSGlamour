@@ -12,6 +12,8 @@
       figmaRect,
       figmaUnit,
       figmaUnitY,
+      formatEcSubtitleParts,
+      getEcSubtitlePartsFromSettings,
       getItemName,
       getSilenceFashionBackground,
       getSelectedTemplateLocales,
@@ -142,6 +144,12 @@
     }
 
     function getCharacterText() {
+      const imported = typeof getEcSubtitlePartsFromSettings === "function" && typeof formatEcSubtitleParts === "function"
+        ? formatEcSubtitleParts(getEcSubtitlePartsFromSettings())
+        : "";
+      if (imported) {
+        return imported;
+      }
       const configured = String(state.settings.characterName || "").trim();
       if (configured) {
         return configured;

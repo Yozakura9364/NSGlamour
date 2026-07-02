@@ -42,7 +42,7 @@
 
 ## 本地状态
 
-常见 key：
+常见键名：
 
 - `nsglamour.theme`
 - `nsglamour.cardDraft.v2`
@@ -67,7 +67,7 @@
 
 - 前台文案由 `static/ui-language.js` 和 `data/ui-localization.json` 管理。
 - 新增 UI 文案时优先考虑是否需要本地化。
-- 不要在已有多语言区域硬编码英文-only 文案。
+- 不要在已有多语言区域硬编码仅英文文案。
 - 动态生成 DOM 后，必要时调用 `window.NSGlamourUiLanguage?.refresh?.(...)`。
 
 ## 样式

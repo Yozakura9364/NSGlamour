@@ -418,7 +418,7 @@ const RISINGSTONES_TEMPLATE = {
   avatarStrokeWidth: 0,
   title: { x: 2129, y: 333, width: 1010, height: 144, maxSize: 150, minSize: 72 },
   author: { x: 2145, y: 552, width: 451, height: 61, maxSize: 60, minSize: 34 },
-  source: { x: 2145, y: 641, width: 897, height: 57, maxSize: 60, minSize: 32 },
+  source: { x: 2145, y: 641, width: 1060, height: 57, maxSize: 60, minSize: 32 },
   showMeta: false,
   meta: [
     { x: 2164, y: 1739, width: 336, height: 57, key: "race" },
@@ -482,7 +482,7 @@ const SILENCE_FASHION_TEMPLATE = {
   sourceSize: 3000,
   textColor: "#161616",
   serifFamily: "'Source Han Serif CN', 'Noto Serif CJK KR', 'Noto Serif KR', Batang, 'Malgun Gothic', 'Songti SC', SimSun, serif",
-  koSerifFamily: "'Source Han Serif KR Local', 'Source Han Serif KR', 'Noto Serif CJK KR', 'Noto Serif KR', Batang, 'Malgun Gothic', serif",
+  koSerifFamily: "'Noto Serif CJK KR', 'Noto Serif KR', Batang, AppleMyungjo, 'Source Han Serif KR Local', 'Source Han Serif CN', 'Malgun Gothic', serif",
   equipmentBottom: 2650,
   equipmentRight: 2760,
   backgroundUrl: SILENCE_FASHION_BACKGROUND_URL,
@@ -678,6 +678,7 @@ const state = {
   settings: {
     templateId: DEFAULT_TEMPLATE_ID,
     topText: "幻化存档",
+    importedTitleAutoText: "",
     characterName: "",
     bottomText: "NSGlamour",
     ecSubtitleText: "",
@@ -702,6 +703,7 @@ const state = {
 
 const DEFAULT_TEMPLATE_SETTINGS = {
   topText: "幻化存档",
+  importedTitleAutoText: "",
   characterName: "",
   bottomText: "NSGlamour",
   ecSubtitleText: "",
@@ -791,8 +793,10 @@ const TEMPLATE_CANVAS_FONTS = [
   "600 40px 'Source Han Serif CN'",
 ];
 const SILENCE_FASHION_KO_CANVAS_FONTS = [
-  "400 60px 'Source Han Serif KR Local'",
-  "600 50px 'Source Han Serif KR Local'",
+  "400 60px 'Noto Serif CJK KR'",
+  "600 50px 'Noto Serif CJK KR'",
+  "400 60px Batang",
+  "600 50px Batang",
 ];
 let templateFontsReady = !document.fonts;
 let silenceFashionKoFontsLoading = false;
@@ -897,6 +901,11 @@ function getTemplateLocaleOrder(template = getCurrentTemplate()) {
   return normalized.length ? normalized : TEMPLATE_LOCALE_ORDER;
 }
 
+function getTemplateFirstLocale(template = getCurrentTemplate()) {
+  const languageOption = getTemplateLanguageOptions(template)[0];
+  return languageOption?.locales?.[0] || getTemplateLocaleOrder(template)[0] || getTemplateDefaultLocale(template);
+}
+
 function normalizeTemplateLanguageOptionLocales(value, template = getCurrentTemplate()) {
   const allowed = new Set(getTemplateLocaleOrder(template));
   const locales = [];
@@ -936,16 +945,14 @@ function templateSupportsLocale(template, locale) {
   return getTemplateLocaleOrder(template).includes(locale);
 }
 
-function getTemplatesForUiLanguage(language = getCurrentUiLanguage()) {
-  const locale = getTemplateLocaleForUiLanguage(language);
+function getTemplatesForUiLanguage() {
   return TEMPLATE_SELECT_ORDER
     .map((id) => TEMPLATE_DEFINITIONS[id])
-    .filter(Boolean)
-    .filter((template) => templateSupportsLocale(template, locale));
+    .filter(Boolean);
 }
 
-function getTemplateDefaultForUiLanguage(language = getCurrentUiLanguage()) {
-  return getTemplatesForUiLanguage(language)[0] || TEMPLATE_DEFINITIONS[DEFAULT_TEMPLATE_ID];
+function getTemplateDefaultForUiLanguage() {
+  return getTemplatesForUiLanguage()[0] || TEMPLATE_DEFINITIONS[DEFAULT_TEMPLATE_ID];
 }
 
 function getTemplateEquipmentFormat(template = getCurrentTemplate()) {
@@ -958,7 +965,7 @@ function getTemplateDyeFormat(template = getCurrentTemplate()) {
 
 function getLocaleForTemplateAndUiLanguage(template, language = getCurrentUiLanguage()) {
   const uiLocale = getTemplateLocaleForUiLanguage(language);
-  return templateSupportsLocale(template, uiLocale) ? uiLocale : getTemplateDefaultLocale(template);
+  return templateSupportsLocale(template, uiLocale) ? uiLocale : getTemplateFirstLocale(template);
 }
 
 function getCurrentTemplateSourceSize() {
@@ -2017,6 +2024,7 @@ function normalizeSettings(raw, templateIdOverride = null) {
   return {
     templateId,
     topText,
+    importedTitleAutoText: String(settings.importedTitleAutoText ?? defaults.importedTitleAutoText).slice(0, 80),
     characterName: String(settings.characterName ?? defaults.characterName).slice(0, 80),
     bottomText: String(settings.bottomText ?? defaults.bottomText).slice(0, 80),
     ecSubtitleText: String(settings.ecSubtitleText ?? defaults.ecSubtitleText).slice(0, 120),
@@ -2046,10 +2054,7 @@ function loadSettings() {
     const uiDefaultTemplate = getTemplateDefaultForUiLanguage();
     const storedTemplateId = normalizeTemplateId(rawSettings?.templateId);
     const selectedTemplate = TEMPLATE_DEFINITIONS[storedTemplateId] || uiDefaultTemplate;
-    const uiLocale = getTemplateLocaleForUiLanguage();
-    const selectedTemplateId = templateSupportsLocale(selectedTemplate, uiLocale)
-      ? selectedTemplate.id
-      : uiDefaultTemplate.id;
+    const selectedTemplateId = selectedTemplate.id;
     const rawTemplateSettings = rawSettings?.templates && typeof rawSettings.templates === "object"
       ? rawSettings.templates
       : {};
@@ -2367,7 +2372,7 @@ function renderTemplateSelector() {
   if (!templates.length) {
     const empty = document.createElement("p");
     empty.className = "search-empty";
-    empty.textContent = getUiLocalizedText("当前界面语言没有可用模板");
+    empty.textContent = getUiLocalizedText("没有符合筛选的模板");
     templateSelectorControls.appendChild(empty);
     return;
   }
@@ -2433,57 +2438,37 @@ function renderTemplateSelector() {
 }
 
 async function ensureTemplateSupportsCurrentUiLanguage({ saveDraft = true } = {}) {
-  const uiLocale = getTemplateLocaleForUiLanguage();
   const currentTemplate = getCurrentTemplate();
-  if (templateSupportsLocale(currentTemplate, uiLocale)) {
-    if (state.locale !== uiLocale || state.settings.locales[0] !== uiLocale) {
-      state.locale = uiLocale;
-      state.settings.locales = normalizeSelectedTemplateLocales([uiLocale], [uiLocale], currentTemplate);
-      await ensureStains(state.locale);
-      await ensureTemplateLocalesReady();
-      writeSettings();
-      if (saveDraft) {
-        writeCurrentDraft();
-      }
-      return true;
+  const locale = getLocaleForTemplateAndUiLanguage(currentTemplate);
+  const nextLocales = normalizeSelectedTemplateLocales([locale], [locale], currentTemplate);
+  if (state.locale !== locale || !areSameTemplateLocales(state.settings.locales || [], nextLocales)) {
+    state.locale = locale;
+    state.settings.locales = nextLocales;
+    await ensureStains(state.locale);
+    await ensureTemplateLocalesReady();
+    writeSettings();
+    if (saveDraft) {
+      writeCurrentDraft();
     }
-    renderTemplateSelector();
-    return false;
+    return true;
   }
 
-  const fallbackTemplate = getTemplateDefaultForUiLanguage();
-  if (!fallbackTemplate || fallbackTemplate.id === currentTemplate.id) {
-    renderTemplateSelector();
-    return false;
-  }
-
-  const previousImages = cloneTemplateImages(state.images);
-  saveCurrentTemplateRuntimeState();
-  applyTemplateRuntimeState(fallbackTemplate.id);
-  await restoreCurrentTemplateImages();
-  await carryTemplateImagesIntoCurrentTemplate(previousImages);
-  const locale = getLocaleForTemplateAndUiLanguage(fallbackTemplate);
-  state.locale = locale;
-  state.settings.locales = normalizeSelectedTemplateLocales([locale], [locale], fallbackTemplate);
-  await ensureStains(state.locale);
-  await ensureTemplateLocalesReady();
-  writeSettings();
-  if (saveDraft) {
-    writeCurrentDraft();
-  }
-  return true;
+  renderTemplateSelector();
+  return false;
 }
 
 async function switchTemplate(templateId) {
   const nextTemplateId = normalizeTemplateId(templateId);
   const nextTemplate = TEMPLATE_DEFINITIONS[nextTemplateId];
-  if (!nextTemplate || !templateSupportsLocale(nextTemplate, getTemplateLocaleForUiLanguage())) {
-    setStatus("当前界面语言不支持此模板", true);
+  if (!nextTemplate) {
+    setStatus("模板不存在", true);
     return;
   }
   if (nextTemplateId === state.settings.templateId) {
-    return;
+    renderTemplateSelector();
+    return false;
   }
+
   const loadingTaskId = beginTemplateLoadingTask();
   try {
     const previousImages = cloneTemplateImages(state.images);
@@ -2491,9 +2476,11 @@ async function switchTemplate(templateId) {
     applyTemplateRuntimeState(nextTemplateId);
     await restoreCurrentTemplateImages();
     await carryTemplateImagesIntoCurrentTemplate(previousImages);
-    const uiLocale = getLocaleForTemplateAndUiLanguage(getCurrentTemplate());
-    state.locale = uiLocale;
-    state.settings.locales = normalizeSelectedTemplateLocales([uiLocale], [uiLocale], getCurrentTemplate());
+    const locale = getLocaleForTemplateAndUiLanguage(getCurrentTemplate());
+    state.locale = locale;
+    state.settings.locales = normalizeSelectedTemplateLocales([locale], [locale], getCurrentTemplate());
+    applyImportedTitleToSettings(state.sourceParsed || { sourceMeta: state.sourceMeta }, { force: false });
+    applyImportedAuthorToSettings(state.sourceParsed || { sourceMeta: state.sourceMeta }, { force: false });
     await ensureTemplateLocalesReady();
     writeSettings();
     writeCurrentDraft();
@@ -2889,11 +2876,142 @@ function buildTemplateSourceMeta(parsed) {
   };
 }
 
+function getImportedTitleText(source) {
+  const meta = source?.sourceMeta && typeof source.sourceMeta === "object" ? source.sourceMeta : {};
+  const rawTitle = meta.sourceTitle ||
+    source?.source_title ||
+    source?.sourceTitle ||
+    source?.source_name ||
+    source?.sourceName ||
+    "";
+  const title = normalizeEcSubtitleText(rawTitle).slice(0, 80);
+  if (!title || /^https?:\/\//i.test(title)) {
+    return "";
+  }
+  if (["幻化站导入", "手动编辑", "第一页导入"].includes(title)) {
+    return "";
+  }
+  return title;
+}
+
+function shouldApplyImportedTitle(settings, template, force = false) {
+  if (force) {
+    return true;
+  }
+  const currentText = String(settings?.topText || "").trim();
+  const autoText = String(settings?.importedTitleAutoText || "").trim();
+  const defaultText = getTemplateDefaultTopText(template);
+  return Boolean(autoText && currentText === autoText) || currentText === defaultText;
+}
+
+function applyImportedTitleToSettings(source, options = {}) {
+  const importedTitle = getImportedTitleText(source);
+  if (!importedTitle) {
+    return false;
+  }
+  const template = getCurrentTemplate();
+  const normalizedTitle = normalizeTemplateTopText(importedTitle, template).slice(0, 80);
+  if (!shouldApplyImportedTitle(state.settings, template, options.force === true)) {
+    return false;
+  }
+  state.settings.topText = normalizedTitle;
+  state.settings.importedTitleAutoText = normalizedTitle;
+  return true;
+}
+
+function applyImportedTitleToAllTemplateSettings(source, options = {}) {
+  const importedTitle = getImportedTitleText(source);
+  if (!importedTitle) {
+    return false;
+  }
+  let changed = applyImportedTitleToSettings(source, options);
+  if (options.allTemplates !== true) {
+    return changed;
+  }
+
+  const currentId = getTemplateStateId();
+  TEMPLATE_SELECT_ORDER.forEach((templateId) => {
+    if (templateId === currentId) {
+      return;
+    }
+    const template = TEMPLATE_DEFINITIONS[templateId];
+    if (!template) {
+      return;
+    }
+    const settings = templateSettingsById[templateId] || getDefaultTemplateSettingsFor(templateId);
+    const normalizedTitle = normalizeTemplateTopText(importedTitle, template).slice(0, 80);
+    if (!shouldApplyImportedTitle(settings, template, options.force === true)) {
+      return;
+    }
+    templateSettingsById[templateId] = {
+      ...settings,
+      templateId,
+      topText: normalizedTitle,
+      importedTitleAutoText: normalizedTitle,
+    };
+    changed = true;
+  });
+  return changed;
+}
+
+function getImportedAuthorParts(source) {
+  const author = source?.author && typeof source.author === "object" ? source.author : {};
+  const meta = source?.sourceMeta && typeof source.sourceMeta === "object" ? source.sourceMeta : {};
+  const name = normalizeEcSubtitlePart(author.name || meta.authorName || "");
+  const world = normalizeEcSubtitlePart(author.world || meta.authorWorld || "");
+  if (name || world) {
+    return { left: name, symbol: "♦", right: world };
+  }
+  const label = normalizeEcSubtitleText(author.label || meta.authorLabel || source?.source_author || "");
+  if (!label) {
+    return null;
+  }
+  return splitEcSubtitleText(label) || { full: label };
+}
+
 function getImportedEcSubtitleText(parsed) {
-  const author = parsed?.author && typeof parsed.author === "object" ? parsed.author : {};
-  const name = String(author.name || "").trim();
-  const world = String(author.world || "").trim();
-  return name && world ? `${name} ♦ ${world}` : "";
+  return formatEcSubtitleParts(getImportedAuthorParts(parsed));
+}
+
+function applyImportedAuthorToSettings(source, options = {}) {
+  const parts = getImportedAuthorParts(source);
+  const importedText = formatEcSubtitleParts(parts);
+  if (!importedText) {
+    return false;
+  }
+
+  const controls = getCurrentTemplate().controls || {};
+  const force = options.force === true;
+  let changed = false;
+
+  if (controls.ecSubtitle === true) {
+    const currentText = getEcSubtitleText();
+    const shouldUpdate = force ||
+      !state.settings.ecSubtitleTouched ||
+      currentText === state.settings.ecSubtitleAutoText;
+    if (shouldUpdate) {
+      state.settings.ecSubtitleLeftText = parts?.full ? normalizeEcSubtitlePart(parts.full) : normalizeEcSubtitlePart(parts?.left);
+      state.settings.ecSubtitleSymbolText = parts?.full ? "" : normalizeEcSubtitleSymbol(parts?.symbol || "♦");
+      state.settings.ecSubtitleRightText = parts?.full ? "" : normalizeEcSubtitlePart(parts?.right);
+      state.settings.ecSubtitleText = importedText;
+      state.settings.ecSubtitleAutoText = importedText;
+      state.settings.ecSubtitleTouched = false;
+      changed = true;
+    }
+  }
+
+  if (controls.characterName === true) {
+    const shouldUpdate = force ||
+      !state.settings.characterName ||
+      state.settings.characterName === state.settings.ecSubtitleAutoText;
+    if (shouldUpdate) {
+      state.settings.characterName = importedText.slice(0, 80);
+      state.settings.ecSubtitleAutoText = importedText;
+      changed = true;
+    }
+  }
+
+  return changed;
 }
 
 async function importTemplateGlamourLink(event) {
@@ -2923,12 +3041,15 @@ async function importTemplateGlamourLink(event) {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ url }),
     });
-    const draft = buildDraftFromParsedPayload(parsed);
+    const draft = buildDraftFromParsedPayload(parsed, { includeEcSubtitle: true });
     if (!draft.entries.length) {
       throw new Error(getUiLocalizedText("未识别到可导入装备"));
     }
     localStorage.setItem(CARD_DRAFT_KEY, JSON.stringify(draft));
+    state.sourceParsed = parsed;
     applyDraft(draft);
+    applyImportedTitleToAllTemplateSettings(parsed, { force: true, allTemplates: true });
+    applyImportedAuthorToSettings(parsed, { force: true });
     const templateDefaultLocale = getLocaleForTemplateAndUiLanguage(getCurrentTemplate());
     const availableLocales = parsed?.locales || [];
     state.locale = availableLocales.includes(templateDefaultLocale)
@@ -2936,6 +3057,7 @@ async function importTemplateGlamourLink(event) {
       : parsed.default_locale || DEFAULT_LOCALE;
     state.settings.locales = normalizeSelectedTemplateLocales([state.locale], [state.locale]);
     syncSettingsControls();
+    writeSettings();
     await hydrateMissingItemRarity();
     await ensureStains(state.locale);
     await ensureTemplateLocalesReady();
@@ -2959,12 +3081,20 @@ async function loadDraft() {
   if (!raw) {
     state.sourceName = "手动编辑";
     state.sourceMeta = {};
+    state.sourceParsed = null;
     state.rows = makeRows();
     setStatus("");
     return;
   }
   try {
-    applyDraft(JSON.parse(raw));
+    const draft = JSON.parse(raw);
+    applyDraft(draft);
+    const importedTitleChanged = applyImportedTitleToSettings(draft, { force: false });
+    const importedAuthorChanged = applyImportedAuthorToSettings(draft, { force: false });
+    if (importedTitleChanged || importedAuthorChanged) {
+      syncSettingsControls();
+      writeSettings();
+    }
     if (!hasStoredTemplateLocalePrefs) {
       const defaultLocale = getLocaleForTemplateAndUiLanguage(getCurrentTemplate());
       state.locale = defaultLocale;
@@ -2977,6 +3107,7 @@ async function loadDraft() {
   } catch {
     state.sourceName = "手动编辑";
     state.sourceMeta = {};
+    state.sourceParsed = null;
     state.rows = makeRows();
     setStatus("配装读取失败", true);
   }
@@ -2985,6 +3116,7 @@ async function loadDraft() {
 function resetDraft() {
   state.sourceName = "手动编辑";
   state.sourceMeta = {};
+  state.sourceParsed = null;
   state.rows = makeRows();
   localStorage.removeItem(CARD_DRAFT_KEY);
   lastTemplateStoreSyncSignature = "";
@@ -5276,6 +5408,9 @@ function bindTextSetting(input, key) {
   input.addEventListener("input", () => {
     const maxLength = key === "ecSubtitleText" ? 120 : 80;
     state.settings[key] = String(input.value || "").slice(0, maxLength);
+    if (key === "topText") {
+      state.settings.importedTitleAutoText = "";
+    }
     writeSettings();
     renderCanvas();
   });
@@ -5624,6 +5759,12 @@ NSGlamourStore.on("equipment:changed", async (data) => {
   _storeIgnoreSync = true;
   try {
     applyDraft(draft, { saveDraft: false });
+    const importedTitleChanged = applyImportedTitleToSettings(state.sourceParsed || draft, { force: false });
+    const importedAuthorChanged = applyImportedAuthorToSettings(state.sourceParsed || draft, { force: false });
+    if (importedTitleChanged || importedAuthorChanged) {
+      syncSettingsControls();
+      writeSettings();
+    }
     render();
   } finally {
     _storeIgnoreSync = false;
@@ -5742,6 +5883,15 @@ switchTemplate = async function (templateId) {
 
   loadSettings();
   await ensureTemplateSupportsCurrentUiLanguage({ saveDraft: false });
+  if (loadedFromStore) {
+    const importedSource = state.sourceParsed || { sourceMeta: state.sourceMeta };
+    const importedTitleChanged = applyImportedTitleToSettings(importedSource, { force: false });
+    const importedAuthorChanged = applyImportedAuthorToSettings(importedSource, { force: false });
+    if (importedTitleChanged || importedAuthorChanged) {
+      syncSettingsControls();
+      writeSettings();
+    }
+  }
   await ensureStains(state.locale);
   if (!loadedFromStore) {
     await loadDraft(); // only load old draft if store had nothing

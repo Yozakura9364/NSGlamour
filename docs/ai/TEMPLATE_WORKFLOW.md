@@ -6,7 +6,7 @@
 
 ## 新增或修改模板的步骤
 
-1. 阅读现有模板定义和 renderer：
+1. 阅读现有模板定义和渲染器：
    - `static/template-definitions.js`
    - `static/template.js`
    - `static/template-renderers.js`
@@ -26,7 +26,7 @@
    - `controls`
    - `equipmentFormat`
    - `imageSlots`
-6. 在 renderer 中实现视觉绘制。
+6. 在渲染器中实现视觉绘制。
 7. 更新版本查询串。
 8. 验证导入数据、上传图片、裁剪、预览、导出。
 

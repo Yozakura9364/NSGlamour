@@ -30,6 +30,7 @@
 ## 通用开发原则
 
 - 优先保持现有 Flask 路由、原生 JavaScript、Jinja 模板、CSS 和数据结构习惯。
+- 回答、文档、提示词、注释和说明性文本默认使用中文；只有技术专有名词、代码标识符、文件名、路径、命令、API 名称和第三方库/产品名可以保留英文。
 - 只做与需求直接相关的最小改动，不做顺手式重构。
 - 不要把其他项目的 Angular、NestJS、React、Vue 或 Vite 规则套用到本项目。
 - 不要引入新依赖，除非先说明原因、影响、替代方案，并得到确认。
@@ -38,7 +39,7 @@
 
 ## 重要文件
 
-- `scripts/app.py`：Flask 路由、上传限制、base path、导入 API、搜索 API、图标代理、石之家浏览器辅助。
+- `scripts/app.py`：Flask 路由、上传限制、基础路径、导入 API、搜索 API、图标代理、石之家浏览器辅助。
 - `scripts/resolve_chara.py`：`.chara` 解析与 `resolved_equipment` 数据结构生成。
 - `scripts/build_item_mapping.py`：从 datamining CSV 生成 `data/item_model_mapping.json`。
 - `templates/template.html` 与 `static/template.js`：模板工作台、图片槽、装备编辑、导入、裁剪、PNG 导出。
@@ -52,18 +53,18 @@
 
 ## 前端规则
 
-- 当前项目是原生 JavaScript + Flask templates，不是 Angular、React 或 Vue。
+- 当前项目是原生 JavaScript + Flask 模板，不是 Angular、React 或 Vue。
 - 保持紧凑中文 UI 和现有琥珀色强调风格。
-- 不要在已有本地化 UI 中硬编码英文-only 标签。
-- 公开 `/glamour` 部署需要通过 `appPath(...)` 或现有 helper 生成前端路径，不要硬编码根路径。
-- 修改 `static/template.js`、`static/equipinfo.js`、`static/ui-language.js`、`static/app.css` 或 renderer 后，需要同步更新相关模板里的静态资源版本查询串。
-- `localStorage`、`NSGlamourStore`、最近记录、草稿同步和图片持久化是核心链路，修改前必须查清 key 和跨页面同步方式。
+- 不要在已有本地化 UI 中硬编码仅英文标签。
+- 公开 `/glamour` 部署需要通过 `appPath(...)` 或现有辅助方法生成前端路径，不要硬编码根路径。
+- 修改 `static/template.js`、`static/equipinfo.js`、`static/ui-language.js`、`static/app.css` 或渲染器后，需要同步更新相关模板里的静态资源版本查询串。
+- `localStorage`、`NSGlamourStore`、最近记录、草稿同步和图片持久化是核心链路，修改前必须查清键名和跨页面同步方式。
 - 移动端布局要保持可用，紧凑控件文字不能溢出。
 
 ## 模板规则
 
 - `/template` 是固定模板填充器，不是自由卡片设计器。
-- 模板视觉规则应尽量隔离在模板定义和对应 renderer 中，避免一个模板的特殊逻辑影响其他模板。
+- 模板视觉规则应尽量隔离在模板定义和对应渲染器中，避免一个模板的特殊逻辑影响其他模板。
 - PSD/SVG 导出文件只作为参考；运行时资源放在 `static/templates/`。
 - 修改装备行、染剂行、头像/图片槽、导出 PNG 前，必须确认预览尺寸和导出尺寸分别由哪里控制。
 - 新增或修改模板后，至少验证真实装备数据、图片上传/裁剪、预览和导出。
@@ -85,7 +86,7 @@ node --check static\equipinfo.js
 node --check static\ui-language.js
 ```
 
-- 如果改动涉及共享文件或 renderer，也检查对应 JS 文件，例如：
+- 如果改动涉及共享文件或渲染器，也检查对应 JS 文件，例如：
 
 ```powershell
 node --check static\common.js

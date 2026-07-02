@@ -40,6 +40,15 @@ const CUSTOM_TEMPLATE_KEY = "nsglamour.copyTemplate";
 const COPY_FORMAT_KEY = "nsglamour.copyFormat";
 const DEFAULT_LOCALE = NSGlamourCommon.C.DEFAULT_LOCALE;
 const LOCALE_ORDER = ["zh", "en", "ja", "ko", "tc", "fr", "de"];
+const UI_LANGUAGE_TO_EQUIPINFO_LOCALE = {
+  "zh-CN": "zh",
+  "zh-TW": "tc",
+  en: "en",
+  ja: "ja",
+  ko: "ko",
+  fr: "fr",
+  de: "de",
+};
 const LOCALE_LABELS = NSGlamourCommon.C.LOCALE_LABELS;
 const SLOT_DEFINITIONS = NSGlamourCommon.C.SLOT_DEFINITIONS;
 const EQUIPINFO_LEFT_COLUMN_SLOTS = ["MainHand", "HeadGear", "Body", "Hands", "Legs", "Feet", "Glasses"];
@@ -60,6 +69,7 @@ const state = {
   displayName: "",
 };
 let _storeIgnoreSync = false;
+let equipinfoInitialized = false;
 
 function createEmptyParsedPayload() {
   return {
@@ -113,6 +123,17 @@ function writeCopyFormat(format) {
 function readRecentCache() { return NSGlamourCommon.readRecentCache(); }
 function writeRecentCache(items) { return NSGlamourCommon.writeRecentCache(items); }
 
+function cloneJson(value) {
+  if (!value || typeof value !== "object") {
+    return value;
+  }
+  try {
+    return JSON.parse(JSON.stringify(value));
+  } catch {
+    return value;
+  }
+}
+
 function buildRecentSnapshot() {
   const sourceUrl = state.parsed?.source_url || "";
   const displayName = normalizeConfigName(state.displayName);
@@ -122,7 +143,7 @@ function buildRecentSnapshot() {
     sourceName: displayName,
     displayName,
     sourceUrl,
-    parsed: state.parsed,
+    parsed: cloneJson(state.parsed),
     locale: state.locale,
     copyFormat: state.copyFormat,
     customTemplate: state.customTemplate,
@@ -175,14 +196,28 @@ function restoreRecentSnapshot(item) {
   if (!item?.parsed) {
     return;
   }
-  acceptPayload(item.parsed, { saveRecent: false, render: false, clearStatus: false });
-  state.displayName = normalizeConfigName(item.displayName);
-  state.locale = item.locale || item.parsed.default_locale || state.locale || DEFAULT_LOCALE;
+  const parsed = cloneJson(item.parsed);
+  const restoredLocale = item.locale || parsed?.source_locale || parsed?.default_locale || state.locale || DEFAULT_LOCALE;
+  const displayName = normalizeConfigName(item.displayName || item.sourceName || parsed?.source_name || "");
+  localStorage.removeItem(CARD_DRAFT_KEY);
+  acceptPayload(parsed, {
+    displayName,
+    locale: restoredLocale,
+    saveRecent: false,
+    render: false,
+    clearStatus: false,
+    syncStore: false,
+  });
+  state.locale = getAvailableEquipinfoLocale(restoredLocale);
   state.copyFormat = COPY_FORMATS.has(item.copyFormat) ? item.copyFormat : readCopyFormat();
   state.customTemplate = typeof item.customTemplate === "string" ? item.customTemplate : readCustomTemplate();
   syncFormatControls();
   renderResult();
-  ensureStains(state.locale).finally(() => renderResult());
+  writeCurrentDraft();
+  ensureStains(state.locale).finally(() => {
+    renderResult();
+    writeCurrentDraft();
+  });
   closeRecentPanel();
   setStatus(`已载入缓存: ${state.displayName}`);
 }
@@ -242,9 +277,56 @@ function getLocaleLabel(locale) {
   return state.parsed?.locale_labels?.[locale] || LOCALE_LABELS[locale] || locale;
 }
 
+function normalizeEquipinfoLocales(locales) {
+  const source = Array.isArray(locales) ? locales : [];
+  const supported = new Set([...source, ...LOCALE_ORDER]);
+  return LOCALE_ORDER.filter((locale) => supported.has(locale));
+}
+
+function normalizeEquipinfoLocaleLabels(labels) {
+  return { ...LOCALE_LABELS, ...(labels || {}) };
+}
+
 function getAvailableLocales() {
-  const locales = Array.isArray(state.parsed?.locales) ? state.parsed.locales : LOCALE_ORDER;
-  return LOCALE_ORDER.filter((locale) => locales.includes(locale));
+  return normalizeEquipinfoLocales(state.parsed?.locales);
+}
+
+function getCurrentUiLanguage() {
+  return window.NSGlamourUiLanguage?.get?.() || document.documentElement.lang || "zh-CN";
+}
+
+function getEquipinfoLocaleForUiLanguage(language = getCurrentUiLanguage()) {
+  const normalized = window.NSGlamourUiLanguage?.normalize?.(language) || String(language || "");
+  return UI_LANGUAGE_TO_EQUIPINFO_LOCALE[normalized] || "";
+}
+
+function getAvailableEquipinfoLocale(locale, fallback = state.locale) {
+  const locales = getAvailableLocales();
+  if (locale && locales.includes(locale)) {
+    return locale;
+  }
+  if (fallback && locales.includes(fallback)) {
+    return fallback;
+  }
+  return locales[0] || DEFAULT_LOCALE;
+}
+
+async function setEquipinfoLocale(locale, options = {}) {
+  const nextLocale = getAvailableEquipinfoLocale(locale);
+  const changed = state.locale !== nextLocale;
+  state.locale = nextLocale;
+  try {
+    await ensureStains(state.locale);
+  } catch (error) {
+    console.warn("[equipinfo] failed to load stains for locale", state.locale, error);
+  }
+  if (options.syncStore !== false && changed) {
+    syncEquipmentToStore();
+  }
+  if (options.render !== false) {
+    renderResult();
+  }
+  return changed;
 }
 
 async function fetchJson(path, options = {}) { return NSGlamourCommon.fetchJson(path, options); }
@@ -624,6 +706,21 @@ function getDisplayDyeEntries(candidate, slot) {
   return NSGlamourCommon.getDisplayDyeEntries(candidate, slot, state.parsed?.no_dye_labels);
 }
 
+function getFormatTwoDyeText(entry, candidate, separator = " | ") {
+  if (!candidate || ACCESSORY_SLOTS.has(entry?.slot)) {
+    return "";
+  }
+  const dyeCount = getDyeCount(entry, candidate);
+  if (dyeCount <= 0) {
+    return getNoDyeText();
+  }
+  return getDisplayDyeEntries(candidate, entry.slot)
+    .slice(0, dyeCount)
+    .map((dye) => getDyeEntryName(dye))
+    .filter(Boolean)
+    .join(separator);
+}
+
 function normalizeDyeEntries(candidate, options = {}) {
   return NSGlamourCommon.normalizeDyeEntries({
     candidate, slot: null, stainsByLocale: state.stainsByLocale, locale: state.locale,
@@ -771,8 +868,7 @@ function renderLanguageControls() {
     button.textContent = getLocaleLabel(locale);
     button.classList.toggle("active", locale === state.locale);
     button.addEventListener("click", () => {
-      state.locale = locale;
-      ensureStains(state.locale).finally(() => renderResult());
+      setEquipinfoLocale(locale);
     });
     languageControls.appendChild(button);
   }
@@ -1354,7 +1450,8 @@ function renderFormatTwo(entries) {
       continue;
     }
     names.push(name);
-    const dyeText = renderTemplateBlock("{{#可染色}}{{#染剂}}{{^首个染剂}} | {{/首个染剂}}{染剂}{{/染剂}}{{/可染色}}", data).trim();
+    const candidate = Array.isArray(entry?.candidates) ? entry.candidates[0] : null;
+    const dyeText = getFormatTwoDyeText(entry, candidate).trim();
     if (dyeText) {
       dyes.push(dyeText);
     }
@@ -1454,13 +1551,15 @@ function acceptPayload(payload, options = {}) {
   state.parsed = {
     ...createEmptyParsedPayload(),
     ...payload,
+    locales: normalizeEquipinfoLocales(payload?.locales),
+    locale_labels: normalizeEquipinfoLocaleLabels(payload?.locale_labels),
     warnings: Array.isArray(payload?.warnings) ? payload.warnings : [],
     resolved_equipment: Array.isArray(payload?.resolved_equipment) ? payload.resolved_equipment : [],
   };
-  sanitizeParsedEquipment(state.parsed);
   state.displayName = normalizeConfigName(options.displayName || "");
-  const preferred = payload.source_locale || payload.default_locale || DEFAULT_LOCALE;
-  state.locale = (payload.locales || []).includes(preferred) ? preferred : DEFAULT_LOCALE;
+  const preferred = options.locale || payload.source_locale || payload.default_locale || DEFAULT_LOCALE;
+  state.locale = state.parsed.locales.includes(preferred) ? preferred : DEFAULT_LOCALE;
+  sanitizeParsedEquipment(state.parsed);
   if (options.render !== false) {
     ensureStains(state.locale).finally(() => renderResult());
   }
@@ -1788,17 +1887,33 @@ NSGlamourStore.on("equipment:changed", (data) => {
     try {
       acceptPayload(parsed, {
         displayName: NSGlamourStore.equipmentSync.getDisplayName(data),
-        render: true,
+        render: false,
         syncStore: false,
       });
       const storeLocale = NSGlamourStore.equipmentSync.getLocale(data);
-      if (storeLocale) state.locale = storeLocale;
-    } finally {
+      if (storeLocale) state.locale = getAvailableEquipinfoLocale(storeLocale);
+      setEquipinfoLocale(state.locale, { syncStore: false }).finally(() => {
+        _storeIgnoreSync = false;
+      });
+    } catch {
       _storeIgnoreSync = false;
     }
   } else {
     _storeIgnoreSync = false;
   }
+});
+
+window.addEventListener("nsglamour:ui-language-change", (event) => {
+  const locale = getEquipinfoLocaleForUiLanguage(event.detail?.language);
+  if (!locale) {
+    window.NSGlamourUiLanguage?.refresh?.();
+    return;
+  }
+  state.locale = getAvailableEquipinfoLocale(locale);
+  if (!equipinfoInitialized) {
+    return;
+  }
+  setEquipinfoLocale(state.locale);
 });
 
 function readTemplateDraftFallback() {
@@ -1865,8 +1980,11 @@ async function initFromSharedEquipment() {
 }
 
 initFromSharedEquipment().finally(() => {
-  ensureStains(state.locale).finally(() => {
-    syncFormatControls();
-    renderResult();
+  const uiLocale = getEquipinfoLocaleForUiLanguage();
+  if (uiLocale) {
+    state.locale = getAvailableEquipinfoLocale(uiLocale);
+  }
+  setEquipinfoLocale(state.locale, { syncStore: false }).finally(() => {
+    equipinfoInitialized = true;
   });
 });

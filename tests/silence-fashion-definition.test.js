@@ -47,6 +47,7 @@ const template = TEMPLATE_DEFINITIONS["silence-fashion"];
 assert.ok(template, "silence-fashion template should exist");
 assert.deepEqual(Array.from(template.languageOptions, (option) => option.label), ["chs", "tc", "ko", "en", "ja", "en+ja"]);
 assert.deepEqual(Array.from(template.languageOptions[5].locales), ["en", "ja"]);
-assert.equal(template.controls.characterName, true);
+assert.equal(template.controls.characterName, false);
+assert.equal(template.controls.ecSubtitle, true);
 assert.equal(template.imageSlots.length, 2);
 assert.ok(TEMPLATE_SELECT_ORDER.includes("silence-fashion"));

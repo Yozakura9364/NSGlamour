@@ -301,8 +301,8 @@
         ],
         controls: {
           title: true,
-          characterName: true,
-          ecSubtitle: false,
+          characterName: false,
+          ecSubtitle: true,
           dyeFrame: false,
           storySwatches: false,
         },

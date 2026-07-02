@@ -45,11 +45,7 @@
     }
 
     function getRisingstonesSourceText() {
-      const title = String(state.sourceMeta?.sourceTitle || state.sourceName || "").trim();
-      if (title && title !== "手动编辑" && title !== "第一页导入") {
-        return title;
-      }
-      return "最终幻想14 - FINAL FANTASY XIV";
+      return RISINGSTONES_TEMPLATE.sourceText || "最终幻想14 - FINAL FANTASY XIV";
     }
 
     function getRisingstonesMetaValues() {
@@ -170,11 +166,15 @@
         maxSize: layout.author.maxSize,
         minSize: layout.author.minSize,
         weight: 700,
+        clipBleedX: 32,
+        clipBleedY: 28,
       });
       drawRisingstonesFittedText(ctx, metrics, getRisingstonesSourceText(), layout.source, {
         maxSize: layout.source.maxSize,
         minSize: layout.source.minSize,
         weight: 700,
+        clipBleedX: 48,
+        clipBleedY: 28,
       });
       if (layout.showMeta) {
         const values = getRisingstonesMetaValues();

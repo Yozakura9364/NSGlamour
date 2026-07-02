@@ -50,10 +50,10 @@
 
 - JavaScript 引用。
 - HTML 模板引用。
-- CSS class 使用。
+- CSS 类名使用。
 - Flask 路由引用。
 - 动态 import 或字符串调用。
-- localStorage key。
+- `localStorage` 键名。
 - postMessage。
 - `NSGlamourStore` 同步。
 - 测试文件。
