@@ -42,6 +42,7 @@ python scripts/app.py
 | `NSGLAMOUR_ENABLE_CHARA_IMPORT` | `1` | 设为 `0` 禁用 `.chara` 导入 |
 | `NSGLAMOUR_CHROME_PATH` | — | Chrome/Chromium 路径（石之家功能） |
 | `NSGLAMOUR_BASE_PATH` | — | 反向代理二级路径 |
+| `NSGLAMOUR_ICON_BASE_URL` | `https://img.nightingalesilence.com/ui/icon` | 图标源地址，可覆盖默认 CDN / 自定义域 |
 | `NSGLAMOUR_ICON_CACHE_DIR` | `.runtime/icon-cache` | 图标缓存目录 |
 | `NSGLAMOUR_DEBUG_ERRORS` | — | 设为 `1` 返回详细错误信息 |
 

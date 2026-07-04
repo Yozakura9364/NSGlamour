@@ -81,7 +81,10 @@ STATIC_DIR = BASE_DIR / "static"
 FONT_DIR = BASE_DIR / "font"
 MAPPING_PATH = DATA_DIR / "item_model_mapping.json"
 UI_LOCALIZATION_PATH = DATA_DIR / "ui-localization.json"
-ICON_BASE_URL = "https://nine-1326554799.cos.ap-shanghai.myqcloud.com/ui/icon"
+ICON_BASE_URL = os.environ.get(
+    "NSGLAMOUR_ICON_BASE_URL",
+    "https://img.nightingalesilence.com/ui/icon",
+).rstrip("/")
 ICON_MAX_BYTES = 512 * 1024
 ICON_CACHE_DIR = Path(os.environ.get("NSGLAMOUR_ICON_CACHE_DIR", str(BASE_DIR / ".runtime" / "icon-cache")))
 EC_ALLOWED_HOST = "ffxiv.eorzeacollection.com"
