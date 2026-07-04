@@ -116,13 +116,21 @@
 
     function drawRisingstonesFittedText(ctx, metrics, text, area, options = {}) {
       const box = figmaRect(metrics, area);
-      const clipBleedX = figmaUnit(metrics, options.clipBleedX || 0);
+      const defaultClipBleedX = options.clipBleedX || 0;
+      const clipBleedLeftX = figmaUnit(
+        metrics,
+        options.clipBleedLeftX != null ? options.clipBleedLeftX : defaultClipBleedX,
+      );
+      const clipBleedRightX = figmaUnit(
+        metrics,
+        options.clipBleedRightX != null ? options.clipBleedRightX : defaultClipBleedX,
+      );
       const clipBleedY = figmaUnitY(metrics, options.clipBleedY || 0);
-      const fitWidth = box.width + clipBleedX * 2;
+      const fitWidth = box.width + clipBleedLeftX + clipBleedRightX;
       const clipBox = {
-        x: box.x - clipBleedX,
+        x: box.x - clipBleedLeftX,
         y: box.y - clipBleedY,
-        width: box.width + clipBleedX * 2,
+        width: box.width + clipBleedLeftX + clipBleedRightX,
         height: box.height + clipBleedY * 2,
       };
       const value = String(text || "").trim();
@@ -154,6 +162,10 @@
 
     function drawRisingstonesHeader(ctx, metrics) {
       const layout = RISINGSTONES_TEMPLATE;
+      const authorRightBleed = Math.max(
+        0,
+        (layout.source.x + layout.source.width) - (layout.author.x + layout.author.width),
+      );
       drawRisingstonesAvatar(ctx, metrics);
       drawRisingstonesFittedText(ctx, metrics, getRisingstonesTitleText(), layout.title, {
         maxSize: layout.title.maxSize,
@@ -166,7 +178,8 @@
         maxSize: layout.author.maxSize,
         minSize: layout.author.minSize,
         weight: 700,
-        clipBleedX: 32,
+        clipBleedLeftX: 0,
+        clipBleedRightX: authorRightBleed,
         clipBleedY: 28,
       });
       drawRisingstonesFittedText(ctx, metrics, getRisingstonesSourceText(), layout.source, {

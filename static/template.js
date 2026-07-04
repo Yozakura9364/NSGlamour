@@ -4839,6 +4839,7 @@ const SILENCE_FASHION_TEMPLATE_RENDERER = window.NSGlamourSilenceFashionTemplate
   figmaUnit,
   figmaUnitY,
   formatEcSubtitleParts,
+  getEcSubtitlePartsFromSettings,
   getItemName,
   getSilenceFashionBackground: () => silenceFashionBackground,
   getSelectedTemplateLocales,

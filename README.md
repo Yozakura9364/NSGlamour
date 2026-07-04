@@ -45,6 +45,23 @@ python scripts/app.py
 | `NSGLAMOUR_ICON_CACHE_DIR` | `.runtime/icon-cache` | 图标缓存目录 |
 | `NSGLAMOUR_DEBUG_ERRORS` | — | 设为 `1` 返回详细错误信息 |
 
+## Playwright
+
+仓库内的 `playwright.config.js` 会优先使用系统已安装的浏览器，不强依赖 `playwright install chromium`。
+
+默认优先级：
+
+1. `NSGLAMOUR_PLAYWRIGHT_EXECUTABLE_PATH` 或 `PLAYWRIGHT_EXECUTABLE_PATH`
+2. Microsoft Edge
+3. Google Chrome
+4. Chromium
+
+如需查看当前会命中的浏览器，可运行：
+
+```bash
+node -e "console.log(require('./scripts/playwright-system-browser').describePreferredSystemBrowser())"
+```
+
 ## 部署
 
 `scripts/build_deploy.ps1` 将项目打包到 `deploy/NSGlamour`，使用 gunicorn 服务。
