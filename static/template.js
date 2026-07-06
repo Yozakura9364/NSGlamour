@@ -12,6 +12,7 @@ const templateCanvasUploadLayer = document.getElementById("templateCanvasUploadL
 const templateExportCanvas = document.createElement("canvas");
 const templateDownloadButton = document.getElementById("templateDownloadButton");
 const templateLoadingOverlay = document.getElementById("templateLoadingOverlay");
+const templateLoadingText = templateLoadingOverlay?.querySelector(".template-loading-text");
 const templateAuthor = document.getElementById("templateAuthor");
 const templateSelectorOpenButton = document.getElementById("templateSelectorOpenButton");
 const templateSelectorOverlay = document.getElementById("templateSelectorOverlay");
@@ -83,6 +84,9 @@ const TEMPLATE_DESIGN_HEIGHT = 720;
 const FIGMA_SOURCE_SIZE = 3840;
 const TEMPLATE_OUTPUT_HEIGHT = FIGMA_SOURCE_SIZE;
 const CROP_ASPECT_RATIO = 9 / 16;
+const DEFAULT_TEMPLATE_LOADING_MESSAGE = "加载中……";
+const SWITCH_TEMPLATE_LOADING_MESSAGE = "切换模板中……";
+const FONT_LOADING_MESSAGE = "字体加载中……";
 const DEFAULT_IMAGE_SLOT_ID = "main";
 const RISINGSTONES_AVATAR_SLOT_ID = "risingstones-avatar";
 const SILENCE_FASHION_AVATAR_SLOT_ID = "silence-fashion-avatar";
@@ -243,7 +247,7 @@ const EC_TEMPLATE_COLORS = {
   rowDeep: "#242424",
   accent: "#fb4b4e",
   text: "#c7c1bd",
-  textDim: "#77716d",
+  textDim: "#b8b1ac",
   line: "#303030",
   placeholder: "#ffffff",
 };
@@ -482,7 +486,7 @@ const SILENCE_FASHION_TEMPLATE = {
   sourceSize: 3000,
   textColor: "#161616",
   serifFamily: "'Source Han Serif CN', 'Noto Serif CJK KR', 'Noto Serif KR', Batang, 'Malgun Gothic', 'Songti SC', SimSun, serif",
-  koSerifFamily: "'Noto Serif CJK KR', 'Noto Serif KR', Batang, AppleMyungjo, 'Source Han Serif KR Local', 'Source Han Serif CN', 'Malgun Gothic', serif",
+  koSerifFamily: "'Source Han Serif KR Local', 'Noto Serif CJK KR', 'Noto Serif KR', Batang, AppleMyungjo, 'Source Han Serif CN', 'Malgun Gothic', serif",
   equipmentBottom: 2650,
   equipmentRight: 2760,
   backgroundUrl: SILENCE_FASHION_BACKGROUND_URL,
@@ -768,50 +772,46 @@ let storyTemplateLeftMaskPromise = null;
 let doublePicLeftMask = null;
 let doublePicLeftMaskLoading = false;
 let doublePicLeftMaskPromise = null;
-const TEMPLATE_CANVAS_FONTS = [
-  "700 38px 'HarmonyOS Sans SC'",
-  "500 118px 'Source Han Sans CN'",
-  "500 130px 'Source Han Serif CN'",
-  "500 74px 'Source Han Serif CN'",
-  "700 62px 'Source Han Serif CN'",
-  "900 62px 'Source Han Serif CN'",
-  "900 52px 'Source Han Serif CN'",
-  "900 100px 'HarmonyOS Sans SC'",
-  "400 95px 'Source Sans 3'",
-  "300 95px 'Source Sans 3'",
-  "400 95px 'HarmonyOS Sans SC'",
-  "400 178px 'Josefin Sans'",
-  "700 178px 'Josefin Sans'",
-  "400 76px 'Source Sans 3'",
-  "400 76px 'NS Cambria'",
-  "600 41px 'Source Sans 3'",
-  "500 72px 'HarmonyOS Sans SC'",
-  "700 150px 'HarmonyOS Sans SC'",
-  "300 38px 'HarmonyOS Sans SC'",
-  "200 50px 'Source Han Serif CN'",
-  "400 70px 'Source Han Serif CN'",
-  "600 40px 'Source Han Serif CN'",
-];
+const TEMPLATE_CANVAS_FONTS = {
+  eorzea: [
+    "500 130px 'Source Han Serif CN'",
+    "500 118px 'Source Han Sans CN'",
+    "400 24px 'Source Han Sans CN'",
+  ],
+  horizontal: [
+    "900 100px 'HarmonyOS Sans SC'",
+    "300 95px 'Source Sans 3'",
+  ],
+  ec: [
+    "400 178px 'Josefin Sans'",
+    "700 41px 'Source Sans 3'",
+    "400 76px 'Source Sans 3'",
+    "400 76px 'NS Cambria'",
+  ],
+  story: [
+    "900 62px 'Source Han Serif CN'",
+  ],
+  risingstones: [
+    "700 150px 'HarmonyOS Sans SC'",
+    "300 38px 'HarmonyOS Sans SC'",
+  ],
+  "silence-fashion": [
+    "400 70px 'Source Han Serif CN'",
+    "500 70px 'Source Han Serif CN'",
+    "600 40px 'Source Han Serif CN'",
+  ],
+};
 const SILENCE_FASHION_KO_CANVAS_FONTS = [
+  "400 60px 'Source Han Serif KR Local'",
+  "600 50px 'Source Han Serif KR Local'",
   "400 60px 'Noto Serif CJK KR'",
   "600 50px 'Noto Serif CJK KR'",
   "400 60px Batang",
   "600 50px Batang",
 ];
-let templateFontsReady = !document.fonts;
-let silenceFashionKoFontsLoading = false;
+const templateFontLoadPromises = new Map();
+const loadedTemplateFontKeys = new Set();
 let templatePreviewResizeFrame = 0;
-const templateFontsReadyPromise = document.fonts
-  ? Promise.all(TEMPLATE_CANVAS_FONTS.map((font) => document.fonts.load(font)))
-  .then(() => document.fonts.ready)
-  .then(() => {
-    templateFontsReady = true;
-    renderCanvas();
-  })
-  .catch(() => {
-    templateFontsReady = true;
-  })
-  : Promise.resolve();
 
 function getAppBasePath() { return NSGlamourCommon.getAppBasePath(); }
 function appPath(path) { return NSGlamourCommon.appPath(path); }
@@ -1259,6 +1259,20 @@ function setTemplateImportHint(message, isError = false) {
   templateImportHint.classList.toggle("error", isError);
 }
 
+function setTemplateLoadingMessage(message = DEFAULT_TEMPLATE_LOADING_MESSAGE) {
+  if (!templateLoadingText) {
+    return;
+  }
+  templateLoadingText.textContent = getUiLocalizedText(message || DEFAULT_TEMPLATE_LOADING_MESSAGE);
+}
+
+function setTemplateLoadingTaskMessage(taskId, message = DEFAULT_TEMPLATE_LOADING_MESSAGE) {
+  if (taskId !== loadingTaskSequence) {
+    return;
+  }
+  setTemplateLoadingMessage(message);
+}
+
 function showTemplateLoadingOverlay() {
   if (!templateLoadingOverlay) {
     return;
@@ -1291,8 +1305,9 @@ function hideTemplateLoadingOverlay() {
   }, waitMs);
 }
 
-function beginTemplateLoadingTask() {
+function beginTemplateLoadingTask(options = {}) {
   const taskId = ++loadingTaskSequence;
+  setTemplateLoadingMessage(options.message || DEFAULT_TEMPLATE_LOADING_MESSAGE);
   window.clearTimeout(loadingShowTimer);
   window.clearTimeout(loadingHideTimer);
   loadingShowTimer = window.setTimeout(() => {
@@ -1632,30 +1647,64 @@ function getTemplateDyeText(row, locale = state.locale, options = {}) {
 
 async function ensureStains(locale) { return NSGlamourCommon.Stains.ensureStains(state.stainsByLocale, locale); }
 
-async function ensureTemplateFontsForLocales(locales) {
-  if (!document.fonts || getCurrentTemplate().id !== "silence-fashion" || !locales.includes("ko")) {
+function getTemplateCanvasFonts(template = getCurrentTemplate(), locales = getSelectedTemplateLocales()) {
+  const templateId = normalizeTemplateId(template?.id);
+  const fonts = Array.isArray(TEMPLATE_CANVAS_FONTS[templateId]) ? [...TEMPLATE_CANVAS_FONTS[templateId]] : [];
+  if (templateId === "silence-fashion" && Array.isArray(locales) && locales.includes("ko")) {
+    fonts.push(...SILENCE_FASHION_KO_CANVAS_FONTS);
+  }
+  return Array.from(new Set(fonts));
+}
+
+function getTemplateCanvasFontsCacheKey(template = getCurrentTemplate(), locales = getSelectedTemplateLocales()) {
+  const templateId = normalizeTemplateId(template?.id);
+  return `${templateId}::${getTemplateCanvasFonts(template, locales).join("||")}`;
+}
+
+function areTemplateCanvasFontsReady(template = getCurrentTemplate(), locales = getSelectedTemplateLocales()) {
+  if (!document.fonts) {
+    return true;
+  }
+  return loadedTemplateFontKeys.has(getTemplateCanvasFontsCacheKey(template, locales));
+}
+
+async function ensureTemplateCanvasFonts(options = {}) {
+  if (!document.fonts) {
     return;
   }
-  if (silenceFashionKoFontsLoading) {
+  const template = options.template || getCurrentTemplate();
+  const locales = Array.isArray(options.locales) ? options.locales.slice() : getSelectedTemplateLocales();
+  const fontSpecs = getTemplateCanvasFonts(template, locales);
+  const cacheKey = getTemplateCanvasFontsCacheKey(template, locales);
+  if (!fontSpecs.length) {
+    loadedTemplateFontKeys.add(cacheKey);
     return;
   }
-  silenceFashionKoFontsLoading = true;
-  Promise.all(SILENCE_FASHION_KO_CANVAS_FONTS.map((font) => document.fonts.load(font).catch(() => [])))
-    .then(() => {
-      if (getCurrentTemplate().id === "silence-fashion" && getSelectedTemplateLocales().includes("ko")) {
-        renderCanvas();
-      }
-    })
-    .finally(() => {
-      silenceFashionKoFontsLoading = false;
-    });
+  if (loadedTemplateFontKeys.has(cacheKey)) {
+    return;
+  }
+  if (options.loadingTaskId) {
+    setTemplateLoadingTaskMessage(options.loadingTaskId, options.message || FONT_LOADING_MESSAGE);
+  }
+  let promise = templateFontLoadPromises.get(cacheKey);
+  if (!promise) {
+    promise = Promise.all(fontSpecs.map((font) => document.fonts.load(font).catch(() => [])))
+      .then(() => document.fonts.ready)
+      .then(() => {
+        loadedTemplateFontKeys.add(cacheKey);
+      })
+      .finally(() => {
+        templateFontLoadPromises.delete(cacheKey);
+      });
+    templateFontLoadPromises.set(cacheKey, promise);
+  }
+  await promise;
 }
 
 async function ensureTemplateLocalesReady() {
   const locales = getSelectedTemplateLocales();
   await Promise.all([
     ...locales.map((locale) => ensureStains(locale)),
-    ensureTemplateFontsForLocales(locales),
   ]);
 }
 
@@ -2469,7 +2518,7 @@ async function switchTemplate(templateId) {
     return false;
   }
 
-  const loadingTaskId = beginTemplateLoadingTask();
+  const loadingTaskId = beginTemplateLoadingTask({ message: SWITCH_TEMPLATE_LOADING_MESSAGE });
   try {
     const previousImages = cloneTemplateImages(state.images);
     saveCurrentTemplateRuntimeState();
@@ -3162,7 +3211,7 @@ function getSelectedTemplateLanguageOption(template = getCurrentTemplate()) {
     || languageOptions[0];
 }
 
-function moveTemplateLocale(locale, direction) {
+async function moveTemplateLocale(locale, direction) {
   if (isSingleTemplateLanguageMode()) {
     return;
   }
@@ -3175,7 +3224,7 @@ function moveTemplateLocale(locale, direction) {
   [selected[index], selected[nextIndex]] = [selected[nextIndex], selected[index]];
   state.settings.locales = selected;
   writeSettings();
-  render();
+  await render({ showLoading: true });
 }
 
 async function removeTemplateLocale(locale) {
@@ -3198,7 +3247,7 @@ async function removeTemplateLocale(locale) {
   }
   writeSettings();
   writeCurrentDraft();
-  render();
+  await render({ showLoading: true });
 }
 
 async function toggleTemplateLocale(locale) {
@@ -3214,7 +3263,7 @@ async function toggleTemplateLocale(locale) {
     await hydrateMissingItemRarity();
     writeSettings();
     writeCurrentDraft();
-    render();
+    await render({ showLoading: true });
     return;
   }
 
@@ -3229,7 +3278,7 @@ async function toggleTemplateLocale(locale) {
     await hydrateMissingItemRarity();
     writeSettings();
     writeCurrentDraft();
-    render();
+    await render({ showLoading: true });
     return;
   }
 
@@ -3255,7 +3304,7 @@ async function toggleTemplateLocale(locale) {
   await hydrateMissingItemRarity();
   writeSettings();
   writeCurrentDraft();
-  render();
+  await render({ showLoading: true });
 }
 
 function renderTemplateLanguageSettings() {
@@ -5317,9 +5366,10 @@ function renderCanvasPreviewSoon() {
 
 async function render(options = {}) {
   const renderId = ++renderSequence;
-  const loadingTaskId = options.loadingTaskId || 0;
+  let loadingTaskId = options.loadingTaskId || 0;
   if (options.showLoading && !loadingTaskId) {
-    options.loadingTaskId = beginTemplateLoadingTask();
+    loadingTaskId = beginTemplateLoadingTask();
+    options.loadingTaskId = loadingTaskId;
   }
   syncTemplateMeta();
   syncSettingsControls();
@@ -5327,6 +5377,8 @@ async function render(options = {}) {
     templateSourceName.textContent = state.sourceName;
   }
   renderLanguageControls();
+  const currentTemplate = getCurrentTemplate();
+  const selectedLocales = getSelectedTemplateLocales();
   // Incremental row update — preserve existing DOM to avoid icon flash
   const sortedRows = sortRowsForTemplate(state.rows);
   const existingRows = new Map();
@@ -5360,7 +5412,7 @@ async function render(options = {}) {
     const assetPromises = getTemplateAssetPromises();
     await Promise.all([
       ensureTemplateIconsReady(),
-      templateFontsReady ? Promise.resolve() : templateFontsReadyPromise,
+      ensureTemplateCanvasFonts({ template: currentTemplate, locales: selectedLocales, loadingTaskId }),
       ...assetPromises,
     ]);
     if (renderId !== renderSequence) {
@@ -5377,9 +5429,14 @@ async function render(options = {}) {
 }
 
 async function downloadCanvas() {
-  if (!templateFontsReady) {
-    setStatus("正在加载字体...");
-    await templateFontsReadyPromise;
+  if (!areTemplateCanvasFontsReady()) {
+    setStatus(FONT_LOADING_MESSAGE);
+    const loadingTaskId = beginTemplateLoadingTask({ message: FONT_LOADING_MESSAGE });
+    try {
+      await ensureTemplateCanvasFonts({ loadingTaskId });
+    } finally {
+      finishTemplateLoadingTask(loadingTaskId);
+    }
     renderCanvas();
   }
   if (!templateExportCanvas.width || !templateExportCanvas.height) {
@@ -5902,5 +5959,5 @@ switchTemplate = async function (templateId) {
   await restoreCurrentTemplateImages();
   templateInitialized = true;
   updateAuthorClickHandler();
-  render();
+  await render({ showLoading: true });
 })();

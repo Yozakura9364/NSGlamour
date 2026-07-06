@@ -276,6 +276,13 @@
       return boxCenterY;
     }
 
+    function getRisingstonesNameWidth(metrics, layout) {
+      const avatarRight = Number(RISINGSTONES_TEMPLATE.avatarRegion?.x || 0) + Number(RISINGSTONES_TEMPLATE.avatarRegion?.width || 0);
+      const defaultRight = Number(layout.nameX || 0) + Number(layout.nameWidth || 0);
+      const nameRight = Math.max(defaultRight, avatarRight);
+      return figmaUnit(metrics, Math.max(0, nameRight - Number(layout.nameX || 0)));
+    }
+
     function drawRisingstonesIcon(ctx, metrics, row, rowY, layout, scale = 1) {
       const iconX = figmaUnit(metrics, layout.iconX);
       const iconY = figmaUnit(metrics, rowY + getRisingstonesScaledValue(layout, "iconYOffset", scale));
@@ -375,7 +382,7 @@
 
         const nameX = figmaUnit(metrics, layout.nameX);
         const nameY = figmaUnit(metrics, nameCenterY);
-        const nameWidth = figmaUnit(metrics, layout.nameWidth);
+        const nameWidth = getRisingstonesNameWidth(metrics, layout);
         ctx.fillStyle = RISINGSTONES_TEMPLATE.textColor;
         ctx.textAlign = "left";
         drawEcFittedItemName(ctx, metrics, row.itemName ?? getItemName(row.item, locale), nameX, nameY, nameWidth, {

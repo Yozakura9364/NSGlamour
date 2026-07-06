@@ -78,7 +78,7 @@
     }
 
     function wrapCanvasText(ctx, text, width) {
-      const tokens = String(text || "").trim().match(/[A-Za-z0-9]+(?:['’-][A-Za-z0-9]+)*\s*|\S/g) || [];
+      const tokens = String(text || "").trim().match(/[A-Za-z0-9]+(?:['’-][A-Za-z0-9]+)*\s*|[^\s]+\s*|\s+/gu) || [];
       const lines = [];
       let line = "";
       for (const token of tokens) {

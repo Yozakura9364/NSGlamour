@@ -24,77 +24,77 @@
 
 @font-face {
   font-family: "HarmonyOS Sans SC";
-  src: url("../font/HarmonyOS_Sans_SC/HarmonyOS_Sans_SC_Regular.ttf") format("truetype");
+  src: url("../font/HarmonyOS_Sans_SC/HarmonyOS_Sans_SC_Regular.woff2") format("woff2");
   font-weight: 400;
   font-display: swap;
 }
 
 @font-face {
   font-family: "HarmonyOS Sans SC";
-  src: url("../font/HarmonyOS_Sans_SC/HarmonyOS_Sans_SC_Light.ttf") format("truetype");
+  src: url("../font/HarmonyOS_Sans_SC/HarmonyOS_Sans_SC_Light.woff2") format("woff2");
   font-weight: 300;
   font-display: swap;
 }
 
 @font-face {
   font-family: "HarmonyOS Sans SC";
-  src: url("../font/HarmonyOS_Sans_SC/HarmonyOS_Sans_SC_Bold.ttf") format("truetype");
+  src: url("../font/HarmonyOS_Sans_SC/HarmonyOS_Sans_SC_Bold.woff2") format("woff2");
   font-weight: 700;
   font-display: swap;
 }
 
 @font-face {
   font-family: "HarmonyOS Sans SC";
-  src: url("../font/HarmonyOS_Sans_SC/HarmonyOS_Sans_SC_Black.ttf") format("truetype");
+  src: url("../font/HarmonyOS_Sans_SC/HarmonyOS_Sans_SC_Black.woff2") format("woff2");
   font-weight: 900;
   font-display: swap;
 }
 
 @font-face {
   font-family: "Source Han Sans CN";
-  src: url("../font/Source%20Han%20Sans/%E6%80%9D%E6%BA%90%E9%BB%91%E4%BD%93%20CN-Medium.otf") format("opentype");
+  src: url("../font/Source%20Han%20Sans/%E6%80%9D%E6%BA%90%E9%BB%91%E4%BD%93%20CN-Medium.woff2") format("woff2");
   font-weight: 500;
   font-display: swap;
 }
 
 @font-face {
   font-family: "Source Han Serif CN";
-  src: url("../font/Source%20Han%20Serif/%E6%80%9D%E6%BA%90%E5%AE%8B%E4%BD%93%20CN%20ExtraLight.ttf") format("truetype");
+  src: url("../font/Source%20Han%20Serif/%E6%80%9D%E6%BA%90%E5%AE%8B%E4%BD%93%20CN%20ExtraLight.woff2") format("woff2");
   font-weight: 200;
   font-display: swap;
 }
 
 @font-face {
   font-family: "Source Han Serif CN";
-  src: url("../font/Source%20Han%20Serif/%E6%80%9D%E6%BA%90%E5%AE%8B%E4%BD%93%20CN.ttf") format("truetype");
+  src: url("../font/Source%20Han%20Serif/%E6%80%9D%E6%BA%90%E5%AE%8B%E4%BD%93%20CN.woff2") format("woff2");
   font-weight: 400;
   font-display: swap;
 }
 
 @font-face {
   font-family: "Source Han Serif CN";
-  src: url("../font/Source%20Han%20Serif/%E6%80%9D%E6%BA%90%E5%AE%8B%E4%BD%93%20CN%20Medium.ttf") format("truetype");
+  src: url("../font/Source%20Han%20Serif/%E6%80%9D%E6%BA%90%E5%AE%8B%E4%BD%93%20CN%20Medium.woff2") format("woff2");
   font-weight: 500;
   font-display: swap;
 }
 
 @font-face {
   font-family: "Source Han Serif CN";
-  src: url("../font/Source%20Han%20Serif/%E6%80%9D%E6%BA%90%E5%AE%8B%E4%BD%93%20CN%20SemiBold.ttf") format("truetype");
+  src: url("../font/Source%20Han%20Serif/%E6%80%9D%E6%BA%90%E5%AE%8B%E4%BD%93%20CN%20SemiBold.woff2") format("woff2");
   font-weight: 600;
   font-display: swap;
 }
 
 @font-face {
   font-family: "Source Han Serif KR Local";
-  src: url("../font/Source%20Han%20Serif/Korean/SourceHanSerifK-Regular.otf") format("opentype");
+  src: url("../font/Source%20Han%20Serif/Korean/SourceHanSerifK-Regular.woff2") format("woff2");
   font-weight: 400;
   font-display: swap;
 }
 
 @font-face {
   font-family: "Source Han Serif KR Local";
-  src: url("../font/Source%20Han%20Serif/Korean/SourceHanSerifK-SemiBold.otf") format("opentype");
+  src: url("../font/Source%20Han%20Serif/Korean/SourceHanSerifK-SemiBold.woff2") format("woff2");
   font-weight: 600;
   font-display: swap;
 }
@@ -115,7 +115,7 @@
 
 @font-face {
   font-family: "NS Cambria";
-  src: url("../font/cambria.ttc") format("truetype");
+  src: url("../font/cambria-math-regular.woff2") format("woff2");
   font-weight: 400;
   font-display: swap;
 }

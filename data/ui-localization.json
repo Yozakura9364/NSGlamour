@@ -2310,6 +2310,40 @@
         }
       ]
     },
+    "static.template.frontend-literal.loading_switch_template": {
+      "zh-CN": "切换模板中……",
+      "zh-TW": "切換範本中……",
+      "en": "Switching template...",
+      "ja": "テンプレートを切り替え中……",
+      "ko": "템플릿 전환 중...",
+      "de": "Vorlage wird gewechselt...",
+      "fr": "Changement de modèle...",
+      "note": "Template workspace loading overlay message while switching templates.",
+      "occurrences": [
+        {
+          "file": "static/template.js",
+          "line": 88,
+          "kind": "frontend-literal"
+        }
+      ]
+    },
+    "static.template.frontend-literal.loading_fonts": {
+      "zh-CN": "字体加载中……",
+      "zh-TW": "字體載入中……",
+      "en": "Loading fonts...",
+      "ja": "フォントを読み込み中……",
+      "ko": "글꼴 불러오는 중...",
+      "de": "Schriftarten werden geladen...",
+      "fr": "Chargement des polices...",
+      "note": "Template workspace loading overlay message while waiting for template fonts.",
+      "occurrences": [
+        {
+          "file": "static/template.js",
+          "line": 89,
+          "kind": "frontend-literal"
+        }
+      ]
+    },
     "template.template.html-text.342": {
       "zh-CN": "模板设置",
       "zh-TW": "範本設定",
