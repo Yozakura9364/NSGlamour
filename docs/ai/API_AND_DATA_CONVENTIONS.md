@@ -106,8 +106,13 @@ update_mapping.bat
 
 - 外部网页结构可能变化。
 - 石之家部分能力可能依赖后台浏览器和登录态。
+- 石之家当前优先通过后台浏览器 Cookie 直连 `apiff14risingstones` API；页内 `fetch(...)` 只保留为后备路径，不要再把它当主流程。
 - 解析失败要返回可理解的错误。
 - 不能把外部输入直接信任为内部数据。
+
+石之家后台浏览器、登录态刷新和部署约束的长期说明见：
+
+- `docs/ai/RISINGSTONES_BACKGROUND_BROWSER.md`
 
 ## 公开部署安全
 

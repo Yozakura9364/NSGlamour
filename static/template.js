@@ -87,6 +87,7 @@ const CROP_ASPECT_RATIO = 9 / 16;
 const DEFAULT_TEMPLATE_LOADING_MESSAGE = "加载中……";
 const SWITCH_TEMPLATE_LOADING_MESSAGE = "切换模板中……";
 const FONT_LOADING_MESSAGE = "字体加载中……";
+const TEMPLATE_FONT_LOAD_FALLBACK_TEXT = "幻化工房最终幻想14装备染色角色服务器NameServer日本語한국어123";
 const DEFAULT_IMAGE_SLOT_ID = "main";
 const RISINGSTONES_AVATAR_SLOT_ID = "risingstones-avatar";
 const SILENCE_FASHION_AVATAR_SLOT_ID = "silence-fashion-avatar";
@@ -448,20 +449,22 @@ const RISINGSTONES_TEMPLATE = {
     nameHeight: 75,
     nameSize: 72,
     nameMinSize: 40,
-    nameWeight: 500,
-    fontFamily: "'HarmonyOS Sans SC', 'Source Han Sans CN', 'Microsoft YaHei', sans-serif",
+    nameWeight: 400,
+    fontFamily: "'Noto Sans SC Variable', 'HarmonyOS Sans SC', 'Source Han Sans CN', 'Microsoft YaHei', sans-serif",
     dyeYOffset: 135,
     dyeHeight: 72,
-    dyeFontSize: 46,
+    dyeFontSize: 52,
     dyeMinFontSize: 28,
     dyeDotSize: 51,
     dyeDotRadius: 10,
     dyeDotStrokeWidth: 1,
     dyeDotXOffset: 12,
     dyeTextXOffset: 77,
-    dyeTextYOffset: 149,
-    dyeTextHeight: 43,
+    dyeTextYOffset: 145,
+    dyeTextHeight: 52,
     dyeTextWidth: 133,
+    dyeTextRightPadding: 12,
+    dyeGap: 30,
     dyes: [
       { x: 2374, minWidth: 287 },
       { x: 2691, minWidth: 287 },
@@ -792,8 +795,8 @@ const TEMPLATE_CANVAS_FONTS = {
     "900 62px 'Source Han Serif CN'",
   ],
   risingstones: [
-    "700 150px 'HarmonyOS Sans SC'",
-    "300 38px 'HarmonyOS Sans SC'",
+    "700 150px 'Noto Sans SC Variable'",
+    "400 38px 'Noto Sans SC Variable'",
   ],
   "silence-fashion": [
     "400 70px 'Source Han Serif CN'",
@@ -1656,9 +1659,46 @@ function getTemplateCanvasFonts(template = getCurrentTemplate(), locales = getSe
   return Array.from(new Set(fonts));
 }
 
+function buildTemplateCanvasFontLoadText(template = getCurrentTemplate(), locales = getSelectedTemplateLocales()) {
+  const parts = [
+    TEMPLATE_FONT_LOAD_FALLBACK_TEXT,
+    state.settings.topText,
+    state.settings.characterName,
+    state.settings.bottomText,
+    state.sourceName,
+    getEcSubtitleText(),
+    state.sourceMeta?.race,
+    state.sourceMeta?.gender,
+    state.sourceMeta?.sourceId != null ? String(state.sourceMeta.sourceId) : "",
+  ];
+  const resolvedLocales = Array.isArray(locales) && locales.length ? locales : [state.locale || DEFAULT_LOCALE];
+  getRenderableRows().forEach((row) => {
+    if (!row?.item) {
+      return;
+    }
+    resolvedLocales.forEach((locale) => {
+      parts.push(getItemName(row.item, locale));
+      parts.push(getTemplateDyeText(row, locale, getTemplateDyeFormat(template, row)));
+    });
+  });
+  const dedupedChars = [];
+  const seen = new Set();
+  for (const char of parts.filter(Boolean).join("")) {
+    if (/\s/.test(char) || seen.has(char)) {
+      continue;
+    }
+    seen.add(char);
+    dedupedChars.push(char);
+    if (dedupedChars.length >= 1600) {
+      break;
+    }
+  }
+  return dedupedChars.length ? dedupedChars.join("") : TEMPLATE_FONT_LOAD_FALLBACK_TEXT;
+}
+
 function getTemplateCanvasFontsCacheKey(template = getCurrentTemplate(), locales = getSelectedTemplateLocales()) {
   const templateId = normalizeTemplateId(template?.id);
-  return `${templateId}::${getTemplateCanvasFonts(template, locales).join("||")}`;
+  return `${templateId}::${getTemplateCanvasFonts(template, locales).join("||")}::${buildTemplateCanvasFontLoadText(template, locales)}`;
 }
 
 function areTemplateCanvasFontsReady(template = getCurrentTemplate(), locales = getSelectedTemplateLocales()) {
@@ -1675,6 +1715,7 @@ async function ensureTemplateCanvasFonts(options = {}) {
   const template = options.template || getCurrentTemplate();
   const locales = Array.isArray(options.locales) ? options.locales.slice() : getSelectedTemplateLocales();
   const fontSpecs = getTemplateCanvasFonts(template, locales);
+  const fontLoadText = buildTemplateCanvasFontLoadText(template, locales);
   const cacheKey = getTemplateCanvasFontsCacheKey(template, locales);
   if (!fontSpecs.length) {
     loadedTemplateFontKeys.add(cacheKey);
@@ -1688,8 +1729,7 @@ async function ensureTemplateCanvasFonts(options = {}) {
   }
   let promise = templateFontLoadPromises.get(cacheKey);
   if (!promise) {
-    promise = Promise.all(fontSpecs.map((font) => document.fonts.load(font).catch(() => [])))
-      .then(() => document.fonts.ready)
+    promise = Promise.all(fontSpecs.map((font) => document.fonts.load(font, fontLoadText).catch(() => [])))
       .then(() => {
         loadedTemplateFontKeys.add(cacheKey);
       })

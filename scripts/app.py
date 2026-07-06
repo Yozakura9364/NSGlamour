@@ -2,6 +2,7 @@ import base64
 import hashlib
 import html
 import json
+import mimetypes
 import os
 import re
 import secrets
@@ -22,6 +23,9 @@ from typing import Any, Dict, List, Optional, Set, Tuple
 
 from flask import Flask, abort, jsonify, redirect, render_template, request, send_file, url_for
 from werkzeug.middleware.proxy_fix import ProxyFix
+
+mimetypes.add_type("font/woff", ".woff")
+mimetypes.add_type("font/woff2", ".woff2")
 
 try:
     from .resolve_chara import (
@@ -92,14 +96,19 @@ EC_MAX_HTML_BYTES = 1_200_000
 EC_USER_AGENT = "Mozilla/5.0 (compatible; NSGlamour/1.0)"
 RS_ALLOWED_ORIGIN = "https://ff14risingstones.web.sdo.com"
 RS_API_BASE = "https://apiff14risingstones.web.sdo.com/api/home/"
-RS_GLAMOUR_HOME_URL = f"{RS_ALLOWED_ORIGIN}/pc/index.html#/glamour"
+RS_GLAMOUR_HOME_URL = f"{RS_ALLOWED_ORIGIN}/pc/index.html#/post"
 RS_BROWSER_PROFILE_DIR = Path(os.environ.get("NSGLAMOUR_RS_BROWSER_PROFILE", str(BASE_DIR / ".runtime" / "risingstones-chrome-profile")))
 RS_BROWSER_PORT = int(os.environ.get("NSGLAMOUR_RS_BROWSER_PORT", "18765"))
 RS_BROWSER_PORT_FILE = BASE_DIR / ".runtime" / "risingstones-browser-port.json"
 RS_BROWSER_HEADLESS = os.environ.get("NSGLAMOUR_RS_BROWSER_HEADLESS", "").lower() in {"1", "true", "yes", "on"}
+RS_BROWSER_ALLOW_HEADED_FALLBACK = os.environ.get("NSGLAMOUR_RS_BROWSER_ALLOW_HEADED_FALLBACK", "").lower() in {"1", "true", "yes", "on"}
 RS_BROWSER_NO_SANDBOX = os.environ.get("NSGLAMOUR_RS_BROWSER_NO_SANDBOX", "").lower() in {"1", "true", "yes", "on"}
 RS_BROWSER_EXTRA_ARGS = shlex.split(os.environ.get("NSGLAMOUR_RS_BROWSER_ARGS", ""))
 RS_READABLE_ERROR_PATTERNS = [
+    (
+        re.compile(r"请先登录", re.IGNORECASE),
+        "石之家读取失效！请联系网站博主",
+    ),
     (
         re.compile(r"登录页|login\.u\.sdo\.com|未登录|login", re.IGNORECASE),
         "石之家后台浏览器还没有完成登录。请先点“后台登录”，在弹出的专用浏览器里登录小号，登录后刷新石之家页面再重试。",
@@ -119,6 +128,10 @@ RS_READABLE_ERROR_PATTERNS = [
     (
         re.compile(r"接口错误|HTTP\s*(401|403)|unauthorized|forbidden|权限|风控", re.IGNORECASE),
         "石之家接口拒绝了这次读取。通常是登录态失效、账号需要验证，或刚登录后页面没有刷新；请重新打开后台登录页确认后再试。",
+    ),
+    (
+        re.compile(r"failed to fetch|networkerror|err_", re.IGNORECASE),
+        "石之家后台浏览器的请求被站点拦截了。程序会优先尝试改用非 headless 浏览器重试；如果仍失败，请确认服务器上的 Xvfb/桌面正常，并重新登录石之家小号。",
     ),
     (
         re.compile(r"详情 ID|detail", re.IGNORECASE),
@@ -1670,6 +1683,20 @@ def is_devtools_alive(port: Optional[int] = None) -> bool:
         return False
 
 
+def get_risingstones_browser_user_agent(port: Optional[int] = None) -> str:
+    try:
+        payload = devtools_json("/json/version", port=port, timeout=1.0)
+    except RuntimeError:
+        return ""
+    if not isinstance(payload, dict):
+        return ""
+    return str(payload.get("User-Agent", "") or "")
+
+
+def is_risingstones_headless_browser(port: Optional[int] = None) -> bool:
+    return "headlesschrome/" in get_risingstones_browser_user_agent(port).lower()
+
+
 def find_open_local_port(preferred: int) -> int:
     if can_bind(preferred):
         return preferred
@@ -1678,13 +1705,21 @@ def find_open_local_port(preferred: int) -> int:
         return int(sock.getsockname()[1])
 
 
-def ensure_risingstones_browser(open_login: bool = False) -> Dict[str, Any]:
+def ensure_risingstones_browser(
+    open_login: bool = False,
+    prefer_headless: Optional[bool] = None,
+    force_relaunch: bool = False,
+) -> Dict[str, Any]:
     global _risingstones_browser_process
     global _risingstones_browser_port
 
+    desired_headless = RS_BROWSER_HEADLESS if prefer_headless is None else bool(prefer_headless)
     with _risingstones_browser_lock:
         port = _risingstones_browser_port or read_risingstones_browser_port() or RS_BROWSER_PORT
-        if is_devtools_alive(port):
+        if force_relaunch:
+            shutdown_risingstones_browser_locked(port)
+            port = _risingstones_browser_port or read_risingstones_browser_port() or RS_BROWSER_PORT
+        elif is_devtools_alive(port):
             _risingstones_browser_port = port
             if open_login:
                 open_risingstones_browser_page(RS_GLAMOUR_HOME_URL, port)
@@ -1702,9 +1737,10 @@ def ensure_risingstones_browser(open_login: bool = False) -> Dict[str, Any]:
             "--no-default-browser-check",
             RS_GLAMOUR_HOME_URL,
         ]
-        if RS_BROWSER_HEADLESS:
+        if desired_headless:
             args.insert(-1, "--headless=new")
             args.insert(-1, "--disable-gpu")
+            args.insert(-1, "--disable-blink-features=AutomationControlled")
         if RS_BROWSER_NO_SANDBOX:
             args.insert(-1, "--no-sandbox")
             args.insert(-1, "--disable-dev-shm-usage")
@@ -1746,22 +1782,63 @@ def get_risingstones_page_targets(port: Optional[int] = None) -> List[Dict[str, 
     ]
 
 
+def get_risingstones_target_priority(target: Dict[str, Any]) -> Optional[Tuple[int, str]]:
+    url = str(target.get("url", ""))
+    if not url.startswith(RS_ALLOWED_ORIGIN):
+        return None
+    lowered = url.lower()
+    if "/pc/index.html#/post" in lowered:
+        return (0, lowered)
+    if "/pc/index.html#/glamour/detail/" in lowered:
+        return (1, lowered)
+    if "/pc/index.html#/glamour" in lowered:
+        return (2, lowered)
+    if "/pc/index.html#" in lowered:
+        return (3, lowered)
+    if lowered.rstrip("/") == f"{RS_ALLOWED_ORIGIN.lower()}/glamour":
+        return (9, lowered)
+    return (4, lowered)
+
+
 def select_risingstones_target(port: Optional[int] = None) -> Dict[str, Any]:
     ensure_risingstones_browser()
     targets = get_risingstones_page_targets(port)
-    for target in targets:
-        if str(target.get("url", "")).startswith(RS_ALLOWED_ORIGIN):
-            return target
+    ranked_targets = [
+        (priority, target)
+        for target in targets
+        for priority in [get_risingstones_target_priority(target)]
+        if priority is not None
+    ]
+    if ranked_targets:
+        ranked_targets.sort(key=lambda item: item[0])
+        return ranked_targets[0][1]
     open_risingstones_browser_page(RS_GLAMOUR_HOME_URL, port)
     time.sleep(0.8)
     targets = get_risingstones_page_targets(port)
-    for target in targets:
-        if str(target.get("url", "")).startswith(RS_ALLOWED_ORIGIN):
-            return target
+    ranked_targets = [
+        (priority, target)
+        for target in targets
+        for priority in [get_risingstones_target_priority(target)]
+        if priority is not None
+    ]
+    if ranked_targets:
+        ranked_targets.sort(key=lambda item: item[0])
+        return ranked_targets[0][1]
     login_urls = [str(target.get("url", "")) for target in targets if "login.u.sdo.com" in str(target.get("url", ""))]
     if login_urls:
         raise RuntimeError("后台浏览器还在登录页，请先在弹出的专用窗口完成石之家小号登录")
     raise RuntimeError("没有找到已登录的石之家后台页面，请先点“后台登录”")
+
+
+def normalize_risingstones_user_agent(user_agent: str) -> str:
+    value = str(user_agent or "").strip()
+    if not value:
+        return (
+            "Mozilla/5.0 (Windows NT 10.0; Win64; x64) "
+            "AppleWebKit/537.36 (KHTML, like Gecko) "
+            "Chrome/149.0.0.0 Safari/537.36"
+        )
+    return re.sub(r"HeadlessChrome/", "Chrome/", value, flags=re.IGNORECASE)
 
 
 def ws_masked_frame(payload: bytes) -> bytes:
@@ -1856,6 +1933,214 @@ def devtools_ws_request(ws_url: str, message: Dict[str, Any], timeout: float = 2
                 return data
 
 
+def shutdown_risingstones_browser_locked(port_hint: Optional[int] = None) -> None:
+    global _risingstones_browser_process
+    global _risingstones_browser_port
+
+    port = port_hint or _risingstones_browser_port or read_risingstones_browser_port() or RS_BROWSER_PORT
+    process = _risingstones_browser_process
+    _risingstones_browser_process = None
+    _risingstones_browser_port = None
+    try:
+        RS_BROWSER_PORT_FILE.unlink()
+    except FileNotFoundError:
+        pass
+    except OSError:
+        pass
+
+    if process and process.poll() is None:
+        try:
+            process.terminate()
+            process.wait(timeout=5)
+        except subprocess.TimeoutExpired:
+            process.kill()
+            process.wait(timeout=3)
+        except Exception:
+            try:
+                process.kill()
+            except Exception:
+                pass
+
+    if is_devtools_alive(port):
+        try:
+            version = devtools_json("/json/version", port=port, timeout=1.0)
+            ws_url = str(version.get("webSocketDebuggerUrl", "") or "") if isinstance(version, dict) else ""
+            if ws_url:
+                devtools_ws_request(
+                    ws_url,
+                    {
+                        "id": 1,
+                        "method": "Browser.close",
+                    },
+                    timeout=5,
+                )
+        except Exception:
+            pass
+        deadline = time.time() + 5
+        while time.time() < deadline:
+            if not is_devtools_alive(port):
+                break
+            time.sleep(0.2)
+
+
+def should_retry_risingstones_headless_failure(
+    port: Optional[int] = None,
+    error: Any = None,
+    failures: Optional[List[Dict[str, Any]]] = None,
+) -> bool:
+    if not is_risingstones_headless_browser(port):
+        return False
+    messages: List[str] = []
+    if error:
+        messages.append(str(error))
+    if failures:
+        for failure in failures:
+            if isinstance(failure, dict):
+                messages.append(str(failure.get("message", "") or ""))
+    for message in messages:
+        lowered = message.strip().lower()
+        if "failed to fetch" in lowered or "networkerror" in lowered or "err_" in lowered:
+            return True
+    return False
+
+
+def get_risingstones_cookies_via_devtools(ws_url: str) -> List[Dict[str, Any]]:
+    result = devtools_ws_request(
+        ws_url,
+        {
+            "id": 1,
+            "method": "Network.getCookies",
+            "params": {
+                "urls": [
+                    RS_ALLOWED_ORIGIN,
+                    RS_GLAMOUR_HOME_URL,
+                    RS_API_BASE,
+                ]
+            },
+        },
+        timeout=10,
+    )
+    if result.get("error"):
+        raise RuntimeError(result["error"].get("message") or "后台浏览器 Cookie 读取失败")
+    cookies = result.get("result", {}).get("cookies")
+    if not isinstance(cookies, list):
+        raise RuntimeError("后台浏览器没有返回有效 Cookie")
+    return [cookie for cookie in cookies if isinstance(cookie, dict) and cookie.get("name")]
+
+
+def build_risingstones_cookie_header(cookies: List[Dict[str, Any]]) -> str:
+    parts: List[str] = []
+    for cookie in cookies:
+        name = str(cookie.get("name", "") or "").strip()
+        if not name:
+            continue
+        value = str(cookie.get("value", "") or "")
+        parts.append(f"{name}={value}")
+    return "; ".join(parts)
+
+
+def build_risingstones_api_url(path: str, params: Optional[Dict[str, Any]] = None) -> str:
+    url = urllib.parse.urljoin(RS_API_BASE, path)
+    parsed = urllib.parse.urlparse(url)
+    query = urllib.parse.parse_qsl(parsed.query, keep_blank_values=True)
+    for key, value in (params or {}).items():
+        if value is None or value == "":
+            continue
+        query.append((str(key), str(value)))
+    query.append(("tempsuid", secrets.token_hex(16)))
+    return urllib.parse.urlunparse(parsed._replace(query=urllib.parse.urlencode(query)))
+
+
+def parse_risingstones_api_payload(
+    raw_body: bytes,
+    *,
+    status_code: int,
+    path: str,
+    extra_codes: Optional[Set[str]] = None,
+) -> Any:
+    try:
+        payload = json.loads(raw_body.decode("utf-8"))
+    except Exception as exc:
+        raise RuntimeError(f"石之家接口返回了无法解析的数据: {path}") from exc
+    if not isinstance(payload, dict):
+        raise RuntimeError(f"石之家接口返回格式异常: {path}")
+    code = str(payload.get("code", payload.get("Code", "")) or "")
+    message = str(payload.get("msg") or payload.get("message") or payload.get("Message") or "").strip()
+    success_codes = {"10000", "10002"}
+    if extra_codes:
+        success_codes.update(str(item) for item in extra_codes)
+    if not (200 <= status_code < 300):
+        raise RuntimeError(message or f"石之家接口错误: {status_code}")
+    if code and code not in success_codes:
+        raise RuntimeError(message or f"石之家接口错误: {code}")
+    return payload.get("data")
+
+
+def fetch_risingstones_api_via_browser_cookies(
+    path: str,
+    *,
+    ws_url: str,
+    browser_port: Optional[int] = None,
+    params: Optional[Dict[str, Any]] = None,
+    extra_codes: Optional[Set[str]] = None,
+) -> Any:
+    cookies = get_risingstones_cookies_via_devtools(ws_url)
+    cookie_header = build_risingstones_cookie_header(cookies)
+    if not cookie_header:
+        raise RuntimeError("后台浏览器里没有可用的石之家 Cookie，请重新登录小号")
+    url = build_risingstones_api_url(path, params)
+    request_obj = urllib.request.Request(
+        url,
+        headers={
+            "Accept": "application/json, text/plain, */*",
+            "Cookie": cookie_header,
+            "Origin": RS_ALLOWED_ORIGIN,
+            "Referer": RS_GLAMOUR_HOME_URL,
+            "User-Agent": normalize_risingstones_user_agent(get_risingstones_browser_user_agent(browser_port)),
+        },
+    )
+    try:
+        with urllib.request.urlopen(request_obj, timeout=20) as response:
+            body = response.read()
+            status_code = int(getattr(response, "status", response.getcode()))
+    except urllib.error.HTTPError as exc:
+        body = exc.read()
+        status_code = int(exc.code)
+    except Exception as exc:
+        raise RuntimeError(f"石之家接口请求失败: {exc}") from exc
+    return parse_risingstones_api_payload(body, status_code=status_code, path=path, extra_codes=extra_codes)
+
+
+def read_risingstones_details_via_http(ids: List[str], *, ws_url: str, browser_port: Optional[int] = None) -> Dict[str, Any]:
+    fetch_risingstones_api_via_browser_cookies(
+        "GHome/isLogin",
+        ws_url=ws_url,
+        browser_port=browser_port,
+        extra_codes={"10103", "10104"},
+    )
+    details = []
+    failures = []
+    for glamour_id in ids:
+        try:
+            detail = fetch_risingstones_api_via_browser_cookies(
+                "glamour/glamourDetail",
+                ws_url=ws_url,
+                browser_port=browser_port,
+                params={"id": glamour_id},
+            )
+            details.append(detail)
+        except RuntimeError as exc:
+            failures.append({"id": glamour_id, "message": str(exc)})
+    return {
+        "ok": True,
+        "ids": ids,
+        "details": details,
+        "failures": failures,
+        "page": RS_GLAMOUR_HOME_URL,
+        "mode": "http",
+    }
+
+
 def extract_risingstones_glamour_ids(value: str) -> List[str]:
     text = str(value or "").strip()
     if not text:
@@ -1920,37 +2205,66 @@ def risingstones_fetch_expression(ids: List[str]) -> str:
 def read_risingstones_details_via_browser(ids: List[str]) -> Dict[str, Any]:
     if not ids:
         raise ValueError("没有识别到石之家详情 ID")
-    ensure_risingstones_browser()
-    target = select_risingstones_target()
-    ws_url = target.get("webSocketDebuggerUrl")
-    if not ws_url:
-        raise RuntimeError("后台浏览器没有 DevTools 连接")
-    expression = risingstones_fetch_expression(ids)
-    result = devtools_ws_request(
-        ws_url,
-        {
-            "id": 1,
-            "method": "Runtime.evaluate",
-            "params": {
-                "expression": expression,
-                "awaitPromise": True,
-                "returnByValue": True,
-                "timeout": 30000,
-            },
-        },
-        timeout=35,
-    )
-    if result.get("error"):
-        raise RuntimeError(result["error"].get("message") or "后台浏览器执行失败")
-    payload = result.get("result", {})
-    exception = payload.get("exceptionDetails")
-    if exception:
-        text = exception.get("text") or exception.get("exception", {}).get("description") or "后台浏览器读取失败"
-        raise RuntimeError(text)
-    value = payload.get("result", {}).get("value")
-    if not isinstance(value, dict):
-        raise RuntimeError("后台浏览器没有返回有效数据")
-    return value
+    attempts = [RS_BROWSER_HEADLESS]
+    if RS_BROWSER_HEADLESS and RS_BROWSER_ALLOW_HEADED_FALLBACK:
+        attempts.append(False)
+    last_error: Optional[RuntimeError] = None
+
+    for attempt_index, use_headless in enumerate(attempts):
+        state = ensure_risingstones_browser(
+            prefer_headless=use_headless,
+            force_relaunch=attempt_index > 0,
+        )
+        port = state.get("port")
+        try:
+            target = select_risingstones_target(port)
+            ws_url = target.get("webSocketDebuggerUrl")
+            if not ws_url:
+                raise RuntimeError("后台浏览器没有 DevTools 连接")
+            http_result = read_risingstones_details_via_http(ids, ws_url=ws_url, browser_port=port)
+            http_failures = http_result.get("failures") if isinstance(http_result.get("failures"), list) else []
+            if http_result.get("details") or not http_failures:
+                return http_result
+            if attempt_index == 0 and should_retry_risingstones_headless_failure(port=port, failures=http_failures):
+                continue
+            expression = risingstones_fetch_expression(ids)
+            result = devtools_ws_request(
+                ws_url,
+                {
+                    "id": 1,
+                    "method": "Runtime.evaluate",
+                    "params": {
+                        "expression": expression,
+                        "awaitPromise": True,
+                        "returnByValue": True,
+                        "timeout": 30000,
+                    },
+                },
+                timeout=35,
+            )
+            if result.get("error"):
+                raise RuntimeError(result["error"].get("message") or "后台浏览器执行失败")
+            payload = result.get("result", {})
+            exception = payload.get("exceptionDetails")
+            if exception:
+                text = exception.get("text") or exception.get("exception", {}).get("description") or "后台浏览器读取失败"
+                raise RuntimeError(text)
+            value = payload.get("result", {}).get("value")
+            if not isinstance(value, dict):
+                raise RuntimeError("后台浏览器没有返回有效数据")
+            failures = value.get("failures") if isinstance(value.get("failures"), list) else []
+            if attempt_index == 0 and should_retry_risingstones_headless_failure(port=port, failures=failures):
+                continue
+            return value
+        except RuntimeError as exc:
+            last_error = exc
+            if attempt_index == 0 and should_retry_risingstones_headless_failure(port=port, error=exc):
+                continue
+            raise
+
+    if last_error:
+        raise last_error
+    raise RuntimeError("后台浏览器读取失败")
 
 
 app = Flask(

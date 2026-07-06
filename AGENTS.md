@@ -14,10 +14,11 @@
 3. `docs/ai/MODULE_MAP.md`
 4. `docs/ai/FRONTEND_CONVENTIONS.md`
 5. `docs/ai/API_AND_DATA_CONVENTIONS.md`
-6. 涉及模板渲染时读：`docs/ai/TEMPLATE_WORKFLOW.md`
-7. 涉及具体页面时读：`docs/ai/MODULES/template-workspace.md` 或 `docs/ai/MODULES/equipinfo-workspace.md`
-8. 涉及工作流程、计划阶段、验证和文档维护时读：`docs/ai/DEVELOPMENT_WORKFLOW.md`
-9. 通用公共提示词在：`docs/ai/公共提示词.md`
+6. 涉及石之家后台浏览器、登录态、DevTools、远程读取时读：`docs/ai/RISINGSTONES_BACKGROUND_BROWSER.md`
+7. 涉及模板渲染时读：`docs/ai/TEMPLATE_WORKFLOW.md`
+8. 涉及具体页面时读：`docs/ai/MODULES/template-workspace.md` 或 `docs/ai/MODULES/equipinfo-workspace.md`
+9. 涉及工作流程、计划阶段、验证和文档维护时读：`docs/ai/DEVELOPMENT_WORKFLOW.md`
+10. 通用公共提示词在：`docs/ai/公共提示词.md`
 
 ## 编码要求
 
@@ -40,6 +41,7 @@
 ## 重要文件
 
 - `scripts/app.py`：Flask 路由、上传限制、基础路径、导入 API、搜索 API、图标代理、石之家浏览器辅助。
+- `scripts/risingstones_login.py`：石之家专用资料目录的可见登录刷新脚本。
 - `scripts/resolve_chara.py`：`.chara` 解析与 `resolved_equipment` 数据结构生成。
 - `scripts/build_item_mapping.py`：从 datamining CSV 生成 `data/item_model_mapping.json`。
 - `templates/template.html` 与 `static/template.js`：模板工作台、图片槽、装备编辑、导入、裁剪、PNG 导出。

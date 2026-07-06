@@ -140,7 +140,7 @@
       const maxSize = figmaUnit(metrics, options.maxSize || area.maxSize || 60);
       const minSize = figmaUnit(metrics, options.minSize || area.minSize || 24);
       const weight = Number(options.weight || 700);
-      const family = options.fontFamily || "'HarmonyOS Sans SC', 'Source Han Sans CN', 'Microsoft YaHei', sans-serif";
+      const family = options.fontFamily || "'Noto Sans SC Variable', 'HarmonyOS Sans SC', 'Source Han Sans CN', 'Microsoft YaHei', sans-serif";
       let size = maxSize;
       while (size > minSize) {
         ctx.font = `${weight} ${size}px ${family}`;
@@ -301,14 +301,53 @@
       ctx.restore();
     }
 
-    function drawRisingstonesDyeChip(ctx, metrics, rowY, dye, dyeIndex, layout, locale, scale = 1, dyeY = null) {
-      const spec = layout.dyes[dyeIndex];
+    function measureRisingstonesDyeChip(ctx, metrics, rowY, dye, dyeIndex, layout, locale, scale = 1, dyeY = null) {
+      const spec = layout.dyes[dyeIndex] || layout.dyes[0];
       if (!spec) {
-        return;
+        return 0;
       }
-      const x = figmaUnit(metrics, spec.x);
+      const label = getEcDyeLabel(dye, locale);
+      const fontSize = figmaUnit(metrics, getRisingstonesScaledValue(layout, "dyeFontSize", scale));
+      const font = `400 ${fontSize}px 'Noto Sans SC Variable', 'HarmonyOS Sans SC', 'Source Han Sans CN', 'Microsoft YaHei', sans-serif`;
+      ctx.save();
+      ctx.font = font;
+      const labelWidth = ctx.measureText(label).width;
+      ctx.restore();
+      const contentWidth = figmaUnit(metrics, getRisingstonesScaledValue(layout, "dyeTextXOffset", scale))
+        + labelWidth
+        + figmaUnit(metrics, getRisingstonesScaledValue(layout, "dyeTextRightPadding", scale));
+      return {
+        label,
+        spec,
+        contentWidth,
+        font,
+        fontSize,
+      };
+    }
+
+    function getRisingstonesDyeGap(metrics, layout, scale = 1) {
+      const configuredGap = figmaUnit(metrics, getRisingstonesScaledValue(layout, "dyeGap", scale));
+      if (configuredGap > 0) {
+        return configuredGap;
+      }
+      const first = layout.dyes?.[0];
+      const second = layout.dyes?.[1];
+      if (first && second) {
+        return figmaUnit(
+          metrics,
+          Math.max(0, Number(second.x || 0) - Number(first.x || 0) - Number(first.minWidth || 0)),
+        );
+      }
+      return figmaUnit(metrics, 24 * scale);
+    }
+
+    function drawRisingstonesDyeChip(ctx, metrics, rowY, dye, layout, locale, scale = 1, dyeY = null, measurement = null, xOverride = null, maxWidth = null) {
+      const measured = measurement || measureRisingstonesDyeChip(ctx, metrics, rowY, dye, 0, layout, locale, scale, dyeY);
+      if (!measured) {
+        return 0;
+      }
+      const x = xOverride != null ? xOverride : figmaUnit(metrics, measured.spec.x);
       const y = figmaUnit(metrics, dyeY ?? (rowY + getRisingstonesScaledValue(layout, "dyeYOffset", scale)));
-      const minWidth = figmaUnit(metrics, Number(spec.minWidth || 0) * scale);
       const height = figmaUnit(metrics, getRisingstonesScaledValue(layout, "dyeHeight", scale));
       const textY = figmaUnit(metrics, rowY + getRisingstonesScaledValue(layout, "dyeTextYOffset", scale));
       const textHeight = figmaUnit(metrics, getRisingstonesScaledValue(layout, "dyeTextHeight", scale) || getRisingstonesScaledValue(layout, "dyeHeight", scale));
@@ -316,10 +355,13 @@
       const dotX = x + figmaUnit(metrics, getRisingstonesScaledValue(layout, "dyeDotXOffset", scale));
       const dotY = y + (height - dotSize) / 2;
       const textX = x + figmaUnit(metrics, getRisingstonesScaledValue(layout, "dyeTextXOffset", scale));
-      const textWidth = figmaUnit(metrics, getRisingstonesScaledValue(layout, "dyeTextWidth", scale));
       const name = normalizeFigmaDyeName(dye.name);
       const isEmptyDye = dye.isEmpty || name === FIGMA_EMPTY_DYE_NAME;
-      const label = getEcDyeLabel(dye, locale);
+      const label = measured.label;
+      const textWidth = Math.max(
+        0,
+        (maxWidth != null ? maxWidth : measured.contentWidth) - figmaUnit(metrics, getRisingstonesScaledValue(layout, "dyeTextXOffset", scale)),
+      );
 
       ctx.fillStyle = isEmptyDye ? "#d4d4d4" : normalizeHexColor(dye.hex, "#98cce0");
       fillRoundedRect(ctx, dotX, dotY, dotSize, dotSize, figmaUnit(metrics, getRisingstonesScaledValue(layout, "dyeDotRadius", scale)));
@@ -341,26 +383,18 @@
         ctx.restore();
       }
 
-      let fontSize = figmaUnit(metrics, getRisingstonesScaledValue(layout, "dyeFontSize", scale));
-      const minSize = figmaUnit(metrics, getRisingstonesScaledValue(layout, "dyeMinFontSize", scale));
-      while (fontSize > minSize) {
-        ctx.font = `300 ${fontSize}px 'HarmonyOS Sans SC', 'Source Han Sans CN', 'Microsoft YaHei', sans-serif`;
-        if (ctx.measureText(label).width <= textWidth) {
-          break;
-        }
-        fontSize -= 1;
-      }
       ctx.fillStyle = RISINGSTONES_TEMPLATE.dyeText;
-      ctx.textAlign = "center";
+      ctx.textAlign = "left";
       ctx.textBaseline = "alphabetic";
-      ctx.font = `300 ${fontSize}px 'HarmonyOS Sans SC', 'Source Han Sans CN', 'Microsoft YaHei', sans-serif`;
+      ctx.font = measured.font;
       drawClippedTextInBox(
         ctx,
         label,
         { x: textX, y: textY, width: textWidth, height: textHeight },
-        textX + textWidth / 2,
+        textX,
         getRisingstonesTextInkCenterBaseline(ctx, label, textY + textHeight / 2),
       );
+      return measured.contentWidth;
     }
 
     function drawRisingstonesEquipment(ctx, metrics) {
@@ -392,8 +426,33 @@
           inkCenter: true,
         });
 
-        dyes.slice(0, 2).forEach((dye, dyeIndex) => {
-          drawRisingstonesDyeChip(ctx, metrics, rowY, dye, dyeIndex, layout, locale, equipmentScale, dyeY);
+        const visibleDyes = dyes.slice(0, 2);
+        let dyeX = figmaUnit(metrics, layout.dyes?.[0]?.x || layout.nameX);
+        const dyeGap = getRisingstonesDyeGap(metrics, layout, equipmentScale);
+        const rowRight = figmaUnit(metrics, Number(layout.rowX || 0) + Number(layout.rowWidth || 0));
+        visibleDyes.forEach((dye, dyeIndex) => {
+          const measured = measureRisingstonesDyeChip(ctx, metrics, rowY, dye, dyeIndex, layout, locale, equipmentScale, dyeY);
+          if (!measured) {
+            return;
+          }
+          const maxWidth = Math.max(0, rowRight - dyeX);
+          if (maxWidth <= 0) {
+            return;
+          }
+          drawRisingstonesDyeChip(
+            ctx,
+            metrics,
+            rowY,
+            dye,
+            layout,
+            locale,
+            equipmentScale,
+            dyeY,
+            measured,
+            dyeX,
+            maxWidth,
+          );
+          dyeX += measured.contentWidth + dyeGap;
         });
       });
     }
@@ -404,9 +463,9 @@
       ctx.fillStyle = "#000000";
       ctx.textAlign = "center";
       ctx.textBaseline = "middle";
-      ctx.font = `700 ${figmaUnit(metrics, 34)}px 'HarmonyOS Sans SC', 'Source Han Sans CN', 'Microsoft YaHei', sans-serif`;
+      ctx.font = `700 ${figmaUnit(metrics, 34)}px 'Noto Sans SC Variable', 'HarmonyOS Sans SC', 'Source Han Sans CN', 'Microsoft YaHei', sans-serif`;
       ctx.fillText(RISINGSTONES_TEMPLATE.copyright.lines[0], box.x + box.width / 2, box.y + figmaUnit(metrics, 30), box.width);
-      ctx.font = `700 ${figmaUnit(metrics, 32)}px 'HarmonyOS Sans SC', 'Source Han Sans CN', 'Microsoft YaHei', sans-serif`;
+      ctx.font = `700 ${figmaUnit(metrics, 32)}px 'Noto Sans SC Variable', 'HarmonyOS Sans SC', 'Source Han Sans CN', 'Microsoft YaHei', sans-serif`;
       ctx.fillText(RISINGSTONES_TEMPLATE.copyright.lines[1], box.x + box.width / 2, box.y + figmaUnit(metrics, 76), box.width);
       ctx.restore();
     }
