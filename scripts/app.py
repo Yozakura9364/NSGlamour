@@ -218,6 +218,22 @@ EC_SLOT_TO_NS_SLOT = {
     "FASHION": "FashionAccessory",
 }
 
+EC_LEGACY_CSS_SLOT_TO_NS_SLOT = {
+    "weapon": "MainHand",
+    "offhand": "OffHand",
+    "head": "HeadGear",
+    "body": "Body",
+    "hands": "Hands",
+    "legs": "Legs",
+    "feet": "Feet",
+    "ears": "Ears",
+    "neck": "Neck",
+    "wrists": "Wrists",
+    "ring": "LeftRing",
+    "face": "Glasses",
+    "fashion": "FashionAccessory",
+}
+
 EC_SLOT_ORDER = [
     "MainHand",
     "OffHand",
@@ -501,6 +517,21 @@ def validate_ec_url(raw_url: str) -> str:
     return urllib.parse.urlunparse(parsed._replace(fragment=""))
 
 
+def is_ec_access_blocked_page(document: str) -> bool:
+    text = normalize_space(text_from_html(document)).lower()
+    return (
+        "sorry, you have been blocked" in text
+        or "you are unable to access eorzeacollection.com" in text
+        or ("cloudflare" in text and "access denied" in text)
+    )
+
+
+def ec_access_blocked_error() -> ValueError:
+    return ValueError(
+        "Eorzea Collection 当前拒绝此服务器访问，暂时无法读取该链接。请稍后重试或使用装备文字导入。"
+    )
+
+
 def fetch_ec_html(raw_url: str) -> Tuple[str, str]:
     opener = urllib.request.build_opener(NoRedirectHandler)
     url = validate_ec_url(raw_url)
@@ -514,9 +545,16 @@ def fetch_ec_html(raw_url: str) -> Tuple[str, str]:
                 if len(data) > EC_MAX_HTML_BYTES:
                     raise ValueError("Eorzea Collection 页面过大，已停止读取")
                 charset = response.headers.get_content_charset() or "utf-8"
-                return data.decode(charset, errors="replace"), final_url
+                document = data.decode(charset, errors="replace")
+                if is_ec_access_blocked_page(document):
+                    raise ec_access_blocked_error()
+                return document, final_url
         except urllib.error.HTTPError as exc:
             if exc.code not in {301, 302, 303, 307, 308}:
+                body = exc.read(EC_MAX_HTML_BYTES + 1)
+                charset = exc.headers.get_content_charset() or "utf-8"
+                if is_ec_access_blocked_page(body.decode(charset, errors="replace")):
+                    raise ec_access_blocked_error() from exc
                 raise ValueError(f"Eorzea Collection 返回错误：HTTP {exc.code}") from exc
             location = exc.headers.get("Location", "")
             if not location:
@@ -576,7 +614,8 @@ def extract_ec_character(document: str) -> Dict[str, str]:
 def parse_ec_icon_id(block: str) -> int:
     for image_match in re.finditer(r"(?is)<img\b[^>]*>", block):
         tag = image_match.group(0)
-        if "gear-icon-image" not in get_html_attr(tag, "class"):
+        classes = get_html_attr(tag, "class")
+        if "gear-icon-image" not in classes and "b-info-box-item-icon" not in classes:
             continue
         src = get_html_attr(tag, "src")
         icon_match = re.search(r"/(\d{6})\.(?:png|jpg|webp)(?:\?|$)", src)
@@ -597,6 +636,13 @@ def parse_ec_item_name(block: str) -> str:
         title = text_from_html(title_block)
         if title:
             return title
+
+    legacy_name_match = re.search(
+        r'(?is)<span\b[^>]*class="[^"]*\bc-gear-slot-item-name\b[^"]*"[^>]*>(.*?)</span>',
+        block,
+    )
+    if legacy_name_match:
+        return text_from_html(legacy_name_match.group(1))
     return ""
 
 
@@ -649,6 +695,31 @@ def parse_ec_dyes(block: str) -> List[str]:
         dye = clean_ec_dye_name(raw_dye)
         if dye:
             dyes.append(dye)
+
+    if not dyes:
+        color_pattern = re.compile(
+            r'(?is)<span\b[^>]*class="[^"]*\bc-gear-slot-item-info-color\b[^"]*"[^>]*>'
+        )
+        span_pattern = re.compile(r"(?is)</?span\b[^>]*>")
+        position = 0
+        while position < len(block):
+            color_match = color_pattern.search(block, position)
+            if not color_match:
+                break
+            depth = 0
+            for span_match in span_pattern.finditer(block, color_match.start()):
+                if span_match.group(0).lower().startswith("</"):
+                    depth -= 1
+                else:
+                    depth += 1
+                if depth == 0:
+                    dye = clean_ec_dye_name(text_from_html(block[color_match.start() : span_match.end()]))
+                    if dye:
+                        dyes.append(dye)
+                    position = span_match.end()
+                    break
+            else:
+                break
     return dyes[:2]
 
 
@@ -656,24 +727,39 @@ def normalize_ec_slot(value: str) -> str:
     return re.sub(r"[\s_-]+", " ", str(value or "").strip().upper())
 
 
-def parse_ec_equipment(document: str) -> List[Dict[str, Any]]:
-    section = extract_ec_divider_section(document, "Equipment")
+def extract_ec_legacy_equipment_section(document: str) -> str:
+    marker = re.search(
+        r'(?is)<span\b[^>]*class="[^"]*\bb-info-box-category-title\b[^"]*"[^>]*>\s*Equipment:\s*</span>',
+        document,
+    )
+    if not marker:
+        return ""
+    start = document.rfind("<section", 0, marker.start())
+    end = document.find("</section>", marker.end())
+    if start < 0 or end < 0:
+        return ""
+    return document[start : end + len("</section>")]
+
+
+def parse_ec_legacy_equipment(document: str) -> List[Dict[str, Any]]:
+    section = extract_ec_legacy_equipment_section(document)
     if not section:
-        raise ValueError("未在页面中识别到投影信息")
+        return []
 
     entries = []
     generic_ring_count = 0
-    for block in iter_div_blocks(section, ["list", "box"]):
-        slot_match = re.search(
-            r'(?is)<span\b[^>]*class="[^"]*\bgear-icon-box-slot-name\b[^"]*"[^>]*>(.*?)</span>',
-            block,
-        )
-        if not slot_match:
+    for block in iter_div_blocks(section, ["b-info-box-item-wrapper"]):
+        slot_class = ""
+        for tag_match in re.finditer(r"(?is)<a\b[^>]*>", block):
+            class_match = re.search(r"\bc-gear-slot-([a-z-]+)\b", get_html_attr(tag_match.group(0), "class"))
+            if class_match:
+                slot_class = class_match.group(1)
+                break
+        if not slot_class:
             continue
-        slot_label = text_from_html(slot_match.group(1))
-        normalized_slot = normalize_ec_slot(slot_label)
-        slot_name = EC_SLOT_TO_NS_SLOT.get(normalized_slot)
-        if normalized_slot == "RING":
+
+        slot_name = EC_LEGACY_CSS_SLOT_TO_NS_SLOT.get(slot_class)
+        if slot_class == "ring":
             slot_name = "LeftRing" if generic_ring_count == 0 else "RightRing"
             generic_ring_count += 1
         if not slot_name:
@@ -685,12 +771,51 @@ def parse_ec_equipment(document: str) -> List[Dict[str, Any]]:
         entries.append(
             {
                 "slot": slot_name,
-                "ec_slot": slot_label,
+                "ec_slot": slot_class.upper(),
                 "item_name": item_name,
                 "dyes": parse_ec_dyes(block),
                 "icon": parse_ec_icon_id(block),
             }
         )
+    return entries
+
+
+def parse_ec_equipment(document: str) -> List[Dict[str, Any]]:
+    section = extract_ec_divider_section(document, "Equipment")
+
+    entries = []
+    generic_ring_count = 0
+    if section:
+        for block in iter_div_blocks(section, ["list", "box"]):
+            slot_match = re.search(
+                r'(?is)<span\b[^>]*class="[^"]*\bgear-icon-box-slot-name\b[^"]*"[^>]*>(.*?)</span>',
+                block,
+            )
+            if not slot_match:
+                continue
+            slot_label = text_from_html(slot_match.group(1))
+            normalized_slot = normalize_ec_slot(slot_label)
+            slot_name = EC_SLOT_TO_NS_SLOT.get(normalized_slot)
+            if normalized_slot == "RING":
+                slot_name = "LeftRing" if generic_ring_count == 0 else "RightRing"
+                generic_ring_count += 1
+            if not slot_name:
+                continue
+
+            item_name = parse_ec_item_name(block)
+            if not item_name:
+                continue
+            entries.append(
+                {
+                    "slot": slot_name,
+                    "ec_slot": slot_label,
+                    "item_name": item_name,
+                    "dyes": parse_ec_dyes(block),
+                    "icon": parse_ec_icon_id(block),
+                }
+            )
+    else:
+        entries = parse_ec_legacy_equipment(document)
 
     if not entries:
         raise ValueError("未在页面中识别到投影信息")
