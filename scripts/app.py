@@ -227,10 +227,14 @@ EC_LEGACY_CSS_SLOT_TO_NS_SLOT = {
     "legs": "Legs",
     "feet": "Feet",
     "ears": "Ears",
+    "earrings": "Ears",
     "neck": "Neck",
+    "necklace": "Neck",
     "wrists": "Wrists",
+    "bracelets": "Wrists",
     "ring": "LeftRing",
     "face": "Glasses",
+    "facewear": "Glasses",
     "fashion": "FashionAccessory",
 }
 
@@ -595,10 +599,20 @@ def extract_ec_author(document: str) -> Dict[str, str]:
     world_match = re.search(r'(?is)<h4\b[^>]*class="[^"]*\bsubtitle\b[^"]*"[^>]*>(.*?)</h4>', section)
     name = text_from_html(name_match.group(1)) if name_match else ""
     world = text_from_html(world_match.group(1)) if world_match else ""
+    if not name:
+        legacy_match = re.search(
+            r'(?is)<h2\b[^>]*class="[^"]*\bb-title-sub\b[^"]*"[^>]*>\s*by\s*<b\b[^>]*>(.*?)</b>\s*from\s*(.*?)</h2>',
+            document,
+        )
+        if legacy_match:
+            name = text_from_html(legacy_match.group(1))
+            world = text_from_html(legacy_match.group(2))
+    label_world = world.strip()
+    world = world.replace("⧫", "").strip().strip("«»").strip()
     return {
         "name": name,
-        "world": world.replace("⧫", "").strip(),
-        "label": " ".join(part for part in [name, world] if part).strip(),
+        "world": world,
+        "label": " ".join(part for part in [name, label_world] if part).strip(),
     }
 
 
@@ -608,6 +622,15 @@ def extract_ec_character(document: str) -> Dict[str, str]:
     for match in pattern.finditer(text_from_html(document)):
         race = match.group(1).replace("Miqote", "Miqo'te")
         return {"race": race, "gender": match.group(2)}
+
+    for image_match in re.finditer(r"(?is)<img\b[^>]*>", document):
+        tag = image_match.group(0)
+        classes = set(get_html_attr(tag, "class").split())
+        if "c-set-fitting-icon" not in classes or "c-set-fitting-icon-unfit" in classes:
+            continue
+        gender_match = re.search(r"/genders/gender-(female|male)\.", get_html_attr(tag, "src"), flags=re.IGNORECASE)
+        if gender_match:
+            return {"race": "", "gender": gender_match.group(1).title()}
     return {"race": "", "gender": ""}
 
 
