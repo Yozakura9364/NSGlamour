@@ -41,7 +41,8 @@
 ## 重要文件
 
 - `scripts/app.py`：Flask 路由、上传限制、基础路径、导入 API、搜索 API、图标代理、石之家浏览器辅助。
-- `scripts/risingstones_login.py`：石之家专用资料目录的可见登录刷新脚本。
+- `scripts/risingstones_login.py`：服务器可见登录排障脚本；服务器出口被盛趣风控时不能作为有效刷新方式。
+- `reader/windows/`：独立 Windows 石之家读取节点、安装脚本和本机一键登录态刷新脚本。
 - `scripts/resolve_chara.py`：`.chara` 解析与 `resolved_equipment` 数据结构生成。
 - `scripts/build_item_mapping.py`：从 datamining CSV 生成 `data/item_model_mapping.json`。
 - `templates/template.html` 与 `static/template.js`：模板工作台、图片槽、装备编辑、导入、裁剪、PNG 导出。

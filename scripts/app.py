@@ -104,6 +104,12 @@ RS_BROWSER_HEADLESS = os.environ.get("NSGLAMOUR_RS_BROWSER_HEADLESS", "").lower(
 RS_BROWSER_ALLOW_HEADED_FALLBACK = os.environ.get("NSGLAMOUR_RS_BROWSER_ALLOW_HEADED_FALLBACK", "").lower() in {"1", "true", "yes", "on"}
 RS_BROWSER_NO_SANDBOX = os.environ.get("NSGLAMOUR_RS_BROWSER_NO_SANDBOX", "").lower() in {"1", "true", "yes", "on"}
 RS_BROWSER_EXTRA_ARGS = shlex.split(os.environ.get("NSGLAMOUR_RS_BROWSER_ARGS", ""))
+RS_REMOTE_READER_URL = os.environ.get("NSGLAMOUR_RS_READER_URL", "").strip().rstrip("/")
+RS_REMOTE_READER_TOKEN_FILE = Path(
+    os.environ.get("NSGLAMOUR_RS_READER_TOKEN_FILE", str(BASE_DIR / ".runtime" / "risingstones-reader-token"))
+)
+RS_REMOTE_READER_REQUIRED = os.environ.get("NSGLAMOUR_RS_READER_REQUIRED", "").lower() in {"1", "true", "yes", "on"}
+RS_REMOTE_READER_MAX_BYTES = 2 * 1024 * 1024
 RS_READABLE_ERROR_PATTERNS = [
     (
         re.compile(r"请先登录", re.IGNORECASE),
@@ -2415,6 +2421,80 @@ def read_risingstones_details_via_browser(ids: List[str]) -> Dict[str, Any]:
     raise RuntimeError("后台浏览器读取失败")
 
 
+def read_risingstones_reader_token() -> str:
+    try:
+        token = RS_REMOTE_READER_TOKEN_FILE.read_text(encoding="utf-8").strip()
+    except OSError as exc:
+        raise RuntimeError("石之家远程读取器鉴权文件不可用") from exc
+    if not token:
+        raise RuntimeError("石之家远程读取器鉴权文件为空")
+    return token
+
+
+def read_risingstones_details_via_remote_reader(ids: List[str]) -> Dict[str, Any]:
+    if not RS_REMOTE_READER_URL:
+        raise RuntimeError("石之家远程读取器未配置")
+    parsed = urllib.parse.urlparse(RS_REMOTE_READER_URL)
+    if parsed.scheme not in {"http", "https"} or not parsed.hostname:
+        raise RuntimeError("石之家远程读取器地址无效")
+    body = json.dumps({"ids": ids}, ensure_ascii=False).encode("utf-8")
+    request_obj = urllib.request.Request(
+        f"{RS_REMOTE_READER_URL}/v1/glamour-detail",
+        data=body,
+        method="POST",
+        headers={
+            "Accept": "application/json",
+            "Authorization": f"Bearer {read_risingstones_reader_token()}",
+            "Content-Type": "application/json; charset=utf-8",
+        },
+    )
+    try:
+        with urllib.request.urlopen(request_obj, timeout=45) as response:
+            raw_body = response.read(RS_REMOTE_READER_MAX_BYTES + 1)
+            status_code = int(getattr(response, "status", response.getcode()))
+    except urllib.error.HTTPError as exc:
+        raw_body = exc.read(RS_REMOTE_READER_MAX_BYTES + 1)
+        status_code = int(exc.code)
+    except Exception as exc:
+        raise RuntimeError(f"石之家远程读取器请求失败: {exc}") from exc
+    if len(raw_body) > RS_REMOTE_READER_MAX_BYTES:
+        raise RuntimeError("石之家远程读取器响应过大")
+    try:
+        payload = json.loads(raw_body.decode("utf-8"))
+    except Exception as exc:
+        raise RuntimeError("石之家远程读取器返回了无法解析的数据") from exc
+    if not isinstance(payload, dict):
+        raise RuntimeError("石之家远程读取器返回格式异常")
+    if not (200 <= status_code < 300) or payload.get("ok") is False:
+        message = str(payload.get("error") or f"HTTP {status_code}")
+        raise RuntimeError(f"石之家远程读取器失败: {message}")
+    details = payload.get("details")
+    failures = payload.get("failures")
+    returned_ids = [str(item) for item in (payload.get("ids") or [])]
+    if returned_ids != [str(item) for item in ids]:
+        raise RuntimeError("石之家远程读取器返回的详情 ID 不匹配")
+    if not isinstance(details, list) or not isinstance(failures, list):
+        raise RuntimeError("石之家远程读取器缺少详情数据")
+    return {
+        "ok": True,
+        "ids": ids,
+        "details": [item for item in details if isinstance(item, dict)],
+        "failures": [item for item in failures if isinstance(item, dict)],
+        "page": RS_GLAMOUR_HOME_URL,
+        "mode": "remote-reader",
+    }
+
+
+def read_risingstones_details(ids: List[str]) -> Dict[str, Any]:
+    if RS_REMOTE_READER_URL:
+        try:
+            return read_risingstones_details_via_remote_reader(ids)
+        except RuntimeError:
+            if RS_REMOTE_READER_REQUIRED:
+                raise
+    return read_risingstones_details_via_browser(ids)
+
+
 app = Flask(
     __name__,
     template_folder=str(TEMPLATES_DIR),
@@ -2555,7 +2635,7 @@ def import_glamour_link():
         if len(ids) > 1:
             return jsonify({"error": "一次只能载入一条石之家幻化链接"}), 400
         try:
-            result = read_risingstones_details_via_browser(ids)
+            result = read_risingstones_details(ids)
         except ValueError as exc:
             return risingstones_error_response(exc, 400)
         except RuntimeError as exc:

@@ -1,4 +1,4 @@
-"""Open the dedicated Rising Stones browser for a persistent server login."""
+"""Open a visible Rising Stones browser for login-flow diagnostics."""
 
 from __future__ import annotations
 
@@ -15,6 +15,7 @@ def mode_label(headless: bool) -> str:
 
 
 def main() -> None:
+    print("注意：这是可见模式排障流程；服务器网页登录触发风控时可能无法完成新绑定。")
     state = ensure_risingstones_browser(
         open_login=True,
         prefer_headless=False,

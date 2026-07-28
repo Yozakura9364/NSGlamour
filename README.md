@@ -45,6 +45,21 @@ python scripts/app.py
 | `NSGLAMOUR_ICON_BASE_URL` | `https://img.nightingalesilence.com/ui/icon` | 图标源地址，可覆盖默认 CDN / 自定义域 |
 | `NSGLAMOUR_ICON_CACHE_DIR` | `.runtime/icon-cache` | 图标缓存目录 |
 | `NSGLAMOUR_DEBUG_ERRORS` | — | 设为 `1` 返回详细错误信息 |
+| `NSGLAMOUR_RS_READER_URL` | — | 独立石之家 reader 地址 |
+| `NSGLAMOUR_RS_READER_TOKEN_FILE` | `.runtime/risingstones-reader-token` | reader Bearer token 文件路径 |
+| `NSGLAMOUR_RS_READER_REQUIRED` | — | 设为 `1` 禁止 reader 失败时回退旧浏览器 |
+
+## 石之家 Reader
+
+生产环境通过独立 Windows reader 读取石之家数据。日常使用、登录态刷新、Tailscale 和故障检查见：
+
+- [`reader/windows/README.md`](reader/windows/README.md)
+
+登录态失效时，在本机项目根目录运行：
+
+```powershell
+powershell -ExecutionPolicy Bypass -File .\reader\windows\refresh-reader-login.ps1
+```
 
 ## Playwright
 

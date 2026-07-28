@@ -2,89 +2,108 @@
 
 ## 适用范围
 
-本文件只描述 NSGlamour 里石之家远程读取这条链路：
+本文件描述 NSGlamour 的石之家远程读取链路：
 
 - `/api/import-glamour-link` 解析石之家详情链接。
-- 后台专用 Chrome/Chromium 资料目录。
-- DevTools 本地端口。
-- 登录态刷新方式。
+- 独立 Windows reader 的 Edge profile、登录和详情读取。
+- 生产服务器到 reader 的 Tailscale 调用。
+- 登录态刷新方式和安全边界。
 
 ## 当前运行模型
 
-石之家链路当前是“专用浏览器 + 后端代读”模式，不是前端直接抓站：
+生产链路使用独立 Windows reader，不再让旧 Linux Web 服务器直接登录石之家：
 
-1. 后端维护一个石之家专用浏览器资料目录。
-2. 浏览器 DevTools 只绑定 `127.0.0.1:<port>`。
-3. `/api/import-glamour-link` 从石之家详情链接里提取详情 ID。
-4. 后端优先通过 DevTools 读取专用浏览器里的 Cookie。
-5. 后端带这些 Cookie 直接请求 `https://apiff14risingstones.web.sdo.com/api/home/`。
-6. 只有在 HTTP 直连失败时，才保留页内 `fetch(...)` 这条旧后备路径。
+1. 生产 Flask 从石之家链接中提取详情 ID。
+2. 配置 `NSGLAMOUR_RS_READER_URL` 后，Flask 通过 Tailscale 调用 reader 的 `/v1/glamour-detail`。
+3. reader 使用 Bearer token 鉴权，只接受 1 至 5 个纯数字详情 ID。
+4. reader 维护专用 Edge profile，常态以 headless 模式运行。
+5. 详情读取优先使用“Edge Cookie + reader 后端 HTTP”；页内 `fetch(...)` 只作为后备。
+6. 生产配置 `NSGLAMOUR_RS_READER_REQUIRED=1`，reader 失败时禁止回退到旧服务器浏览器。
 
-## 为什么这样做
+当前部署：
 
-2026-07-06 已确认过一个长期坑：
+- reader 主机：`risingstones-reader`，Tailscale IP `100.64.65.72`。
+- reader 目录：`C:\ProgramData\NSGlamourReader`。
+- 计划任务：`NSGlamour Rising Stones Reader`。
+- 专用本地账户：`NSGlamourReaderSvc`，不是管理员账户。
+- reader 端口：`18770`，Windows 防火墙只允许 `100.64.0.0/10` 入站。
+- DevTools：仅绑定 reader 本机 `127.0.0.1:18765`。
+- 生产 token 文件：`/etc/nsglamour/risingstones-reader-token`，权限 `0600`。
 
-- `HeadlessChrome` 访问石之家页面时，站点可能返回挑战页或拦截页。
-- 这会让页内 `fetch("glamour/glamourDetail")` 在 headless 模式下报 `Failed to fetch`。
-- 但同一份登录态 Cookie 往往仍可用于后端直连 `apiff14risingstones` API。
+## 登录态刷新
 
-因此当前原则是：
+在本机项目根目录运行：
 
-- 常态运行优先保留 `NSGLAMOUR_RS_BROWSER_HEADLESS=1`。
-- 读取详情优先走“Cookie + 后端 HTTP”。
-- 不把“非 headless 浏览器常驻”作为默认方案，因为用户反馈那样登录态更短。
-
-## 最简单的登录态刷新方法
-
-服务器上直接运行：
-
-```bash
-cd /www/wwwroot/NightingaleSilenceWeb/NSGlamour
-.venv/bin/python scripts/risingstones_login.py
+```powershell
+powershell -ExecutionPolicy Bypass -File reader\windows\refresh-reader-login.ps1
 ```
 
-这个脚本的设计目标就是“最简单刷新登录态”：
+脚本会生成并打开二维码，等待扫码确认，成功后让 reader 自动切回 headless。不要手工替换脚本里的密码或 token。
 
-1. 先关闭当前占用同一资料目录的石之家后台浏览器。
-2. 强制用可见模式打开同一个专用资料目录。
-3. 让你在专用浏览器里重新登录石之家小号。
-4. 你回到终端按一次回车。
-5. 脚本再自动切回当前环境配置的默认模式，通常是 headless。
+reader 必须遵循网站自己的登录入口，不能硬编码 `login.u.sdo.com` 地址：
 
-如果服务器没有桌面，需要先进入 `Xvfb` / `VNC` / `noVNC` 再执行。
+1. 使用同一 Windows 服务账户和同一 Edge profile 临时启动非 headless Edge。
+2. 打开 `https://ff14risingstones.web.sdo.com/pc/index.html#/post`。
+3. 等首页完整加载后点击 `button.login-btn`，即“登录并绑定角色”。
+4. 等网站生成本次登录对应的 `login.u.sdo.com` target；该 URL 可能包含动态上下文。
+5. 勾选协议，选择第三个二维码登录标签，再生成二维码。
+6. 手机确认后，以 `GHome/isLogin` 返回代码 `10000` 为成功依据。
+7. 优雅关闭非 headless Edge，再用同一账户、同一 profile 启动 headless Edge。
 
-如果当前终端不能交互，脚本会只负责打开可见浏览器；登录完成后请手动重启服务。
+旧服务器上的 `scripts/risingstones_login.py` 只保留为 Linux 可见模式排障工具，不是当前生产刷新入口。
 
-## 相关环境变量
+## 为什么后端直读
+
+已确认以下行为：
+
+- headless Edge 可以保存和复用登录 Cookie。
+- headless 页面内请求石之家 API 可能报 `Failed to fetch`。
+- 同一登录态由 reader 在后端携带 Cookie、Origin、Referer 和浏览器 User-Agent 请求 API 可以成功。
+
+因此不要把页内 `fetch(...)` 恢复为主读取路径，也不要因为它失败就判断登录态失效。
+
+## Reader 接口
+
+- `GET /health`：不含秘密的健康检查。
+- `POST /v1/login/start`：启动非 headless 登录流程并准备二维码。
+- `GET /v1/login/qr`：获取当前二维码。
+- `GET /v1/login/status`：检查登录结果；成功后切回 headless。
+- `POST /v1/glamour-detail`：读取石之家详情。
+
+除 `/health` 外全部要求 Bearer token。reader 不是通用 URL 代理，禁止扩展为任意网页抓取器。
+
+## 环境变量
+
+生产 Flask：
+
+- `NSGLAMOUR_RS_READER_URL`
+- `NSGLAMOUR_RS_READER_TOKEN_FILE`
+- `NSGLAMOUR_RS_READER_REQUIRED`
+
+旧版同机浏览器变量仍用于后备和排障，但生产强制 reader 时不会回退：
 
 - `NSGLAMOUR_RS_BROWSER_PROFILE`
-  - 石之家专用浏览器资料目录。
 - `NSGLAMOUR_RS_BROWSER_PORT`
-  - DevTools 端口，只应监听 `127.0.0.1`。
 - `NSGLAMOUR_RS_BROWSER_HEADLESS`
-  - 常态浏览器模式。公开部署推荐保持为 `1`。
 - `NSGLAMOUR_RS_BROWSER_ALLOW_HEADED_FALLBACK`
-  - 是否允许读取失败时自动退到非 headless 重试。
-  - 默认不要开启，除非明确需要临时排障。
 - `NSGLAMOUR_CHROME_PATH`
-  - 显式指定 Chrome / Chromium 可执行文件。
 - `NSGLAMOUR_RS_BROWSER_NO_SANDBOX`
-  - Linux 服务器需要时开启。
 - `NSGLAMOUR_RS_BROWSER_ARGS`
-  - 额外浏览器参数。
 
 ## 安全边界
 
-- DevTools 端口绝不能暴露到公网。
-- 这条能力只应该接受石之家详情链接或详情 ID，不要扩展成通用代理抓取器。
-- 不要复用管理员自己的日常浏览器资料目录。
-- 登录态异常时优先刷新石之家小号，不要尝试导入普通 Chrome 全局 Cookie。
+- 不在聊天、日志、Git 或命令输出中显示 token、Cookie、ticket、二维码会话参数或服务账户密码。
+- reader 端口只通过 Tailscale 暴露；DevTools 永远不离开 `127.0.0.1`。
+- token 文件只允许 reader 服务账户、SYSTEM 或管理员读取。
+- 不复用管理员的日常浏览器 profile。
+- 不复制 QQ 机器人用户的 Cookie、数据库或 `secret.key`。
+- 临时二维码和诊断文件完成后及时删除。
 
-## 维护提示
+## 已验证结果
 
-- 如果石之家再次调整风控，先验证“Cookie 直连 API”是否仍可用，再考虑页面抓取。
-- 如果后端 HTTP 直连也被拦，再去抓服务器上的返回码、响应体和请求头，不要只盯着 `Failed to fetch`。
-- 修改 `scripts/app.py` 里石之家链路后，至少重新检查：
-  - 登录态刷新脚本 `scripts/risingstones_login.py`
-  - `/api/import-glamour-link`
-  - 错误文案的人类可读性
+2026-07-16 已完成：
+
+- 旧生产服务器访问 `http://100.64.65.72:18770/health` 成功。
+- 二维码确认后 `GHome/isLogin` 返回 `10000`。
+- reader 读取详情 `274729` 成功，模式为 `remote-http`。
+- 生产 `/glamour/api/import-glamour-link` 返回 HTTP 200，并解析出 5 件装备。
