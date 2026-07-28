@@ -26,6 +26,7 @@ CLAUDE.md
 Anamnesis/
 MemoryLab/
 NSGameExplorer/
+tools/batch-loadout-export/
 
 # Source design files and conversion scratch output.
 templates/**/*.psd
