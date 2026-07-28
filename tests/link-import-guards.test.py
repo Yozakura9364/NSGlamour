@@ -159,10 +159,26 @@ def test_ec_legacy_author_and_gender():
     assert app.extract_ec_character(document) == {"race": "", "gender": "Female"}
 
 
+def test_link_import_can_be_disabled_without_removing_parsers():
+    with mock.patch.object(app, "LINK_IMPORT_ENABLED", False):
+        with app.app.test_client() as client:
+            response = client.post(
+                "/api/import-glamour-link",
+                json={"url": EC_URL},
+            )
+            assert response.status_code == 503
+            assert response.get_json() == {"error": "网页链接导入暂时关闭"}
+            assert b"templateImportLinkButton" not in client.get("/template").data
+            equipinfo_page = client.get("/equipinfo").data
+            assert b"equipinfoLinkForm" not in equipinfo_page
+            assert b"equipinfoCharaDropOverlay" in equipinfo_page
+
+
 test_ec_cloudflare_block_page()
 test_risingstones_detail_id_forms()
 test_ec_legacy_equipment_layout()
 test_ec_legacy_accessory_slots()
 test_ec_legacy_author_and_gender()
+test_link_import_can_be_disabled_without_removing_parsers()
 
 print("link import guards ok")

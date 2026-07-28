@@ -110,6 +110,7 @@ RS_REMOTE_READER_TOKEN_FILE = Path(
 )
 RS_REMOTE_READER_REQUIRED = os.environ.get("NSGLAMOUR_RS_READER_REQUIRED", "").lower() in {"1", "true", "yes", "on"}
 RS_REMOTE_READER_MAX_BYTES = 2 * 1024 * 1024
+LINK_IMPORT_ENABLED = os.environ.get("NSGLAMOUR_ENABLE_LINK_IMPORT", "1").lower() in {"1", "true", "yes", "on"}
 RS_READABLE_ERROR_PATTERNS = [
     (
         re.compile(r"请先登录", re.IGNORECASE),
@@ -2564,7 +2565,7 @@ def index():
 
 @app.get("/template")
 def template_workspace():
-    return render_template("template.html")
+    return render_template("template.html", link_import_enabled=LINK_IMPORT_ENABLED)
 
 
 @app.get("/equipinfo")
@@ -2573,6 +2574,7 @@ def equipinfo_workspace():
         "equipinfo.html",
         chara_import_enabled=is_chara_import_authorized(),
         max_chara_upload_mb=MAX_CHARA_UPLOAD_MB,
+        link_import_enabled=LINK_IMPORT_ENABLED,
     )
 
 
@@ -2611,6 +2613,8 @@ def ui_localization():
 
 @app.post("/api/import-glamour-link")
 def import_glamour_link():
+    if not LINK_IMPORT_ENABLED:
+        return jsonify({"error": "网页链接导入暂时关闭"}), 503
     payload = request.get_json(silent=True, cache=True) or {}
     raw_url = str(payload.get("url", "") or payload.get("target", "")).strip()
     if raw_url and not re.match(r"^[a-z][a-z0-9+.-]*://", raw_url, flags=re.IGNORECASE):

@@ -110,7 +110,7 @@
           <section class="template-config-section">
             <div class="template-section-title-row">
               <div class="bar-title">装备数据</div>
-              <button id="templateImportLinkButton" type="button" class="secondary" data-i18n-key="static.template.frontend-literal.217">从网页导入</button>
+              {% if link_import_enabled %}<button id="templateImportLinkButton" type="button" class="secondary" data-i18n-key="static.template.frontend-literal.217">从网页导入</button>{% endif %}
             </div>
             <div class="template-config-toolbar">
               <div id="templateLanguageControls" class="language-controls" aria-label="排版语言"></div>
@@ -169,7 +169,7 @@
       </section>
     </div>
 
-    <div id="templateImportOverlay" class="template-import-overlay hidden" aria-hidden="true">
+    {% if link_import_enabled %}<div id="templateImportOverlay" class="template-import-overlay hidden" aria-hidden="true">
       <section class="template-import-dialog" role="dialog" aria-modal="true" aria-labelledby="templateImportTitle">
         <div class="template-import-head">
           <h2 id="templateImportTitle" data-i18n-key="static.template.frontend-literal.217">从网页导入</h2>
@@ -184,7 +184,7 @@
           </div>
         </form>
       </section>
-    </div>
+    </div>{% endif %}
 
     <script src="{{ url_for('static', filename='vendor/cropperjs/cropper.min.js', v='1.6.2') }}"></script>
   <script src="{{ url_for('static', filename='common.js', v='20260630-1') }}"></script>

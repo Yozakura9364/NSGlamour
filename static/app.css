@@ -888,7 +888,8 @@ button.secondary:hover {
   transition: opacity 120ms ease;
 }
 
-.equipinfo-link-form.chara-dragover .equipinfo-chara-drop-overlay {
+.equipinfo-link-form.chara-dragover .equipinfo-chara-drop-overlay,
+.equipinfo-text-form.chara-dragover .equipinfo-chara-drop-overlay {
   opacity: 1;
 }
 

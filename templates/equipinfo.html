@@ -8,7 +8,7 @@
     <link rel="icon" type="image/png" sizes="429x429" href="{{ url_for('static', filename='icons/WebIcon.png', v='20260629-1') }}">
     <link rel="shortcut icon" href="{{ url_for('static', filename='icons/WebIcon.png', v='20260629-1') }}">
     <link rel="apple-touch-icon" href="{{ url_for('static', filename='icons/WebIcon.png', v='20260629-1') }}">
-    <link rel="stylesheet" href="{{ url_for('static', filename='app.css', v='20260706-3') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='app.css', v='20260729-1') }}">
   </head>
   <body>
     <header class="app-header">
@@ -52,7 +52,7 @@
       <section class="panel equipinfo-panel">
         <div class="bar-title">装备信息</div>
         <div class="equipinfo-source-grid">
-          <form id="equipinfoLinkForm" class="equipinfo-form equipinfo-link-form" autocomplete="off">
+          {% if link_import_enabled %}<form id="equipinfoLinkForm" class="equipinfo-form equipinfo-link-form" autocomplete="off">
             <div class="equipinfo-form-head">
               <label for="equipinfoUrlInput">网页链接</label>
               <button id="equipinfoImportLinkButton" type="submit">读取</button>
@@ -61,7 +61,7 @@
               <input id="equipinfoUrlInput" type="url" spellcheck="false" placeholder="石之家或 Eorzea Collection 幻化链接">
               <div id="equipinfoCharaDropOverlay" class="equipinfo-chara-drop-overlay" aria-hidden="true"></div>
             </div>
-          </form>
+          </form>{% endif %}
 
           <form id="equipinfoTextForm" class="equipinfo-form equipinfo-text-form">
             <div class="equipinfo-form-head">
@@ -78,6 +78,7 @@
             <div class="equipinfo-code-input">
               <div id="equipinfoTextLineNumbers" class="equipinfo-line-numbers" aria-hidden="true">1</div>
               <textarea id="equipinfoTextInput" spellcheck="false" wrap="off" placeholder="例如：&#10;主手：过期青铜步兵剑&#10;身体：梦幻装（无染色/煤玉黑）&#10;耳饰：日长石耳坠"></textarea>
+              {% if not link_import_enabled %}<div id="equipinfoCharaDropOverlay" class="equipinfo-chara-drop-overlay" aria-hidden="true"></div>{% endif %}
             </div>
             <div id="equipinfoWarnings" class="equipinfo-warnings"></div>
             <p id="equipinfoStatus" class="status">等待输入</p>
@@ -247,6 +248,6 @@
     <script src="{{ url_for('static', filename='common.js', v='20260630-1') }}"></script>
     <script src="{{ url_for('static', filename='store.js', v='20260630-1') }}"></script>
     <script src="{{ url_for('static', filename='ui-language.js', v='20260630-1') }}"></script>
-    <script src="{{ url_for('static', filename='equipinfo.js', v='20260702-4') }}"></script>
+    <script src="{{ url_for('static', filename='equipinfo.js', v='20260729-1') }}"></script>
   </body>
 </html>

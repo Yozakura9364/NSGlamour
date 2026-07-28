@@ -4,6 +4,9 @@ const linkInputWrap = document.querySelector(".equipinfo-link-input-wrap");
 const charaDropOverlay = document.getElementById("equipinfoCharaDropOverlay");
 const textForm = document.getElementById("equipinfoTextForm");
 const textInput = document.getElementById("equipinfoTextInput");
+const textInputWrap = document.querySelector(".equipinfo-code-input");
+const charaDropHost = linkForm || textForm;
+const charaDropTarget = linkInputWrap || textInputWrap;
 const textLineNumbers = document.getElementById("equipinfoTextLineNumbers");
 const sourceLocaleSelect = document.getElementById("equipinfoSourceLocaleSelect");
 const clearButton = document.getElementById("equipinfoClearButton");
@@ -1573,7 +1576,7 @@ function acceptPayload(payload, options = {}) {
 
 async function importLink(event) {
   event.preventDefault();
-  const url = urlInput.value.trim();
+  const url = urlInput?.value.trim() || "";
   if (!url) {
     setStatus("请输入石之家或 Eorzea Collection 幻化链接", true);
     return;
@@ -1606,10 +1609,10 @@ function getEventCharaFile(event) {
 }
 
 function setCharaDragover(active) {
-  if (!linkForm || !charaDropOverlay) {
+  if (!charaDropHost || !charaDropOverlay) {
     return;
   }
-  linkForm.classList.toggle("chara-dragover", Boolean(active));
+  charaDropHost.classList.toggle("chara-dragover", Boolean(active));
 }
 
 async function importCharaFile(file) {
@@ -1634,12 +1637,12 @@ async function importCharaFile(file) {
 }
 
 function setupHiddenCharaDrop() {
-  if (!CHARA_IMPORT_ENABLED || !linkForm || !linkInputWrap || !urlInput || !charaDropOverlay) {
+  if (!CHARA_IMPORT_ENABLED || !charaDropHost || !charaDropTarget || !charaDropOverlay) {
     return;
   }
 
   ["dragenter", "dragover"].forEach((eventName) => {
-    linkInputWrap.addEventListener(eventName, (event) => {
+    charaDropTarget.addEventListener(eventName, (event) => {
       if (!dragMayContainFile(event.dataTransfer)) {
         return;
       }
@@ -1650,14 +1653,14 @@ function setupHiddenCharaDrop() {
     });
   });
 
-  linkInputWrap.addEventListener("dragleave", (event) => {
-    if (linkInputWrap.contains(event.relatedTarget)) {
+  charaDropTarget.addEventListener("dragleave", (event) => {
+    if (charaDropTarget.contains(event.relatedTarget)) {
       return;
     }
     setCharaDragover(false);
   });
 
-  linkInputWrap.addEventListener("drop", (event) => {
+  charaDropTarget.addEventListener("drop", (event) => {
     const file = getEventCharaFile(event);
     if (!file) {
       setCharaDragover(false);
@@ -1754,7 +1757,9 @@ function clearAll() {
   state.displayName = "";
   state.copyFormat = readCopyFormat();
   state.customTemplate = readCustomTemplate();
-  urlInput.value = "";
+  if (urlInput) {
+    urlInput.value = "";
+  }
   textInput.value = "";
   updateTextLineNumbers();
   warningsBox.innerHTML = "";
@@ -1770,7 +1775,7 @@ function clearAll() {
   setStatus("等待输入");
 }
 
-linkForm.addEventListener("submit", (event) => {
+linkForm?.addEventListener("submit", (event) => {
   importLink(event).catch((error) => setStatus(error.message || "读取失败", true));
 });
 setupHiddenCharaDrop();
