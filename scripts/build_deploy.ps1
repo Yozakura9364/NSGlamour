@@ -56,6 +56,7 @@ Copy-Dir "static"
 
 Copy-File "templates\template.html"
 Copy-File "templates\equipinfo.html"
+Copy-File "templates\equipinfo-snapshot.html"
 
 Copy-File "data\item_model_mapping.json"
 Copy-File "data\ui-localization.json"
