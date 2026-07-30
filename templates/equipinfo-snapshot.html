@@ -6,19 +6,58 @@
     <title>装备信息 - 幻化工房</title>
     <link rel="icon" type="image/svg+xml" href="{{ url_for('static', filename='icons/WebIcon.svg', v='20260629-1') }}">
     <link rel="stylesheet" href="{{ url_for('static', filename='app.css', v='20260729-1') }}">
-  </head>
-  <body>
-    <header class="app-header">
-      <h1>幻化工房</h1>
-    </header>
+    <style>
+      .snapshot-page {
+        min-height: 100%;
+      }
 
-    <main class="main equipinfo-main">
-      <section class="result-section">
-        <div class="bar-title">装备信息</div>
-        <div class="result-header">
-          <div class="result-title">
-            <h2 id="snapshotTitle">装备信息</h2>
-          </div>
+      .snapshot-main {
+        flex: 1;
+        min-height: 0;
+        overflow-y: auto;
+        display: flex;
+        flex-direction: column;
+        padding: 24px;
+      }
+
+      .snapshot-card {
+        width: min(860px, 100%);
+        margin: auto;
+        padding: 16px 20px 20px;
+        flex: 0 0 auto;
+      }
+
+      .snapshot-toolbar {
+        display: flex;
+        justify-content: flex-end;
+        min-height: 30px;
+        margin-bottom: 4px;
+      }
+
+      .snapshot-toolbar .language-controls:empty {
+        display: none;
+      }
+
+      .snapshot-card .status-line {
+        text-align: center;
+      }
+
+      @media (max-width: 720px) {
+        .snapshot-main {
+          padding: 10px;
+        }
+
+        .snapshot-card {
+          width: 100%;
+          padding: 12px;
+        }
+      }
+    </style>
+  </head>
+  <body class="snapshot-page">
+    <main class="snapshot-main">
+      <section class="result-section snapshot-card">
+        <div class="snapshot-toolbar">
           <div id="snapshotLanguageControls" class="language-controls" aria-label="装备名语言"></div>
         </div>
         <p id="snapshotStatus" class="status-line">正在读取</p>
