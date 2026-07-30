@@ -1,0 +1,35 @@
+<!doctype html>
+<html lang="zh-CN" data-theme="light">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>装备信息 - 幻化工房</title>
+    <link rel="icon" type="image/svg+xml" href="{{ url_for('static', filename='icons/WebIcon.svg', v='20260629-1') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='app.css', v='20260729-1') }}">
+  </head>
+  <body>
+    <header class="app-header">
+      <h1>幻化工房</h1>
+    </header>
+
+    <main class="page-shell equipinfo-shell">
+      <section class="result-section">
+        <div class="bar-title">装备信息</div>
+        <div class="result-header">
+          <div class="result-title">
+            <h2 id="snapshotTitle">装备信息</h2>
+          </div>
+          <div id="snapshotLanguageControls" class="language-controls" aria-label="装备名语言"></div>
+        </div>
+        <p id="snapshotStatus" class="status-line">正在读取</p>
+        <div id="snapshotSlotGrid" class="card-editor equipinfo-card-editor"></div>
+      </section>
+    </main>
+
+    <script>
+      window.NSGLAMOUR_SNAPSHOT_ID = {{ snapshot_id | tojson }};
+    </script>
+    <script src="{{ url_for('static', filename='common.js', v='20260630-1') }}"></script>
+    <script src="{{ url_for('static', filename='snapshot.js', v='20260730-1') }}"></script>
+  </body>
+</html>

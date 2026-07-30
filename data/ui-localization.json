@@ -2882,6 +2882,56 @@
         }
       ]
     },
+    "common.action.create_snapshot": {
+      "zh-CN": "生成快照",
+      "zh-TW": "生成快照",
+      "en": "Create snapshot",
+      "ja": "スナップショットを作成",
+      "ko": "스냅샷 만들기",
+      "de": "Snapshot erstellen",
+      "fr": "Créer un instantané",
+      "note": "Create a read-only equipment snapshot link."
+    },
+    "common.status.creating_snapshot": {
+      "zh-CN": "正在生成",
+      "zh-TW": "正在生成",
+      "en": "Creating",
+      "ja": "作成中",
+      "ko": "생성 중",
+      "de": "Wird erstellt",
+      "fr": "Création",
+      "note": "Snapshot creation progress label."
+    },
+    "common.status.snapshot_link_copied": {
+      "zh-CN": "已复制链接",
+      "zh-TW": "已複製連結",
+      "en": "Link copied",
+      "ja": "リンクをコピーしました",
+      "ko": "링크를 복사했습니다",
+      "de": "Link kopiert",
+      "fr": "Lien copié",
+      "note": "Snapshot link copy success label."
+    },
+    "common.prompt.copy_snapshot_link": {
+      "zh-CN": "快照已生成，请复制链接",
+      "zh-TW": "快照已生成，請複製連結",
+      "en": "Snapshot created. Copy the link",
+      "ja": "スナップショットを作成しました。リンクをコピーしてください",
+      "ko": "스냅샷이 생성되었습니다. 링크를 복사해 주세요",
+      "de": "Snapshot erstellt. Link kopieren",
+      "fr": "Instantané créé. Copiez le lien",
+      "note": "Fallback prompt shown when automatic link copying fails."
+    },
+    "common.error.snapshot_create_failed": {
+      "zh-CN": "快照生成失败",
+      "zh-TW": "快照生成失敗",
+      "en": "Could not create snapshot",
+      "ja": "スナップショットを作成できませんでした",
+      "ko": "스냅샷을 만들 수 없습니다",
+      "de": "Snapshot konnte nicht erstellt werden",
+      "fr": "Impossible de créer l'instantané",
+      "note": "Snapshot creation failure message."
+    },
     "common.prompt.config_name": {
       "zh-CN": "配置名称",
       "zh-TW": "配置名稱",

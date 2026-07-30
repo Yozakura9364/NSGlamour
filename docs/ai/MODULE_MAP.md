@@ -43,6 +43,7 @@
 - 编辑装备候选与染剂。
 - 生成多格式复制文案和自定义模板文案。
 - 保存最近记录并与 `/template` 同步。
+- 生成只读装备快照；成功后自动保存当前配置和链接，相同公开内容复用既有快照 ID。
 
 ## 后端 API 模块
 
@@ -51,6 +52,8 @@
 - `POST /api/parse-chara`：解析 `.chara` 上传文件。
 - `POST /api/import-glamour-link`：解析石之家或 Eorzea Collection 幻化链接。
 - `POST /api/equipinfo/parse-text`：解析用户粘贴的装备文本。
+- `POST /api/equipinfo/snapshots`：创建或复用只读装备快照。
+- `GET /api/equipinfo/snapshots/<snapshot_id>`：读取只读装备快照。
 - `POST /api/risingstones-browser/open-login`：打开石之家后台浏览器登录页。
 
 ### 查询与资源

@@ -26,6 +26,7 @@ const customTemplatePanel = document.getElementById("equipinfoCustomTemplatePane
 const customTemplateInput = document.getElementById("equipinfoCustomTemplateInput");
 const resetTemplateButton = document.getElementById("equipinfoResetTemplateButton");
 const tokenChips = Array.from(document.querySelectorAll("#equipinfoTemplateReference .token-chip"));
+const createSnapshotButton = document.getElementById("equipinfoCreateSnapshotButton");
 const saveConfigButton = document.getElementById("equipinfoSaveConfigButton");
 const recentButton = document.getElementById("equipinfoRecentButton");
 const recentPanel = document.getElementById("equipinfoRecentPanel");
@@ -56,6 +57,10 @@ const LOCALE_LABELS = NSGlamourCommon.C.LOCALE_LABELS;
 const SLOT_DEFINITIONS = NSGlamourCommon.C.SLOT_DEFINITIONS;
 const EQUIPINFO_LEFT_COLUMN_SLOTS = ["MainHand", "HeadGear", "Body", "Hands", "Legs", "Feet", "Glasses"];
 const EQUIPINFO_RIGHT_COLUMN_SLOTS = ["OffHand", "Ears", "Neck", "Wrists", "LeftRing", "RightRing", "FashionAccessory"];
+const SNAPSHOT_LOCALES = ["ja", "en", "fr", "de", "zh", "tc", "ko"];
+const SNAPSHOT_SLOTS = ["MainHand", "OffHand", "HeadGear", "Body", "Hands", "Legs", "Feet", "Ears", "Neck", "Wrists", "LeftRing", "RightRing", "Glasses", "FashionAccessory"];
+const SNAPSHOT_SLOT_ORDER = new Map(SNAPSHOT_SLOTS.map((slot, index) => [slot, index]));
+const SNAPSHOT_HEX_PATTERN = /^#[0-9a-f]{6}$/i;
 const ACCESSORY_SLOTS = NSGlamourCommon.C.ACCESSORY_SLOTS;
 const CUSTOM_TEMPLATE_DEFAULT = "{{#items}}{部位}：{装备}{换行}{{#染色文案}}｜{染色标签}{染色文案}{换行}{{/染色文案}}{{/items}}";
 const COPY_FORMATS = new Set(["format1", "format2", "format3", "format4", "custom"]);
@@ -137,7 +142,7 @@ function cloneJson(value) {
   }
 }
 
-function buildRecentSnapshot() {
+function buildRecentSnapshot(options = {}) {
   const sourceUrl = state.parsed?.source_url || "";
   const displayName = normalizeConfigName(state.displayName);
   return {
@@ -150,6 +155,9 @@ function buildRecentSnapshot() {
     locale: state.locale,
     copyFormat: state.copyFormat,
     customTemplate: state.customTemplate,
+    ...(options.snapshotId ? { snapshotId: options.snapshotId } : {}),
+    ...(options.snapshotUrl ? { snapshotUrl: options.snapshotUrl } : {}),
+    ...(options.snapshotKey ? { snapshotKey: options.snapshotKey } : {}),
   };
 }
 
@@ -167,13 +175,13 @@ function askConfigName(defaultValue = state.displayName) {
   return normalizeConfigName(value);
 }
 
-function saveRecentSnapshot(name = state.displayName) {
+function saveRecentSnapshot(name = state.displayName, options = {}) {
   if (!state.parsed || !Array.isArray(state.parsed.resolved_equipment) || state.parsed.resolved_equipment.length === 0) {
     setStatus("没有可保存的装备配置", true);
     return false;
   }
   state.displayName = normalizeConfigName(name);
-  const snapshot = buildRecentSnapshot();
+  const snapshot = buildRecentSnapshot(options);
   const snapshotKey = snapshot.sourceName;
   const existing = readRecentCache().filter((item) => item.sourceName !== snapshotKey);
   writeRecentCache([snapshot, ...existing]);
@@ -191,6 +199,193 @@ function saveCurrentConfig() {
     return;
   }
   saveRecentSnapshot(name);
+}
+
+function snapshotText(value, limit = 256) {
+  return String(value || "").trim().slice(0, limit);
+}
+
+function snapshotInteger(value) {
+  const number = Number.parseInt(String(value ?? ""), 10);
+  return Number.isFinite(number) ? Math.min(Math.max(number, 0), 9999999) : 0;
+}
+
+function snapshotLocalizedMap(value, limit = 256) {
+  const source = value && typeof value === "object" && !Array.isArray(value) ? value : {};
+  return Object.fromEntries(SNAPSHOT_LOCALES.flatMap((locale) => {
+    const text = snapshotText(source[locale], limit);
+    return text ? [[locale, text]] : [];
+  }));
+}
+
+function createSnapshotRequest() {
+  return {
+    locales: Array.isArray(state.parsed?.locales) ? state.parsed.locales.slice() : [],
+    slot_names: state.parsed?.slot_names || {},
+    no_dye_labels: state.parsed?.no_dye_labels || {},
+    entries: getFilledEntries().map((entry) => ({
+      slot: entry.slot,
+      slot_names: entry.slot_names,
+      candidate: entry.candidates[0],
+    })),
+  };
+}
+
+function createPublicSnapshotIdentity(request) {
+  const slotNames = request.slot_names && typeof request.slot_names === "object" ? request.slot_names : {};
+  const entries = request.entries.flatMap((entry) => {
+    const candidate = entry.candidate && typeof entry.candidate === "object" ? entry.candidate : {};
+    const names = snapshotLocalizedMap(candidate.names);
+    const name = snapshotText(candidate.name);
+    if (!SNAPSHOT_SLOT_ORDER.has(entry.slot) || (!name && !Object.keys(names).length)) {
+      return [];
+    }
+    const dyes = (Array.isArray(candidate.dye_entries) ? candidate.dye_entries : [])
+      .slice(0, 2)
+      .map((dyeValue) => {
+        const dye = dyeValue && typeof dyeValue === "object" ? dyeValue : {};
+        const id = snapshotInteger(dye.id);
+        const hex = snapshotText(dye.hex, 16);
+        return {
+          id,
+          name: snapshotText(dye.name),
+          names: snapshotLocalizedMap(dye.names),
+          hex: SNAPSHOT_HEX_PATTERN.test(hex) ? hex : "transparent",
+          isEmpty: Boolean(dye.isEmpty) || id === 0,
+        };
+      });
+    return [{
+      slot: entry.slot,
+      slot_names: snapshotLocalizedMap(entry.slot_names || slotNames[entry.slot]),
+      item: {
+        key: snapshotText(candidate.key, 96),
+        name,
+        names,
+        icon: snapshotInteger(candidate.icon),
+        dyes,
+      },
+    }];
+  }).sort((left, right) => SNAPSHOT_SLOT_ORDER.get(left.slot) - SNAPSHOT_SLOT_ORDER.get(right.slot));
+
+  const locales = SNAPSHOT_LOCALES.filter((locale) => (
+    request.locales.includes(locale) || entries.some((entry) => Boolean(entry.item.names[locale]))
+  ));
+  return {
+    version: 1,
+    locales: locales.length ? locales : ["zh"],
+    slot_names: Object.fromEntries(SNAPSHOT_SLOTS.flatMap((slot) => {
+      const names = snapshotLocalizedMap(slotNames[slot]);
+      return Object.keys(names).length ? [[slot, names]] : [];
+    })),
+    no_dye_labels: snapshotLocalizedMap(request.no_dye_labels),
+    entries,
+  };
+}
+
+function stableSnapshotStringify(value) {
+  if (Array.isArray(value)) {
+    return `[${value.map(stableSnapshotStringify).join(",")}]`;
+  }
+  if (value && typeof value === "object") {
+    return `{${Object.keys(value).sort().map((key) => `${JSON.stringify(key)}:${stableSnapshotStringify(value[key])}`).join(",")}}`;
+  }
+  return JSON.stringify(value) ?? "null";
+}
+
+async function createSnapshotKey(request) {
+  const identity = stableSnapshotStringify(createPublicSnapshotIdentity(request));
+  if (!globalThis.crypto?.subtle) {
+    return `json:${identity}`;
+  }
+  try {
+    const digest = await globalThis.crypto.subtle.digest("SHA-256", new TextEncoder().encode(identity));
+    const hex = Array.from(new Uint8Array(digest), (byte) => byte.toString(16).padStart(2, "0")).join("");
+    return `sha256:${hex}`;
+  } catch {
+    return `json:${identity}`;
+  }
+}
+
+function createSnapshotUrl(snapshotId) {
+  return new URL(appPath(`/equipinfo/${encodeURIComponent(snapshotId)}`), window.location.origin).href;
+}
+
+async function copySnapshotUrl(value) {
+  if (navigator.clipboard?.writeText) {
+    try {
+      await navigator.clipboard.writeText(value);
+      return true;
+    } catch {
+      // Fall through to the synchronous browser copy command.
+    }
+  }
+  const input = document.createElement("textarea");
+  input.value = value;
+  input.readOnly = true;
+  input.style.position = "fixed";
+  input.style.opacity = "0";
+  document.body.appendChild(input);
+  input.select();
+  try {
+    return document.execCommand("copy");
+  } catch {
+    return false;
+  } finally {
+    input.remove();
+  }
+}
+
+function setCreateSnapshotButtonLabel(text) {
+  if (createSnapshotButton) {
+    createSnapshotButton.textContent = window.NSGlamourUiLanguage?.translate?.(text) || text;
+  }
+}
+
+async function createEquipmentSnapshot() {
+  if (!createSnapshotButton || createSnapshotButton.disabled || !getFilledEntries().length) {
+    return;
+  }
+  createSnapshotButton.disabled = true;
+  setCreateSnapshotButtonLabel("正在生成");
+  try {
+    const requestPayload = createSnapshotRequest();
+    const snapshotKey = await createSnapshotKey(requestPayload);
+    const cached = readRecentCache().find((item) => item?.snapshotKey === snapshotKey && item?.snapshotId);
+    let snapshotId = cached?.snapshotId || "";
+    if (!snapshotId) {
+      const response = await fetch(appPath("/api/equipinfo/snapshots"), {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(requestPayload),
+      });
+      if (!response.ok) {
+        throw new Error(`HTTP ${response.status}`);
+      }
+      const data = await response.json();
+      snapshotId = String(data?.id || "");
+      if (!snapshotId) {
+        throw new Error("missing snapshot id");
+      }
+    }
+
+    const snapshotUrl = createSnapshotUrl(snapshotId);
+    saveRecentSnapshot(state.displayName, { snapshotId, snapshotUrl, snapshotKey });
+    if (await copySnapshotUrl(snapshotUrl)) {
+      setCreateSnapshotButtonLabel("已复制链接");
+      return;
+    }
+    window.prompt(
+      window.NSGlamourUiLanguage?.translate?.("快照已生成，请复制链接") || "快照已生成，请复制链接",
+      snapshotUrl,
+    );
+    setCreateSnapshotButtonLabel("生成快照");
+  } catch (error) {
+    console.error("[equipinfo] failed to create snapshot", error);
+    window.alert(window.NSGlamourUiLanguage?.translate?.("快照生成失败") || "快照生成失败");
+    setCreateSnapshotButtonLabel("生成快照");
+  } finally {
+    createSnapshotButton.disabled = !getFilledEntries().length;
+  }
 }
 
 function formatRecentTime(value) { return NSGlamourCommon.formatRecentTime(value); }
@@ -1537,6 +1732,9 @@ function renderResult() {
   sanitizeParsedEquipment(state.parsed);
   const entries = getVisibleEntries();
   const filledEntries = getFilledEntries(entries);
+  if (createSnapshotButton) {
+    createSnapshotButton.disabled = !filledEntries.length;
+  }
   resultSection.classList.remove("hidden");
   copySection.classList.remove("hidden");
   syncFormatControls();
@@ -1785,6 +1983,7 @@ textForm.addEventListener("submit", (event) => {
 });
 
 // "送到模板" button removed — sync is automatic now
+createSnapshotButton?.addEventListener("click", createEquipmentSnapshot);
 saveConfigButton?.addEventListener("click", saveCurrentConfig);
 clearButton.addEventListener("click", clearAll);
 themeToggleBtn?.addEventListener("click", () => {

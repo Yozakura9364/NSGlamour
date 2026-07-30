@@ -14,6 +14,8 @@ API：
 - `GET /api/ui-localization`
 - `POST /api/import-glamour-link`
 - `POST /api/equipinfo/parse-text`
+- `POST /api/equipinfo/snapshots`
+- `GET /api/equipinfo/snapshots/<snapshot_id>`
 - `POST /api/risingstones-browser/open-login`
 - `GET /font/<path:filename>`
 - `GET /template-preview/<path:filename>`
@@ -23,6 +25,8 @@ API：
 - `POST /api/parse-chara`
 
 修改 API 前必须同时检查前端调用方和测试。
+
+装备快照只持久化净化后的公开字段：部位、多语言部位名、装备键/图标/多语言名称和最多两个染色槽。来源、角色、链接、导入文字、模型和候选列表不进入数据库。服务端按公开 payload 的 SHA-256 幂等去重：新内容返回 `201`，已有内容返回原 ID、`200` 和 `reused: true`；SQLite 旧表迁移不得删除旧行或破坏旧链接。
 
 ## 统一装备数据
 

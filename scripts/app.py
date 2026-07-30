@@ -28,6 +28,7 @@ mimetypes.add_type("font/woff", ".woff")
 mimetypes.add_type("font/woff2", ".woff2")
 
 try:
+    from .snapshots import EquipmentSnapshotStore, register_snapshot_routes
     from .resolve_chara import (
         DEFAULT_DYE_LABELS,
         DEFAULT_LOCALE,
@@ -40,6 +41,7 @@ try:
         resolve_chara,
     )
 except ImportError:
+    from snapshots import EquipmentSnapshotStore, register_snapshot_routes
     from resolve_chara import (
         DEFAULT_DYE_LABELS,
         DEFAULT_LOCALE,
@@ -91,6 +93,12 @@ ICON_BASE_URL = os.environ.get(
 ).rstrip("/")
 ICON_MAX_BYTES = 512 * 1024
 ICON_CACHE_DIR = Path(os.environ.get("NSGLAMOUR_ICON_CACHE_DIR", str(BASE_DIR / ".runtime" / "icon-cache")))
+SNAPSHOT_DB_PATH = Path(
+    os.environ.get(
+        "NSGLAMOUR_SNAPSHOT_DB_PATH",
+        str(BASE_DIR / ".runtime" / "equipment-snapshots.sqlite3"),
+    )
+)
 EC_ALLOWED_HOST = "ffxiv.eorzeacollection.com"
 EC_MAX_HTML_BYTES = 1_200_000
 EC_USER_AGENT = "Mozilla/5.0 (compatible; NSGlamour/1.0)"
@@ -2507,6 +2515,7 @@ app.config["MAX_CONTENT_LENGTH"] = MAX_CHARA_UPLOAD_MB * 1024 * 1024
 app.wsgi_app = ProxyFix(app.wsgi_app, x_for=1, x_proto=1, x_host=1, x_prefix=1)
 if BASE_PATH:
     app.wsgi_app = BasePathMiddleware(app.wsgi_app, BASE_PATH)
+register_snapshot_routes(app, EquipmentSnapshotStore(SNAPSHOT_DB_PATH))
 
 
 @app.after_request
@@ -2576,6 +2585,11 @@ def equipinfo_workspace():
         max_chara_upload_mb=MAX_CHARA_UPLOAD_MB,
         link_import_enabled=LINK_IMPORT_ENABLED,
     )
+
+
+@app.get("/equipinfo/<snapshot_id>")
+def equipinfo_snapshot(snapshot_id: str):
+    return render_template("equipinfo-snapshot.html", snapshot_id=snapshot_id)
 
 
 @app.get("/api/health")

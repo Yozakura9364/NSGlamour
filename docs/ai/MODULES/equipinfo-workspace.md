@@ -68,5 +68,14 @@
 - 修改染剂。
 - 切换语言。
 - 保存配置和恢复最近记录。
+- 生成快照后确认当前配置自动进入最近记录并保存链接。
+- 对同一配置连续生成两次，确认第二次直接复用本地快照 ID；清除本地记录后确认服务端仍返回同一 ID。
 - 检查所有文案格式和自定义模板输出。
+
+## 只读快照
+
+- 公开页面路径：`/equipinfo/<snapshot_id>`，只提供装备名称语言切换，不挂载导入、搜索、替换、删除、保存或模板编辑控件。
+- 默认 SQLite：`.runtime/equipment-snapshots.sqlite3`；生产可用 `NSGLAMOUR_SNAPSHOT_DB_PATH` 指向持久目录。
+- 生成成功后沿用当前来源名自动写入 `nsglamour.recentLoadouts`，记录 `snapshotId`、`snapshotUrl` 和 `snapshotKey`。
+- 本地相同 `snapshotKey` 直接复用；本地记录缺失时继续依赖后端内容哈希去重。
 
