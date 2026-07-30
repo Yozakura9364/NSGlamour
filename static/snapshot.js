@@ -4,10 +4,33 @@
   const languageControls = document.getElementById("snapshotLanguageControls");
   const slotGrid = document.getElementById("snapshotSlotGrid");
   const localeOrder = ["ja", "en", "fr", "de", "zh", "tc", "ko"];
-  const localeLabels = { ja: "ja", en: "en", fr: "fr", de: "de", zh: "chs", tc: "tc", ko: "ko" };
+  const localeLabels = {
+    ja: "日本語",
+    en: "English",
+    fr: "Français",
+    de: "Deutsch",
+    zh: "简体中文",
+    tc: "繁體中文",
+    ko: "한국어",
+  };
   const localeHtmlLang = { zh: "zh-CN", tc: "zh-TW", en: "en", ja: "ja", ko: "ko", fr: "fr", de: "de" };
-  const leftSlots = ["MainHand", "HeadGear", "Body", "Hands", "Legs", "Feet", "Glasses"];
-  const rightSlots = ["OffHand", "Ears", "Neck", "Wrists", "LeftRing", "RightRing", "FashionAccessory"];
+  const equipmentSlotOrder = [
+    "MainHand",
+    "OffHand",
+    "HeadGear",
+    "Body",
+    "Hands",
+    "Legs",
+    "Feet",
+    "Ears",
+    "Neck",
+    "Wrists",
+    "LeftRing",
+    "RightRing",
+    "Glasses",
+    "FashionAccessory",
+  ];
+  const equipmentSlotRanks = new Map(equipmentSlotOrder.map((slot, index) => [slot, index]));
   let snapshot = null;
   let locale = "zh";
 
@@ -25,18 +48,22 @@
   function renderLanguages() {
     languageControls.replaceChildren();
     const locales = localeOrder.filter((value) => snapshot.locales.includes(value));
+    const select = document.createElement("select");
+    select.className = "snapshot-language-select";
+    select.setAttribute("aria-label", "装备名语言");
     locales.forEach((value) => {
-      const button = document.createElement("button");
-      button.type = "button";
-      button.classList.toggle("active", value === locale);
-      button.textContent = localeLabels[value] || value;
-      button.addEventListener("click", () => {
-        locale = value;
-        renderLanguages();
-        renderEquipment();
-      });
-      languageControls.appendChild(button);
+      const option = document.createElement("option");
+      option.value = value;
+      option.lang = localeHtmlLang[value] || value;
+      option.textContent = localeLabels[value] || value;
+      select.appendChild(option);
     });
+    select.value = locale;
+    select.addEventListener("change", () => {
+      locale = select.value;
+      renderEquipment();
+    });
+    languageControls.appendChild(select);
   }
 
   function createDyeChip(dye) {
@@ -93,23 +120,28 @@
     return row;
   }
 
-  function createColumn(entriesBySlot, slots) {
+  function createColumn(entries) {
     const column = document.createElement("div");
     column.className = "equipinfo-slot-column";
-    slots.forEach((slot) => {
-      const entry = entriesBySlot.get(slot);
-      if (entry) {
-        column.appendChild(createEquipmentRow(entry));
-      }
-    });
+    entries.forEach((entry) => column.appendChild(createEquipmentRow(entry)));
     return column;
   }
 
   function renderEquipment() {
-    const entriesBySlot = new Map(snapshot.entries.map((entry) => [entry.slot, entry]));
+    const entries = [...snapshot.entries].sort((left, right) => (
+      (equipmentSlotRanks.get(left.slot) ?? equipmentSlotOrder.length)
+      - (equipmentSlotRanks.get(right.slot) ?? equipmentSlotOrder.length)
+    ));
+    const isSingleColumn = entries.length <= 5;
+    slotGrid.classList.toggle("single-column", isSingleColumn);
+    if (isSingleColumn) {
+      slotGrid.replaceChildren(createColumn(entries));
+      return;
+    }
+    const splitAt = Math.ceil(entries.length / 2);
     slotGrid.replaceChildren(
-      createColumn(entriesBySlot, leftSlots),
-      createColumn(entriesBySlot, rightSlots),
+      createColumn(entries.slice(0, splitAt)),
+      createColumn(entries.slice(splitAt)),
     );
   }
 
