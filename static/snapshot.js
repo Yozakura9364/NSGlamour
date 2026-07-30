@@ -14,6 +14,19 @@
     ko: "한국어",
   };
   const localeHtmlLang = { zh: "zh-CN", tc: "zh-TW", en: "en", ja: "ja", ko: "ko", fr: "fr", de: "de" };
+  const localeUrlValues = { zh: "zh-CN", tc: "zh-TW", en: "en", ja: "ja", ko: "ko", fr: "fr", de: "de" };
+  const urlLocaleAliases = new Map([
+    ["ja", "ja"],
+    ["en", "en"],
+    ["fr", "fr"],
+    ["de", "de"],
+    ["zh", "zh"],
+    ["zh-cn", "zh"],
+    ["chs", "zh"],
+    ["tc", "tc"],
+    ["zh-tw", "tc"],
+    ["ko", "ko"],
+  ]);
   const equipmentSlotOrder = [
     "MainHand",
     "OffHand",
@@ -45,6 +58,19 @@
     return names[selectedLocale] || names.zh || names.en || Object.values(names).find(Boolean) || "";
   }
 
+  function getRequestedLocale() {
+    const value = new URLSearchParams(window.location.search).get("lang");
+    return urlLocaleAliases.get(String(value || "").trim().toLowerCase()) || "";
+  }
+
+  function updateUrlLocale(nextLocale) {
+    const value = localeUrlValues[nextLocale];
+    if (!value) return;
+    const url = new URL(window.location.href);
+    url.searchParams.set("lang", value);
+    window.history.replaceState(null, "", url);
+  }
+
   function renderLanguages() {
     languageControls.replaceChildren();
     const locales = localeOrder.filter((value) => snapshot.locales.includes(value));
@@ -61,6 +87,7 @@
     select.value = locale;
     select.addEventListener("change", () => {
       locale = select.value;
+      updateUrlLocale(locale);
       renderEquipment();
     });
     languageControls.appendChild(select);
@@ -155,7 +182,10 @@
       }
       const data = await response.json();
       snapshot = data.snapshot;
-      locale = snapshot.locales.includes("zh") ? "zh" : snapshot.locales[0] || "zh";
+      const requestedLocale = getRequestedLocale();
+      locale = requestedLocale && snapshot.locales.includes(requestedLocale)
+        ? requestedLocale
+        : snapshot.locales.includes("zh") ? "zh" : snapshot.locales[0] || "zh";
       status.hidden = true;
       renderLanguages();
       renderEquipment();

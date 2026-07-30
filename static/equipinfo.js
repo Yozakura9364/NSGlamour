@@ -58,6 +58,7 @@ const SLOT_DEFINITIONS = NSGlamourCommon.C.SLOT_DEFINITIONS;
 const EQUIPINFO_LEFT_COLUMN_SLOTS = ["MainHand", "HeadGear", "Body", "Hands", "Legs", "Feet", "Glasses"];
 const EQUIPINFO_RIGHT_COLUMN_SLOTS = ["OffHand", "Ears", "Neck", "Wrists", "LeftRing", "RightRing", "FashionAccessory"];
 const SNAPSHOT_LOCALES = ["ja", "en", "fr", "de", "zh", "tc", "ko"];
+const SNAPSHOT_LOCALE_URL_VALUES = { ja: "ja", en: "en", fr: "fr", de: "de", zh: "zh-CN", tc: "zh-TW", ko: "ko" };
 const SNAPSHOT_SLOTS = ["MainHand", "OffHand", "HeadGear", "Body", "Hands", "Legs", "Feet", "Ears", "Neck", "Wrists", "LeftRing", "RightRing", "Glasses", "FashionAccessory"];
 const SNAPSHOT_SLOT_ORDER = new Map(SNAPSHOT_SLOTS.map((slot, index) => [slot, index]));
 const SNAPSHOT_HEX_PATTERN = /^#[0-9a-f]{6}$/i;
@@ -307,7 +308,12 @@ async function createSnapshotKey(request) {
 }
 
 function createSnapshotUrl(snapshotId) {
-  return new URL(appPath(`/equipinfo/${encodeURIComponent(snapshotId)}`), window.location.origin).href;
+  const url = new URL(appPath(`/equipinfo/${encodeURIComponent(snapshotId)}`), window.location.origin);
+  const language = SNAPSHOT_LOCALE_URL_VALUES[state.locale];
+  if (language) {
+    url.searchParams.set("lang", language);
+  }
+  return url.href;
 }
 
 async function copySnapshotUrl(value) {
