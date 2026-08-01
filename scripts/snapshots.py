@@ -7,6 +7,7 @@ import hashlib
 import re
 import secrets
 import sqlite3
+import string
 from contextlib import closing
 from datetime import datetime, timezone
 from pathlib import Path
@@ -17,7 +18,9 @@ from flask import Flask, jsonify, request
 
 SNAPSHOT_VERSION = 1
 MAX_SNAPSHOT_BYTES = 64 * 1024
-SNAPSHOT_ID_PATTERN = re.compile(r"^[A-Za-z0-9_-]{20,96}$")
+SNAPSHOT_ID_PATTERN = re.compile(r"^[A-Za-z0-9]{1,10}$")
+SHORT_SNAPSHOT_ID_LENGTH = 10
+SHORT_SNAPSHOT_ID_ALPHABET = string.ascii_letters + string.digits
 HEX_COLOR_PATTERN = re.compile(r"^#[0-9a-fA-F]{6}$")
 
 SUPPORTED_LOCALES = ("ja", "en", "fr", "de", "zh", "tc", "ko")
@@ -198,6 +201,21 @@ class EquipmentSnapshotStore:
         if "content_hash" not in columns:
             connection.execute("ALTER TABLE equipment_snapshots ADD COLUMN content_hash TEXT")
 
+        # The old long IDs were never published. Remove them during the first
+        # schema touch so every remaining record follows the short-ID contract.
+        legacy_ids = [
+            row["snapshot_id"]
+            for row in connection.execute("SELECT snapshot_id FROM equipment_snapshots").fetchall()
+            if not SNAPSHOT_ID_PATTERN.fullmatch(str(row["snapshot_id"] or ""))
+        ]
+        for snapshot_id in legacy_ids:
+            connection.execute(
+                "DELETE FROM equipment_snapshots WHERE snapshot_id = ?",
+                (snapshot_id,),
+            )
+        if legacy_ids:
+            connection.commit()
+
         existing_hashes = {
             row["content_hash"]
             for row in connection.execute(
@@ -269,7 +287,10 @@ class EquipmentSnapshotStore:
                 return self._response_from_row(existing, reused=True)
 
             for _ in range(4):
-                snapshot_id = secrets.token_urlsafe(18)
+                snapshot_id = "".join(
+                    secrets.choice(SHORT_SNAPSHOT_ID_ALPHABET)
+                    for _ in range(SHORT_SNAPSHOT_ID_LENGTH)
+                )
                 try:
                     connection.execute(
                         """

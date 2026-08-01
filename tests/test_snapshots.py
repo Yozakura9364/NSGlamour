@@ -3,6 +3,7 @@ import sqlite3
 import sys
 import tempfile
 import unittest
+import re
 from contextlib import closing
 from pathlib import Path
 
@@ -10,7 +11,12 @@ from flask import Flask
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "scripts"))
 
-from snapshots import EquipmentSnapshotStore, register_snapshot_routes, sanitize_snapshot_payload
+from snapshots import (
+    EquipmentSnapshotStore,
+    SnapshotNotFoundError,
+    register_snapshot_routes,
+    sanitize_snapshot_payload,
+)
 
 
 def sample_payload():
@@ -43,6 +49,7 @@ class EquipmentSnapshotTests(unittest.TestCase):
             second = store.create(second_payload)
 
         self.assertEqual(second["id"], first["id"])
+        self.assertRegex(first["id"], re.compile(r"^[A-Za-z0-9]{10}$"))
         self.assertFalse(first["reused"])
         self.assertTrue(second["reused"])
 
@@ -58,7 +65,7 @@ class EquipmentSnapshotTests(unittest.TestCase):
         self.assertEqual(second.status_code, 200)
         self.assertEqual(first.get_json()["id"], second.get_json()["id"])
 
-    def test_legacy_database_keeps_existing_link(self):
+    def test_legacy_database_removes_existing_long_id(self):
         with tempfile.TemporaryDirectory() as directory:
             database_path = Path(directory) / "snapshots.sqlite3"
             payload = sanitize_snapshot_payload(sample_payload())
@@ -82,10 +89,12 @@ class EquipmentSnapshotTests(unittest.TestCase):
                 )
                 connection.commit()
 
-            reused = EquipmentSnapshotStore(database_path).create(sample_payload())
+            created = EquipmentSnapshotStore(database_path).create(sample_payload())
+            with self.assertRaises(SnapshotNotFoundError):
+                EquipmentSnapshotStore(database_path).get("legacy_snapshot_identifier")
 
-        self.assertEqual(reused["id"], "legacy_snapshot_identifier")
-        self.assertTrue(reused["reused"])
+        self.assertRegex(created["id"], re.compile(r"^[A-Za-z0-9]{10}$"))
+        self.assertFalse(created["reused"])
 
 
 if __name__ == "__main__":
