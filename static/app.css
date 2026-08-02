@@ -1195,7 +1195,7 @@ button.secondary:hover {
 .language-controls {
   display: inline-flex;
   align-items: flex-end;
-  gap: 14px;
+  gap: 10px;
   min-height: 30px;
   padding: 0;
   border: 0;

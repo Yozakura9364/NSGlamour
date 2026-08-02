@@ -8,7 +8,7 @@
     <link rel="icon" type="image/png" sizes="429x429" href="{{ url_for('static', filename='icons/WebIcon.png', v='20260629-1') }}">
     <link rel="shortcut icon" href="{{ url_for('static', filename='icons/WebIcon.png', v='20260629-1') }}">
     <link rel="apple-touch-icon" href="{{ url_for('static', filename='icons/WebIcon.png', v='20260629-1') }}">
-    <link rel="stylesheet" href="{{ url_for('static', filename='app.css', v='20260802-1') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='app.css', v='20260802-2') }}">
   </head>
   <body>
     <header class="app-header">
@@ -71,7 +71,6 @@
                   <span>语言</span>
                   <select id="equipinfoSourceLocaleSelect"></select>
                 </label>
-                <button id="equipinfoClearButton" type="button" class="secondary">清空</button>
                 <button id="equipinfoParseTextButton" type="submit">识别</button>
               </div>
             </div>
@@ -95,6 +94,7 @@
           </div>
           <div class="meta">
             <div id="equipinfoLanguageControls" class="language-controls" aria-label="装备名语言"></div>
+            <button id="equipinfoClearButton" type="button" class="secondary">清空</button>
             <button id="equipinfoCreateSnapshotButton" type="button" class="secondary">生成快照</button>
             <button id="equipinfoSaveConfigButton" type="button" class="secondary" data-i18n-key="common.action.save_config">保存配置</button>
           </div>
