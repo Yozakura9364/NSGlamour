@@ -12,12 +12,12 @@
   --divider: rgba(232, 234, 240, 0.1);
   --warn: #f97316;
   --shadow: 0 8px 20px rgba(0, 0, 0, 0.12);
-  --ui-font-latin: "Inter", "Helvetica Neue", "Segoe UI", Arial, sans-serif;
+  --ui-font-latin: "Trebuchet MS", "Segoe UI", Arial, sans-serif;
   --ui-font-zh-cn: "PingFang SC", "Microsoft YaHei", "Noto Sans CJK SC", "Noto Sans SC", sans-serif;
   --ui-font-zh-tc: "PingFang TC", "Microsoft JhengHei", "Noto Sans CJK TC", "Noto Sans TC", sans-serif;
   --ui-font-ja: "Hiragino Sans", "Yu Gothic", "Meiryo", "Noto Sans CJK JP", "Noto Sans JP", sans-serif;
   --ui-font-ko: "Apple SD Gothic Neo", "Malgun Gothic", "Noto Sans CJK KR", "Noto Sans KR", sans-serif;
-  --ui-font-family: "Inter", "Helvetica Neue", "Segoe UI", Arial, "PingFang TC", "Microsoft JhengHei", "PingFang SC", "Microsoft YaHei", "Hiragino Sans", "Yu Gothic", "Meiryo", "Apple SD Gothic Neo", "Malgun Gothic", "Noto Sans CJK", "Noto Sans", sans-serif;
+  --ui-font-family: "Trebuchet MS", "Helvetica Neue", "Segoe UI", Arial, "PingFang TC", "Microsoft JhengHei", "PingFang SC", "Microsoft YaHei", "Hiragino Sans", "Yu Gothic", "Meiryo", "Apple SD Gothic Neo", "Malgun Gothic", "Noto Sans CJK", "Noto Sans", sans-serif;
   --mono-font-family: "Noto Sans Mono", "Source Code Pro", Consolas, "Microsoft YaHei", monospace;
   --template-symbol-font-family: "NS Cambria", Cambria, serif;
 }
