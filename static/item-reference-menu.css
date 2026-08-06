@@ -1,0 +1,68 @@
+@font-face {
+  font-family: "NS Snapshot Pixel";
+  src: url("./fonts/snapshot-menu/fusion-pixel-zh-hans.woff2") format("woff2");
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "NS Snapshot Pixel Korean";
+  src: url("./fonts/snapshot-menu/fusion-pixel-ko.woff2") format("woff2");
+  font-display: swap;
+  unicode-range: U+1100-11FF, U+3130-318F, U+A960-A97F, U+AC00-D7AF, U+D7B0-D7FF;
+}
+
+.snapshot-item-reference-target {
+  cursor: context-menu;
+}
+
+.snapshot-item-reference-menu {
+  position: fixed;
+  z-index: 2000;
+  display: grid;
+  box-sizing: border-box;
+  width: 224px;
+  padding: 4px;
+  border: 1px solid #000;
+  border-radius: 0;
+  background: var(--field, #fff);
+  box-shadow: none;
+}
+
+.snapshot-item-reference-menu[hidden] {
+  display: none;
+}
+
+.snapshot-item-reference-menu a {
+  display: flex;
+  box-sizing: border-box;
+  width: 100%;
+  min-height: 32px;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 8px;
+  padding: 0 8px;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  color: var(--text, #241b2f);
+  font: 900 13px/1.25 "NS Snapshot Pixel Korean", "NS Snapshot Pixel", "Microsoft YaHei", sans-serif;
+  letter-spacing: 0;
+  text-align: left;
+  text-decoration: none;
+  box-shadow: none;
+  cursor: pointer;
+}
+
+.snapshot-item-reference-menu a:hover,
+.snapshot-item-reference-menu a:focus-visible {
+  background: rgba(239, 111, 178, 0.16);
+  outline: 1px solid #000;
+  outline-offset: -1px;
+}
+
+.snapshot-item-reference-menu img {
+  width: 16px;
+  height: 16px;
+  flex: 0 0 16px;
+  object-fit: contain;
+}

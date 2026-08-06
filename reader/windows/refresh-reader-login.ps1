@@ -1,12 +1,16 @@
 [CmdletBinding()]
 param(
     [string]$ReaderUrl = "http://100.64.65.72:18770",
-    [string]$TokenFile = (Join-Path $PSScriptRoot "..\..\.runtime\risingstones-reader-token"),
+    [string]$TokenFile,
     [int]$TimeoutSeconds = 180
 )
 
 Set-StrictMode -Version Latest
 $ErrorActionPreference = "Stop"
+
+if (-not $TokenFile) {
+    $TokenFile = Join-Path $PSScriptRoot "..\..\.runtime\risingstones-reader-token"
+}
 
 $resolvedTokenFile = (Resolve-Path -LiteralPath $TokenFile).Path
 $token = [IO.File]::ReadAllText($resolvedTokenFile, [Text.Encoding]::UTF8).Trim()
@@ -48,9 +52,11 @@ while ([DateTime]::UtcNow -lt $deadline) {
         -Headers $headers `
         -TimeoutSec 30
     if ($status.loggedIn) {
+        Remove-Item -LiteralPath $qrPath -Force -ErrorAction SilentlyContinue
         Write-Output "Rising Stones login refreshed. Reader returned to headless mode."
         exit 0
     }
 }
 
+Remove-Item -LiteralPath $qrPath -Force -ErrorAction SilentlyContinue
 throw "Timed out waiting for QR confirmation. Run this script again for a new QR image."

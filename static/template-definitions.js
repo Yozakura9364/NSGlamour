@@ -99,6 +99,7 @@
         renderMode: "horizontal",
         defaultLocale: DEFAULT_LOCALE,
         localeOrder: HORIZONTAL_TEMPLATE_LOCALE_ORDER,
+        supportsBilingual: true,
         controls: {
           title: true,
           ecSubtitle: false,
@@ -142,6 +143,7 @@
         renderMode: "ec",
         defaultLocale: "en",
         localeOrder: EC_TEMPLATE_LOCALE_ORDER,
+        supportsBilingual: true,
         controls: {
           title: true,
           ecSubtitle: true,
@@ -196,6 +198,7 @@
           ecSubtitle: false,
           dyeFrame: false,
           storySwatches: false,
+          storyTextColor: true,
         },
         equipmentFormat: {
           source: "default",
@@ -232,6 +235,7 @@
         renderMode: "risingstones",
         defaultLocale: DEFAULT_LOCALE,
         localeOrder: HORIZONTAL_TEMPLATE_LOCALE_ORDER,
+        supportsBilingual: true,
         controls: {
           title: true,
           ecSubtitle: true,
@@ -286,19 +290,12 @@
           { platform: "douyin", url: "https://www.douyin.com/user/MS4wLjABAAAAtHfFkouTFs-quaZJ9EEgYjkWIa32xJSgiqNklbNuqQY" },
         ],
         previewUrl: appPath("/template-preview/6-Silence Fashion/6-preview.webp"),
-        summary: "Silence Fashion 模板，支持中文、繁中和日英双语排版。",
+        summary: "Silence Fashion 模板，支持单语和可配置双语排版。",
         sourceSize: SILENCE_FASHION_TEMPLATE.sourceSize,
         renderMode: "silence-fashion",
         defaultLocale: DEFAULT_LOCALE,
-        localeOrder: ["zh", "tc", "ko", "ja", "en"],
-        languageOptions: [
-          { id: "zh", label: "chs", locales: ["zh"] },
-          { id: "tc", label: "tc", locales: ["tc"] },
-          { id: "ko", label: "ko", locales: ["ko"] },
-          { id: "en", label: "en", locales: ["en"] },
-          { id: "ja", label: "ja", locales: ["ja"] },
-          { id: "en-ja", label: "en+ja", locales: ["en", "ja"] },
-        ],
+        localeOrder: HORIZONTAL_TEMPLATE_LOCALE_ORDER,
+        supportsBilingual: true,
         controls: {
           title: true,
           characterName: false,
@@ -308,7 +305,7 @@
         },
         equipmentFormat: {
           source: "default",
-          maxRows: SILENCE_FASHION_TEMPLATE.enJa.maxRows,
+          maxRows: SILENCE_FASHION_TEMPLATE.bilingual.maxRows,
           itemName: {
             wrap: false,
             shrink: true,

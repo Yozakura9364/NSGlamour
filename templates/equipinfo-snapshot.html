@@ -5,7 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>装备信息 - 幻化工房</title>
     <link rel="icon" type="image/svg+xml" href="{{ url_for('static', filename='icons/WebIcon.svg', v='20260629-1') }}">
-    <link rel="stylesheet" href="{{ url_for('static', filename='app.css', v='20260729-1') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='app.css', v='20260731-1') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='item-reference-menu.css', v='20260731-1') }}">
     <style>
       .snapshot-page {
         min-height: 100%;
@@ -29,28 +30,67 @@
 
       .snapshot-toolbar {
         display: flex;
+        align-items: center;
         justify-content: flex-end;
-        min-height: 30px;
+        gap: 2px;
+        min-height: 32px;
         margin-bottom: 4px;
       }
 
-      .snapshot-language-control:empty {
-        display: none;
+      .snapshot-toolbar .header-icon-btn {
+        flex: 0 0 32px;
       }
 
-      .snapshot-language-select {
-        min-width: 156px;
-        min-height: 34px;
-        padding: 6px 32px 6px 10px;
-        border: 1px solid var(--border);
-        border-radius: 4px;
-        background: var(--field);
-        color: var(--text);
-        font: 13px/1.2 var(--ui-font-family);
+      .snapshot-layout-icon {
+        position: relative;
+        display: block;
+        width: 16px;
+        height: 14px;
+      }
+
+      .snapshot-layout-icon::before {
+        content: "";
+        position: absolute;
+        top: 3px;
+        left: 1px;
+        width: 14px;
+        height: 2px;
+        background: currentColor;
+        box-shadow: 0 3px currentColor, 0 6px currentColor;
+      }
+
+      .snapshot-layout-icon.is-spacious::before {
+        top: 1px;
+        box-shadow: 0 5px currentColor, 0 10px currentColor;
       }
 
       .snapshot-card .equipinfo-card-editor.single-column {
         grid-template-columns: minmax(0, 1fr);
+      }
+
+      .snapshot-card .editor-row {
+        min-height: 78px;
+        padding: 19px 0 7px;
+      }
+
+      .snapshot-card .editor-slot-name {
+        top: 5px;
+      }
+
+      .snapshot-card .editor-item-body {
+        gap: 2px;
+      }
+
+      .snapshot-card .editor-dye-controls {
+        min-height: 22px;
+        gap: 4px;
+      }
+
+      .snapshot-card .dye-picker-button {
+        min-height: 22px;
+        padding-top: 1px;
+        padding-bottom: 2px;
+        border-bottom: 0;
       }
 
       .snapshot-card .status-line {
@@ -73,7 +113,18 @@
     <main class="snapshot-main">
       <section class="result-section snapshot-card">
         <div class="snapshot-toolbar">
-          <div id="snapshotLanguageControls" class="snapshot-language-control"></div>
+          <button id="snapshotLayoutToggleButton" type="button" class="header-icon-btn" title="切换布局" aria-label="切换布局" aria-pressed="false">
+            <span id="snapshotLayoutToggleIcon" class="snapshot-layout-icon" aria-hidden="true"></span>
+          </button>
+          <div id="snapshotLanguageControl" class="header-language-menu snapshot-language-control">
+            <button id="snapshotLanguageButton" type="button" class="header-icon-btn" title="语言" aria-label="语言" aria-haspopup="true" aria-expanded="false" aria-controls="snapshotLanguageMenu">
+              <img src="{{ url_for('static', filename='icons/language.svg', v='20260731-1') }}" alt="" aria-hidden="true">
+            </button>
+            <div id="snapshotLanguageMenu" class="ui-language-popover hidden" role="menu" aria-label="装备名语言" aria-hidden="true"></div>
+          </div>
+          <button id="themeToggleBtn" type="button" class="header-icon-btn" title="切换为黑夜" aria-label="切换为黑夜">
+            <img id="themeToggleIcon" alt="" aria-hidden="true">
+          </button>
         </div>
         <p id="snapshotStatus" class="status-line">正在读取</p>
         <div id="snapshotSlotGrid" class="card-editor equipinfo-card-editor"></div>
@@ -84,6 +135,8 @@
       window.NSGLAMOUR_SNAPSHOT_ID = {{ snapshot_id | tojson }};
     </script>
     <script src="{{ url_for('static', filename='common.js', v='20260630-1') }}"></script>
-    <script src="{{ url_for('static', filename='snapshot.js', v='20260731-2') }}"></script>
+    <script src="{{ url_for('static', filename='snapshot-layout.js', v='20260731-1') }}"></script>
+    <script src="{{ url_for('static', filename='item-reference-menu.js', v='20260731-1') }}"></script>
+    <script src="{{ url_for('static', filename='snapshot.js', v='20260731-4') }}"></script>
   </body>
 </html>

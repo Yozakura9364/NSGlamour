@@ -104,12 +104,12 @@ update_mapping.bat
 
 ## 外部导入
 
-`/api/import-glamour-link` 支持石之家和 Eorzea Collection。
+`/api/import-glamour-link` 只支持石之家幻化详情链接。Eorzea Collection 和其他域名必须在发起任何外部请求前返回 `400`。
 
 注意：
 
-- 外部网页结构可能变化。
-- `NSGLAMOUR_ENABLE_LINK_IMPORT=0` 时，两个工作台隐藏石之家/Eorzea Collection 外链入口，`/api/import-glamour-link` 返回 503；解析代码保留，便于恢复。
+- 石之家页面和接口结构可能变化。
+- 石之家链接导入默认开启；`NSGLAMOUR_DISABLE_LINK_IMPORT=1` 时，两个工作台隐藏石之家外链入口，`/api/import-glamour-link` 返回 503，作为紧急关闭开关。旧变量 `NSGLAMOUR_ENABLE_LINK_IMPORT` 不再控制该接口。
 - 石之家部分能力可能依赖后台浏览器和登录态。
 - 生产石之家导入当前优先调用独立 Windows reader；reader 内部通过 Edge Cookie 直连 `apiff14risingstones` API，页内 `fetch(...)` 只保留为后备路径。
 - 配置 `NSGLAMOUR_RS_READER_REQUIRED=1` 时 reader 失败必须直接报错，不能回退到旧生产服务器上的浏览器。

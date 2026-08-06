@@ -22,7 +22,7 @@
 主要功能：
 
 - 选择模板。
-- 从石之家或 Eorzea Collection 链接导入装备数据。
+- 从石之家幻化详情链接导入装备数据。
 - 编辑装备候选、染剂、语言、标题、角色名、服务器/名字等模板字段。
 - 上传、拖拽、裁剪和持久化图片。
 - canvas 预览与 PNG 导出。
@@ -37,7 +37,7 @@
 
 主要功能：
 
-- 通过网页链接导入石之家或 Eorzea Collection 数据。
+- 通过网页链接导入石之家数据。
 - 通过文本识别装备与染剂。
 - 隐藏 `.chara` 拖放导入。
 - 编辑装备候选与染剂。
@@ -50,7 +50,7 @@
 ### 导入与解析
 
 - `POST /api/parse-chara`：解析 `.chara` 上传文件。
-- `POST /api/import-glamour-link`：解析石之家或 Eorzea Collection 幻化链接。
+- `POST /api/import-glamour-link`：解析石之家幻化详情链接；拒绝 Eorzea Collection 和其他域名。
 - `POST /api/equipinfo/parse-text`：解析用户粘贴的装备文本。
 - `POST /api/equipinfo/snapshots`：创建或复用只读装备快照。
 - `GET /api/equipinfo/snapshots/<snapshot_id>`：读取只读装备快照。

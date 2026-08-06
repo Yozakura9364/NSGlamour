@@ -26,6 +26,7 @@ const templateEcSubtitleRightInput = document.getElementById("templateEcSubtitle
 const templateCharacterNameInput = document.getElementById("templateCharacterNameInput");
 const templateDyeFrameControls = document.getElementById("templateDyeFrameControls");
 const storySwatchControls = document.getElementById("storySwatchControls");
+const storyTextColorControls = document.getElementById("storyTextColorControls");
 const templateCropOverlay = document.getElementById("templateCropOverlay");
 const templateCropImage = document.getElementById("templateCropImage");
 const templateCropZoomRange = document.getElementById("templateCropZoomRange");
@@ -64,7 +65,17 @@ const TEMPLATE_LOCALE_ORDER = ["zh", "tc"];
 const EC_TEMPLATE_LOCALE_ORDER = ["en", "zh", "tc", "ja", "ko", "fr", "de"];
 const HORIZONTAL_TEMPLATE_LOCALE_ORDER = ["zh", "tc", "en", "ja", "ko", "fr", "de"];
 const TEMPLATE_LANGUAGE_MODE = "single";
-const LOCALE_LABELS = { zh: "chs", en: "en", ja: "ja", ko: "ko", tc: "tc", fr: "fr", de: "de" };
+const TEMPLATE_OUTPUT_LANGUAGE_MODES = new Set(["single", "bilingual"]);
+const LOCALE_LABELS = { zh: "chs", en: "en", ja: "jp", ko: "ko", tc: "tc", fr: "fr", de: "de" };
+const LOCALE_DISPLAY_LABELS = {
+  ja: "日本語",
+  en: "English",
+  fr: "Français",
+  de: "Deutsch",
+  zh: "简体中文",
+  tc: "繁體中文",
+  ko: "한국어",
+};
 const UI_LANGUAGE_TO_TEMPLATE_LOCALE = {
   "zh-CN": "zh",
   "zh-TW": "tc",
@@ -199,8 +210,8 @@ const STORY_TEMPLATE_EQUIPMENT_TEXT = {
   underlineOffsetRatio: 1.13,
   underlineWidth: 4,
   outerGlowColor: "#000000",
-  outerGlowOpacity: 0.62,
-  outerGlowSpread: 0.19,
+  outerGlowOpacity: 0.36,
+  outerGlowSpread: 0.08,
   outerGlowSize: 24,
   outerGlowRange: 0.5,
 };
@@ -513,7 +524,7 @@ const SILENCE_FASHION_TEMPLATE = {
     weight: 600,
     dyeYOffset: 50,
   },
-  enJa: {
+  bilingual: {
     maxRows: 99,
     itemX: 1787,
     dyeX: 1785,
@@ -521,11 +532,11 @@ const SILENCE_FASHION_TEMPLATE = {
     y: 726,
     bottom: 2650,
     rowStep: 245,
-    jaSize: 45,
-    enSize: 45,
+    primarySize: 45,
+    secondarySize: 45,
     dyeSize: 36,
-    jaLineHeight: 54,
-    enLineHeight: 54,
+    primaryLineHeight: 54,
+    secondaryLineHeight: 54,
     dyeLineHeight: 43,
     lineGap: 8,
     groupGap: 66,
@@ -701,10 +712,13 @@ const state = {
     dyeSize: 15,
     showIcons: true,
     dyeFrameMode: FIGMA_DEFAULT_DYE_FRAME_MODE,
+    outputLanguageMode: "single",
     locales: [DEFAULT_LOCALE],
+    dyeLocales: [DEFAULT_LOCALE],
     textColor: "#1c2130",
     panelColor: "#ffffff",
     storySwatchColors: STORY_TEMPLATE_DEFAULT_SWATCH_COLORS.slice(),
+    storyTextColorMode: "white",
   },
 };
 
@@ -726,10 +740,13 @@ const DEFAULT_TEMPLATE_SETTINGS = {
   dyeSize: 15,
   showIcons: true,
   dyeFrameMode: FIGMA_DEFAULT_DYE_FRAME_MODE,
+  outputLanguageMode: "single",
   locales: [DEFAULT_LOCALE],
+  dyeLocales: [DEFAULT_LOCALE],
   textColor: "#1c2130",
   panelColor: "#ffffff",
   storySwatchColors: STORY_TEMPLATE_DEFAULT_SWATCH_COLORS.slice(),
+  storyTextColorMode: "white",
 };
 
 let isApplyingDraft = false;
@@ -902,6 +919,59 @@ function getTemplateLocaleOrder(template = getCurrentTemplate()) {
   const configured = Array.isArray(template?.localeOrder) ? template.localeOrder : TEMPLATE_LOCALE_ORDER;
   const normalized = configured.filter((locale) => LOCALE_ORDER.includes(locale));
   return normalized.length ? normalized : TEMPLATE_LOCALE_ORDER;
+}
+
+function normalizeStoryTextColorMode(value) {
+  return String(value || "").trim() === "black" ? "black" : "white";
+}
+
+function templateSupportsBilingual(template = getCurrentTemplate()) {
+  return template?.supportsBilingual === true;
+}
+
+function normalizeTemplateOutputLanguageMode(value, template = getCurrentTemplate(), locales = []) {
+  if (!templateSupportsBilingual(template)) {
+    return "single";
+  }
+  const normalized = String(value || "").trim();
+  if (TEMPLATE_OUTPUT_LANGUAGE_MODES.has(normalized)) {
+    return normalized;
+  }
+  return Array.isArray(locales) && locales.length > 1 ? "bilingual" : "single";
+}
+
+function getTemplateOutputLanguageMode(template = getCurrentTemplate()) {
+  return normalizeTemplateOutputLanguageMode(state.settings.outputLanguageMode, template, state.settings.locales);
+}
+
+function isTemplateBilingualMode(template = getCurrentTemplate()) {
+  return getTemplateOutputLanguageMode(template) === "bilingual";
+}
+
+function getPreferredSecondaryLocale(primaryLocale, template = getCurrentTemplate()) {
+  const order = getTemplateLocaleOrder(template);
+  const preferred = primaryLocale === "en" ? "ja" : "en";
+  return order.includes(preferred) && preferred !== primaryLocale
+    ? preferred
+    : order.find((locale) => locale !== primaryLocale) || primaryLocale;
+}
+
+function normalizeTemplateItemLocales(value, fallback, template = getCurrentTemplate(), mode = "single") {
+  const locales = normalizeTemplateLocales(value, fallback, template);
+  if (!templateSupportsBilingual(template) || mode !== "bilingual") {
+    return [locales[0] || getTemplateDefaultLocale(template)];
+  }
+  const primary = locales[0] || getTemplateDefaultLocale(template);
+  const secondary = locales.find((locale) => locale !== primary) || getPreferredSecondaryLocale(primary, template);
+  return [primary, secondary].filter((locale, index, list) => locale && list.indexOf(locale) === index).slice(0, 2);
+}
+
+function normalizeTemplateDyeLocales(value, fallback, template = getCurrentTemplate(), mode = "single") {
+  const fallbackLocales = normalizeTemplateLocales(fallback, [getTemplateDefaultLocale(template)], template).slice(0, 2);
+  if (!templateSupportsBilingual(template) || mode !== "bilingual") {
+    return [fallbackLocales[0] || getTemplateDefaultLocale(template)];
+  }
+  return normalizeTemplateLocales(value, fallbackLocales, template).slice(0, 2);
 }
 
 function getTemplateFirstLocale(template = getCurrentTemplate()) {
@@ -1180,10 +1250,11 @@ function isSingleTemplateLanguageMode() {
 }
 
 function normalizeSelectedTemplateLocales(value, fallback = [getTemplateDefaultLocale()], template = getCurrentTemplate()) {
-  const locales = normalizeTemplateLocales(value, fallback, template);
-  return isSingleTemplateLanguageMode() && !getTemplateLanguageOptions(template).length
-    ? [locales[0] || getTemplateDefaultLocale(template)]
-    : locales;
+  const languageOptions = getTemplateLanguageOptions(template);
+  if (languageOptions.length) {
+    return normalizeTemplateLocales(value, fallback, template);
+  }
+  return normalizeTemplateItemLocales(value, fallback, template, getTemplateOutputLanguageMode(template));
 }
 
 function setStatus(message, isError = false) {
@@ -1219,9 +1290,6 @@ function getGlamourLinkKind(rawUrl) {
   } catch {
     return "";
   }
-  if (url.hostname === "ffxiv.eorzeacollection.com") {
-    return "ec";
-  }
   if (url.hostname === "ff14risingstones.web.sdo.com") {
     return "risingstones";
   }
@@ -1240,7 +1308,7 @@ function openTemplateImportDialog() {
   if (!templateImportOverlay) {
     return;
   }
-  setTemplateImportHint("请输入石之家或 Eorzea Collection 幻化链接");
+  setTemplateImportHint("请输入石之家幻化详情链接");
   templateImportOverlay.classList.remove("hidden");
   templateImportOverlay.setAttribute("aria-hidden", "false");
   window.setTimeout(() => templateImportUrlInput?.focus(), 0);
@@ -1648,9 +1716,34 @@ function getTemplateDyeText(row, locale = state.locale, options = {}) {
     .join(resolvedOptions.separator);
 }
 
+function getTemplateDisplayDyeEntriesForOutput(row, options = {}) {
+  const locales = getSelectedTemplateDyeLocales();
+  const localizedEntries = locales.map((locale) => getTemplateDisplayDyeEntries(row, locale, options));
+  const baseEntries = localizedEntries[0] || [];
+  return baseEntries.map((entry, index) => {
+    const names = localizedEntries
+      .map((entries) => String(entries[index]?.name || "").trim())
+      .filter((name, nameIndex, list) => name && list.indexOf(name) === nameIndex);
+    const outputLabel = names.join(" ");
+    return {
+      ...entry,
+      name: outputLabel || entry.name,
+      outputLabel: outputLabel || entry.name,
+    };
+  });
+}
+
+function getTemplateDyeTextForOutput(row, options = {}) {
+  const resolvedOptions = getTemplateDisplayDyeOptions(options);
+  return getTemplateDisplayDyeEntriesForOutput(row, options)
+    .map((dye) => dye.outputLabel || dye.name)
+    .filter(Boolean)
+    .join(resolvedOptions.separator);
+}
+
 async function ensureStains(locale) { return NSGlamourCommon.Stains.ensureStains(state.stainsByLocale, locale); }
 
-function getTemplateCanvasFonts(template = getCurrentTemplate(), locales = getSelectedTemplateLocales()) {
+function getTemplateCanvasFonts(template = getCurrentTemplate(), locales = getTemplateOutputLocales()) {
   const templateId = normalizeTemplateId(template?.id);
   const fonts = Array.isArray(TEMPLATE_CANVAS_FONTS[templateId]) ? [...TEMPLATE_CANVAS_FONTS[templateId]] : [];
   if (templateId === "silence-fashion" && Array.isArray(locales) && locales.includes("ko")) {
@@ -1659,7 +1752,7 @@ function getTemplateCanvasFonts(template = getCurrentTemplate(), locales = getSe
   return Array.from(new Set(fonts));
 }
 
-function buildTemplateCanvasFontLoadText(template = getCurrentTemplate(), locales = getSelectedTemplateLocales()) {
+function buildTemplateCanvasFontLoadText(template = getCurrentTemplate(), locales = getTemplateOutputLocales()) {
   const parts = [
     TEMPLATE_FONT_LOAD_FALLBACK_TEXT,
     state.settings.topText,
@@ -1696,12 +1789,12 @@ function buildTemplateCanvasFontLoadText(template = getCurrentTemplate(), locale
   return dedupedChars.length ? dedupedChars.join("") : TEMPLATE_FONT_LOAD_FALLBACK_TEXT;
 }
 
-function getTemplateCanvasFontsCacheKey(template = getCurrentTemplate(), locales = getSelectedTemplateLocales()) {
+function getTemplateCanvasFontsCacheKey(template = getCurrentTemplate(), locales = getTemplateOutputLocales()) {
   const templateId = normalizeTemplateId(template?.id);
   return `${templateId}::${getTemplateCanvasFonts(template, locales).join("||")}::${buildTemplateCanvasFontLoadText(template, locales)}`;
 }
 
-function areTemplateCanvasFontsReady(template = getCurrentTemplate(), locales = getSelectedTemplateLocales()) {
+function areTemplateCanvasFontsReady(template = getCurrentTemplate(), locales = getTemplateOutputLocales()) {
   if (!document.fonts) {
     return true;
   }
@@ -1713,7 +1806,7 @@ async function ensureTemplateCanvasFonts(options = {}) {
     return;
   }
   const template = options.template || getCurrentTemplate();
-  const locales = Array.isArray(options.locales) ? options.locales.slice() : getSelectedTemplateLocales();
+  const locales = Array.isArray(options.locales) ? options.locales.slice() : getTemplateOutputLocales();
   const fontSpecs = getTemplateCanvasFonts(template, locales);
   const fontLoadText = buildTemplateCanvasFontLoadText(template, locales);
   const cacheKey = getTemplateCanvasFontsCacheKey(template, locales);
@@ -1742,7 +1835,7 @@ async function ensureTemplateCanvasFonts(options = {}) {
 }
 
 async function ensureTemplateLocalesReady() {
-  const locales = getSelectedTemplateLocales();
+  const locales = getTemplateOutputLocales();
   await Promise.all([
     ...locales.map((locale) => ensureStains(locale)),
   ]);
@@ -1769,7 +1862,9 @@ function getDefaultTemplateSettingsFor(templateId = currentTemplateId) {
   return {
     ...DEFAULT_TEMPLATE_SETTINGS,
     topText: getTemplateDefaultTopText(template),
+    outputLanguageMode: "single",
     locales: [defaultLocale],
+    dyeLocales: [defaultLocale],
     storySwatchColors: STORY_TEMPLATE_DEFAULT_SWATCH_COLORS.slice(),
   };
 }
@@ -2076,11 +2171,21 @@ async function restoreCurrentTemplateImages() {
 
 function saveCurrentTemplateRuntimeState() {
   const templateId = getTemplateStateId();
+  const template = getCurrentTemplate();
+  const outputLanguageMode = getTemplateOutputLanguageMode(template);
+  const locales = normalizeTemplateItemLocales(
+    state.settings.locales,
+    [state.locale || getTemplateDefaultLocale(template)],
+    template,
+    outputLanguageMode,
+  );
   templateSettingsById[templateId] = {
     ...state.settings,
     templateId,
+    outputLanguageMode,
     storySwatchColors: normalizeStorySwatchColors(state.settings.storySwatchColors),
-    locales: normalizeSelectedTemplateLocales(state.settings.locales, [state.locale || getTemplateDefaultLocale()], getCurrentTemplate()),
+    locales,
+    dyeLocales: normalizeTemplateDyeLocales(state.settings.dyeLocales, locales, template, outputLanguageMode),
   };
   templateImagesById[templateId] = cloneTemplateImages(state.images);
 }
@@ -2110,6 +2215,17 @@ function normalizeSettings(raw, templateIdOverride = null) {
   const legacySubtitleHasParts = legacySubtitleParts && !legacySubtitleParts.full;
   const hasStoredSubtitleSymbol = Object.prototype.hasOwnProperty.call(settings, "ecSubtitleSymbolText");
   const localeFallback = Array.isArray(settings.locales) ? [state.locale || defaultLocale] : [defaultLocale];
+  const storedLocales = Array.isArray(settings.locales) ? settings.locales : defaults.locales;
+  const outputLanguageMode = normalizeTemplateOutputLanguageMode(settings.outputLanguageMode, template, storedLocales);
+  const legacySilenceLocales = templateId === "silence-fashion"
+    && settings.outputLanguageMode == null
+    && areSameTemplateLocales(storedLocales, ["en", "ja"])
+    ? ["ja", "en"]
+    : storedLocales;
+  const locales = normalizeTemplateItemLocales(legacySilenceLocales, localeFallback, template, outputLanguageMode);
+  const defaultDyeLocales = templateId === "silence-fashion" && outputLanguageMode === "bilingual" && locales.includes("en")
+    ? ["en"]
+    : [locales[0] || defaultLocale];
   return {
     templateId,
     topText,
@@ -2129,10 +2245,13 @@ function normalizeSettings(raw, templateIdOverride = null) {
     dyeSize: clampNumber(settings.dyeSize, 10, 32, defaults.dyeSize),
     showIcons: settings.showIcons ?? defaults.showIcons,
     dyeFrameMode: normalizeFigmaDyeFrameMode(settings.dyeFrameMode || defaults.dyeFrameMode),
-    locales: normalizeSelectedTemplateLocales(settings.locales, localeFallback, template),
+    outputLanguageMode,
+    locales,
+    dyeLocales: normalizeTemplateDyeLocales(settings.dyeLocales, defaultDyeLocales, template, outputLanguageMode),
     textColor: normalizeHexColor(settings.textColor, defaults.textColor),
     panelColor: normalizeHexColor(settings.panelColor, defaults.panelColor),
     storySwatchColors: normalizeStorySwatchColors(settings.storySwatchColors || defaults.storySwatchColors),
+    storyTextColorMode: normalizeStoryTextColorMode(settings.storyTextColorMode || defaults.storyTextColorMode),
   };
 }
 
@@ -2199,7 +2318,7 @@ function writeSettings() {
   currentTemplateId = templateId;
   currentTemplateStateId = templateId;
   localStorage.setItem(TEMPLATE_SETTINGS_KEY, JSON.stringify({
-    version: 3,
+    version: 4,
     templateId,
     templates,
   }));
@@ -2223,6 +2342,9 @@ function syncSettingsControls() {
   document.querySelectorAll(".template-story-swatch-field").forEach((element) => {
     element.classList.toggle("hidden", controls.storySwatches !== true);
   });
+  document.querySelectorAll(".template-story-text-color-field").forEach((element) => {
+    element.classList.toggle("hidden", controls.storyTextColor !== true);
+  });
   templateTopTextInput.value = state.settings.topText;
   if (templateCharacterNameInput) {
     templateCharacterNameInput.value = state.settings.characterName;
@@ -2233,6 +2355,9 @@ function syncSettingsControls() {
   }
   templateDyeFrameControls?.querySelectorAll("[data-template-dye-frame]").forEach((button) => {
     button.classList.toggle("active", button.dataset.templateDyeFrame === state.settings.dyeFrameMode);
+  });
+  storyTextColorControls?.querySelectorAll("[data-story-text-color]").forEach((button) => {
+    button.classList.toggle("active", button.dataset.storyTextColor === state.settings.storyTextColorMode);
   });
   renderStorySwatchControls();
 }
@@ -2528,11 +2653,17 @@ function renderTemplateSelector() {
 
 async function ensureTemplateSupportsCurrentUiLanguage({ saveDraft = true } = {}) {
   const currentTemplate = getCurrentTemplate();
+  if (isTemplateBilingualMode(currentTemplate)) {
+    state.locale = getSelectedTemplateLocales()[0] || getTemplateDefaultLocale(currentTemplate);
+    renderTemplateSelector();
+    return false;
+  }
   const locale = getLocaleForTemplateAndUiLanguage(currentTemplate);
-  const nextLocales = normalizeSelectedTemplateLocales([locale], [locale], currentTemplate);
+  const nextLocales = [locale];
   if (state.locale !== locale || !areSameTemplateLocales(state.settings.locales || [], nextLocales)) {
     state.locale = locale;
     state.settings.locales = nextLocales;
+    state.settings.dyeLocales = [locale];
     await ensureStains(state.locale);
     await ensureTemplateLocalesReady();
     writeSettings();
@@ -2566,8 +2697,14 @@ async function switchTemplate(templateId) {
     await restoreCurrentTemplateImages();
     await carryTemplateImagesIntoCurrentTemplate(previousImages);
     const locale = getLocaleForTemplateAndUiLanguage(getCurrentTemplate());
-    state.locale = locale;
-    state.settings.locales = normalizeSelectedTemplateLocales([locale], [locale], getCurrentTemplate());
+    if (isTemplateBilingualMode()) {
+      state.locale = getSelectedTemplateLocales()[0] || locale;
+      state.settings.dyeLocales = getSelectedTemplateDyeLocales();
+    } else {
+      state.locale = locale;
+      state.settings.locales = [locale];
+      state.settings.dyeLocales = [locale];
+    }
     applyImportedTitleToSettings(state.sourceParsed || { sourceMeta: state.sourceMeta }, { force: false });
     applyImportedAuthorToSettings(state.sourceParsed || { sourceMeta: state.sourceMeta }, { force: false });
     await ensureTemplateLocalesReady();
@@ -2645,8 +2782,13 @@ async function restoreRecentSnapshot(item) {
     applyDraft(draft);
     const templateDefaultLocale = getLocaleForTemplateAndUiLanguage(getCurrentTemplate());
     const preferredLocale = getTemplateLocaleOrder().includes(draft.locale) ? draft.locale : templateDefaultLocale;
-    state.locale = preferredLocale;
-    state.settings.locales = normalizeSelectedTemplateLocales([state.locale], [state.locale]);
+    if (isTemplateBilingualMode()) {
+      state.locale = getSelectedTemplateLocales()[0] || preferredLocale;
+    } else {
+      state.locale = preferredLocale;
+      state.settings.locales = [state.locale];
+      state.settings.dyeLocales = [state.locale];
+    }
     await hydrateMissingItemRarity();
     await ensureStains(state.locale);
     await ensureTemplateLocalesReady();
@@ -3107,14 +3249,14 @@ async function importTemplateGlamourLink(event) {
   event?.preventDefault();
   const url = normalizeGlamourLinkUrl(templateImportUrlInput?.value);
   if (!url) {
-    setStatus("请输入石之家或 Eorzea Collection 幻化链接", true);
-    setTemplateImportHint("请输入石之家或 Eorzea Collection 幻化链接", true);
+    setStatus("请输入石之家幻化详情链接", true);
+    setTemplateImportHint("请输入石之家幻化详情链接", true);
     templateImportUrlInput?.focus();
     return;
   }
   if (!getGlamourLinkKind(url)) {
-    setStatus("无法识别，请输入石之家或 Eorzea Collection 幻化链接", true);
-    setTemplateImportHint("无法识别，请输入石之家或 Eorzea Collection 幻化链接", true);
+    setStatus("只支持石之家幻化详情链接", true);
+    setTemplateImportHint("只支持石之家幻化详情链接", true);
     return;
   }
 
@@ -3141,10 +3283,16 @@ async function importTemplateGlamourLink(event) {
     applyImportedAuthorToSettings(parsed, { force: true });
     const templateDefaultLocale = getLocaleForTemplateAndUiLanguage(getCurrentTemplate());
     const availableLocales = parsed?.locales || [];
-    state.locale = availableLocales.includes(templateDefaultLocale)
+    const importedLocale = availableLocales.includes(templateDefaultLocale)
       ? templateDefaultLocale
       : parsed.default_locale || DEFAULT_LOCALE;
-    state.settings.locales = normalizeSelectedTemplateLocales([state.locale], [state.locale]);
+    if (isTemplateBilingualMode()) {
+      state.locale = getSelectedTemplateLocales()[0] || importedLocale;
+    } else {
+      state.locale = importedLocale;
+      state.settings.locales = [state.locale];
+      state.settings.dyeLocales = [state.locale];
+    }
     syncSettingsControls();
     writeSettings();
     await hydrateMissingItemRarity();
@@ -3187,7 +3335,9 @@ async function loadDraft() {
     if (!hasStoredTemplateLocalePrefs) {
       const defaultLocale = getLocaleForTemplateAndUiLanguage(getCurrentTemplate());
       state.locale = defaultLocale;
-      state.settings.locales = normalizeSelectedTemplateLocales([defaultLocale], [defaultLocale]);
+      state.settings.outputLanguageMode = "single";
+      state.settings.locales = [defaultLocale];
+      state.settings.dyeLocales = [defaultLocale];
     }
     await hydrateMissingItemRarity();
     await ensureStains(state.locale);
@@ -3231,11 +3381,38 @@ function getSelectedTemplateLocales() {
     return state.settings.locales.slice();
   }
 
-  state.settings.locales = normalizeSelectedTemplateLocales(state.settings.locales, [state.locale || defaultLocale], template);
+  const outputLanguageMode = getTemplateOutputLanguageMode(template);
+  state.settings.outputLanguageMode = outputLanguageMode;
+  state.settings.locales = normalizeTemplateItemLocales(
+    state.settings.locales,
+    [state.locale || defaultLocale],
+    template,
+    outputLanguageMode,
+  );
   if (!state.settings.locales.includes(state.locale)) {
     state.locale = state.settings.locales[0] || defaultLocale;
   }
   return state.settings.locales.slice();
+}
+
+function getSelectedTemplateDyeLocales() {
+  const template = getCurrentTemplate();
+  const itemLocales = getSelectedTemplateLocales();
+  const outputLanguageMode = getTemplateOutputLanguageMode(template);
+  state.settings.dyeLocales = normalizeTemplateDyeLocales(
+    state.settings.dyeLocales,
+    [itemLocales[0] || getTemplateDefaultLocale(template)],
+    template,
+    outputLanguageMode,
+  );
+  return state.settings.dyeLocales.slice();
+}
+
+function getTemplateOutputLocales() {
+  return Array.from(new Set([
+    ...getSelectedTemplateLocales(),
+    ...getSelectedTemplateDyeLocales(),
+  ]));
 }
 
 function getSelectedTemplateLanguageOption(template = getCurrentTemplate()) {
@@ -3249,6 +3426,126 @@ function getSelectedTemplateLanguageOption(template = getCurrentTemplate()) {
     || languageOptions.find((option) => option.locales.includes(state.locale))
     || languageOptions.find((option) => option.locales.includes(defaultLocale))
     || languageOptions[0];
+}
+
+async function commitTemplateLanguageChange() {
+  state.locale = getSelectedTemplateLocales()[0] || getTemplateDefaultLocale();
+  await ensureTemplateLocalesReady();
+  await hydrateMissingItemRarity();
+  writeSettings();
+  writeCurrentDraft();
+  await render({ showLoading: true });
+}
+
+async function setTemplateOutputLanguageMode(mode) {
+  const template = getCurrentTemplate();
+  const nextMode = normalizeTemplateOutputLanguageMode(mode, template);
+  if (nextMode === getTemplateOutputLanguageMode(template)) {
+    return;
+  }
+  const primary = getSelectedTemplateLocales()[0] || state.locale || getTemplateDefaultLocale(template);
+  state.settings.outputLanguageMode = nextMode;
+  state.settings.locales = normalizeTemplateItemLocales(
+    nextMode === "bilingual" ? [primary, getPreferredSecondaryLocale(primary, template)] : [primary],
+    [primary],
+    template,
+    nextMode,
+  );
+  state.settings.dyeLocales = normalizeTemplateDyeLocales(
+    state.settings.dyeLocales,
+    [primary],
+    template,
+    nextMode,
+  );
+  await commitTemplateLanguageChange();
+}
+
+async function updateTemplateItemLocale(index, locale) {
+  const locales = getSelectedTemplateLocales();
+  const otherIndex = index === 0 ? 1 : 0;
+  const previous = locales[index];
+  locales[index] = locale;
+  if (locales[otherIndex] === locale) {
+    locales[otherIndex] = previous;
+  }
+  state.settings.locales = normalizeTemplateItemLocales(
+    locales,
+    [locale],
+    getCurrentTemplate(),
+    "bilingual",
+  );
+  await commitTemplateLanguageChange();
+}
+
+async function updateTemplateDyeLocale(index, locale) {
+  const itemLocales = getSelectedTemplateLocales();
+  const locales = getSelectedTemplateDyeLocales();
+  if (index === 0) {
+    locales[0] = locale || itemLocales[0];
+    if (locales[1] === locales[0]) {
+      locales.splice(1, 1);
+    }
+  } else if (!locale || locale === locales[0]) {
+    locales.splice(1, 1);
+  } else {
+    locales[1] = locale;
+  }
+  state.settings.dyeLocales = normalizeTemplateDyeLocales(
+    locales,
+    [itemLocales[0]],
+    getCurrentTemplate(),
+    "bilingual",
+  );
+  await commitTemplateLanguageChange();
+}
+
+function createTemplateLocaleSelect(value, options = {}) {
+  const select = document.createElement("select");
+  select.className = "template-language-select";
+  select.setAttribute("aria-label", getUiLocalizedText(options.label || "语言"));
+  if (options.allowEmpty) {
+    const emptyOption = document.createElement("option");
+    emptyOption.value = "";
+    emptyOption.textContent = getUiLocalizedText("不显示");
+    select.appendChild(emptyOption);
+  }
+  getTemplateLocaleOrder().forEach((locale) => {
+    const option = document.createElement("option");
+    option.value = locale;
+    option.textContent = LOCALE_LABELS[locale] || locale;
+    select.appendChild(option);
+  });
+  select.value = value || "";
+  select.addEventListener("change", () => options.onChange?.(select.value));
+  return select;
+}
+
+function renderBilingualLanguageSettings() {
+  const itemLocales = getSelectedTemplateLocales();
+  const dyeLocales = getSelectedTemplateDyeLocales();
+  const makeRow = (labelText, values, onChange, allowEmptySecond = false) => {
+    const row = document.createElement("div");
+    row.className = "template-bilingual-row";
+    const label = document.createElement("strong");
+    label.textContent = getUiLocalizedText(labelText);
+    row.appendChild(label);
+    row.appendChild(createTemplateLocaleSelect(values[0], {
+      label: `${labelText} 1`,
+      onChange: (locale) => onChange(0, locale),
+    }));
+    const separator = document.createElement("span");
+    separator.className = "template-language-separator";
+    separator.textContent = "+";
+    row.appendChild(separator);
+    row.appendChild(createTemplateLocaleSelect(values[1] || "", {
+      label: `${labelText} 2`,
+      allowEmpty: allowEmptySecond,
+      onChange: (locale) => onChange(1, locale),
+    }));
+    return row;
+  };
+  templateLanguageSettings.appendChild(makeRow("装备名", itemLocales, updateTemplateItemLocale));
+  templateLanguageSettings.appendChild(makeRow("染剂", dyeLocales, updateTemplateDyeLocale, true));
 }
 
 async function moveTemplateLocale(locale, direction) {
@@ -3291,6 +3588,13 @@ async function removeTemplateLocale(locale) {
 }
 
 async function toggleTemplateLocale(locale) {
+  if (templateSupportsBilingual()) {
+    state.settings.outputLanguageMode = "single";
+    state.settings.locales = [locale];
+    state.settings.dyeLocales = [locale];
+    await commitTemplateLanguageChange();
+    return;
+  }
   const languageOptions = getTemplateLanguageOptions();
   if (languageOptions.length) {
     const option = languageOptions.find((item) => item.id === locale || item.locales.includes(locale));
@@ -3353,6 +3657,10 @@ function renderTemplateLanguageSettings() {
   }
 
   templateLanguageSettings.innerHTML = "";
+  if (templateSupportsBilingual() && isTemplateBilingualMode()) {
+    renderBilingualLanguageSettings();
+    return;
+  }
   const selectedLocales = getSelectedTemplateLocales();
   if (isSingleTemplateLanguageMode() || getTemplateLanguageOptions().length) {
     return;
@@ -3410,51 +3718,120 @@ function renderLanguageControls() {
   templateLanguageControls.innerHTML = "";
   const selectedLocales = getSelectedTemplateLocales();
   const languageOptions = getTemplateLanguageOptions();
+  const control = document.createElement("div");
+  control.className = "header-language-menu";
+  const button = document.createElement("button");
+  button.type = "button";
+  button.className = "header-icon-btn";
+  button.setAttribute("aria-haspopup", "menu");
+  button.setAttribute("aria-expanded", "false");
+  const icon = document.createElement("img");
+  icon.src = appPath("static/icons/language.svg");
+  icon.alt = "";
+  icon.setAttribute("aria-hidden", "true");
+  button.appendChild(icon);
+
+  const menu = document.createElement("div");
+  menu.className = "ui-language-popover hidden";
+  menu.setAttribute("role", "menu");
+  menu.setAttribute("aria-label", "排版语言");
+  const options = [];
+
   if (languageOptions.length) {
     const selectedOption = getSelectedTemplateLanguageOption();
-    for (const option of languageOptions) {
-      const button = document.createElement("button");
-      button.type = "button";
-      button.className = "language-button";
-      button.textContent = option.label;
-      button.classList.toggle("active", option.id === selectedOption?.id);
-      button.classList.toggle("current", option.id === selectedOption?.id);
-      button.title = getUiLocalizedText(option.id === selectedOption?.id ? "当前排版语言" : "切换排版语言");
-      button.addEventListener("click", () => toggleTemplateLocale(option.id));
-      templateLanguageControls.appendChild(button);
-    }
-    renderTemplateLanguageSettings();
-    return;
+    languageOptions.forEach((option) => {
+      options.push({
+        id: option.id,
+        label: getTemplateLanguageDisplayLabel(option),
+        active: option.id === selectedOption?.id,
+        action: () => toggleTemplateLocale(option.id),
+      });
+    });
+  } else if (templateSupportsBilingual()) {
+    const bilingual = isTemplateBilingualMode();
+    getTemplateLocaleOrder().forEach((locale) => {
+      options.push({
+        id: locale,
+        label: getLocaleDisplayLabel(locale),
+        active: !bilingual && locale === selectedLocales[0],
+        action: () => toggleTemplateLocale(locale),
+      });
+    });
+    options.push({
+      id: "bilingual",
+      label: getUiLocalizedText("自定义"),
+      active: bilingual,
+      action: () => setTemplateOutputLanguageMode("bilingual"),
+    });
+  } else {
+    const templateLocaleOrder = getTemplateLocaleOrder();
+    const orderedControls = isSingleTemplateLanguageMode()
+      ? templateLocaleOrder.slice()
+      : [
+        ...selectedLocales,
+        ...templateLocaleOrder.filter((locale) => !selectedLocales.includes(locale)),
+      ];
+    orderedControls.forEach((locale) => {
+      options.push({
+        id: locale,
+        label: getLocaleDisplayLabel(locale),
+        active: locale === state.locale,
+        action: () => toggleTemplateLocale(locale),
+      });
+    });
   }
 
-  const templateLocaleOrder = getTemplateLocaleOrder();
-  const orderedControls = isSingleTemplateLanguageMode()
-    ? templateLocaleOrder.slice()
-    : [
-      ...selectedLocales,
-      ...templateLocaleOrder.filter((locale) => !selectedLocales.includes(locale)),
-    ];
-  for (const locale of orderedControls) {
-    const button = document.createElement("button");
-    button.type = "button";
-    button.className = "language-button";
-    button.textContent = LOCALE_LABELS[locale] || locale;
-    button.classList.toggle("active", selectedLocales.includes(locale));
-    button.classList.toggle("current", locale === state.locale);
-    const buttonTitle = isSingleTemplateLanguageMode()
-      ? (locale === state.locale ? "当前输出语言" : "切换输出语言")
-      : selectedLocales.includes(locale)
-        ? locale === state.locale
-          ? selectedLocales.length > 1
-            ? "当前编辑语言，点击可从模板移除"
-            : "当前编辑语言，至少保留一种模板语言"
-          : "已在模板中显示，点击切换为当前编辑语言"
-        : "点击加入模板并切换为当前编辑语言";
-    button.title = getUiLocalizedText(buttonTitle);
-    button.addEventListener("click", () => toggleTemplateLocale(locale));
-    templateLanguageControls.appendChild(button);
-  }
+  const activeOption = options.find((option) => option.active) || options[0];
+  const languageLabel = activeOption?.label || getLocaleDisplayLabel(state.locale);
+  button.setAttribute("aria-label", `语言：${languageLabel}`);
+  button.title = button.getAttribute("aria-label");
+  options.forEach((option) => {
+    const item = document.createElement("button");
+    item.type = "button";
+    item.className = "";
+    item.setAttribute("role", "menuitemradio");
+    item.setAttribute("aria-checked", String(option.active));
+    item.classList.toggle("active", option.active);
+    item.textContent = option.label;
+    item.addEventListener("click", () => {
+      option.action();
+      closeTemplateLanguageMenu();
+      button.focus();
+    });
+    menu.appendChild(item);
+  });
+  button.addEventListener("click", (event) => {
+    event.stopPropagation();
+    const open = menu.classList.contains("hidden");
+    closeTemplateLanguageMenu();
+    if (open) {
+      menu.classList.remove("hidden");
+      button.setAttribute("aria-expanded", "true");
+    }
+  });
+  menu.addEventListener("click", (event) => event.stopPropagation());
+  control.append(button, menu);
+  templateLanguageControls.appendChild(control);
   renderTemplateLanguageSettings();
+}
+
+function getLocaleDisplayLabel(locale) {
+  return LOCALE_DISPLAY_LABELS[locale] || LOCALE_LABELS[locale] || locale;
+}
+
+function getTemplateLanguageDisplayLabel(option) {
+  if (option.id === "custom" || !option.locales?.length) {
+    return option.labelKey ? getUiLocalizedText(option.label || "自定义") : option.label;
+  }
+  return option.locales.map((locale) => getLocaleDisplayLabel(locale)).join(" + ");
+}
+
+function closeTemplateLanguageMenu() {
+  const control = templateLanguageControls?.querySelector(".header-language-menu");
+  const menu = control?.querySelector(".ui-language-popover");
+  const button = control?.querySelector(".header-icon-btn");
+  menu?.classList.add("hidden");
+  button?.setAttribute("aria-expanded", "false");
 }
 
 function renderSearch(container, row) {
@@ -4869,6 +5246,7 @@ const EC_TEMPLATE_RENDERER = window.NSGlamourEcTemplateRenderer.createEcTemplate
   getSelectedTemplateLocales,
   getTemplateDefaultTopText,
   getTemplateDisplayDyeEntries,
+  getTemplateDisplayDyeEntriesForOutput,
   getTemplateDyeFormat,
   getTemplateImageSlot,
   getTemplateImageSlotDefinition,
@@ -4880,6 +5258,7 @@ const EC_TEMPLATE_RENDERER = window.NSGlamourEcTemplateRenderer.createEcTemplate
   normalizeEcSubtitleSymbol,
   normalizeFigmaDyeName,
   normalizeHexColor,
+  isTemplateBilingualMode,
   state,
 });
 
@@ -4907,12 +5286,14 @@ const RISINGSTONES_TEMPLATE_RENDERER = window.NSGlamourRisingstonesTemplateRende
   getSelectedTemplateLocales,
   getTemplateDefaultTopText,
   getTemplateDisplayDyeEntries,
+  getTemplateDisplayDyeEntriesForOutput,
   getTemplateDyeFormat,
   getTemplateImageSlot,
   iconImageCache,
   makeRoundedRectPath,
   normalizeFigmaDyeName,
   normalizeHexColor,
+  isTemplateBilingualMode,
   state,
   strokeRoundedRect,
 });
@@ -4932,10 +5313,12 @@ const SILENCE_FASHION_TEMPLATE_RENDERER = window.NSGlamourSilenceFashionTemplate
   getItemName,
   getSilenceFashionBackground: () => silenceFashionBackground,
   getSelectedTemplateLocales,
+  getSelectedTemplateDyeLocales,
   getTemplateDefaultTopText,
-  getTemplateDisplayDyeEntries,
   getTemplateDyeText,
+  getTemplateDyeTextForOutput,
   getTemplateImageSlot,
+  isTemplateBilingualMode,
   state,
 });
 
@@ -4953,15 +5336,18 @@ const HORIZONTAL_TEMPLATE_RENDERER = window.NSGlamourHorizontalTemplateRenderer.
   figmaRect,
   figmaUnit,
   figmaUnitY,
+  getItemName,
   getSelectedTemplateLocales,
   getTemplateDefaultTopText,
   getTemplateDyeFormat,
   getTemplateEquipmentFormat,
   getTemplateDyeText,
+  getTemplateDyeTextForOutput,
   getTemplateImageSlot,
   getTemplateImageSlotDefinitions,
   getTemplateImageSlotRect,
   loadHorizontalTemplateBackground,
+  isTemplateBilingualMode,
   state,
   getHorizontalTemplateBackground: () => horizontalTemplateBackground,
 });
@@ -5206,6 +5592,9 @@ function syncEcSubtitleControls() {
 }
 
 function getEcDyeLabel(dye, locale = state.locale) {
+  if (dye?.outputLabel) {
+    return String(dye.outputLabel).replace(/染剂(?=\s|$)/gu, "").replace(/染劑(?=\s|$)/gu, "").trim();
+  }
   const name = normalizeFigmaDyeName(dye.name);
   if (dye.isEmpty || name === FIGMA_EMPTY_DYE_NAME) {
     return getFigmaEmptyDyeLabel(locale);
@@ -5712,12 +6101,17 @@ window.addEventListener("storage", (event) => {
 });
 document.addEventListener("click", closeDyePickers);
 document.addEventListener("click", closeRecentPanel);
+document.addEventListener("click", closeTemplateLanguageMenu);
 window.addEventListener("nsglamour:header-popover-open", (event) => {
   if (event.detail?.source !== "recent") {
     closeRecentPanel();
   }
+  closeTemplateLanguageMenu();
 });
 document.addEventListener("keydown", (event) => {
+  if (event.key === "Escape") {
+    closeTemplateLanguageMenu();
+  }
   if (event.key === "Escape" && templateSelectorOverlay && !templateSelectorOverlay.classList.contains("hidden")) {
     closeTemplateSelectorDialog();
     return;
@@ -5738,6 +6132,7 @@ window.addEventListener("nsglamour:ui-language-change", async () => {
       syncSettingsControls();
       await render({ loadingTaskId });
     } else {
+      renderLanguageControls();
       renderTemplateSelector();
       window.NSGlamourUiLanguage?.refresh?.();
     }
@@ -5762,6 +6157,22 @@ if (templateDyeFrameControls) {
       return;
     }
     state.settings.dyeFrameMode = nextMode;
+    writeSettings();
+    syncSettingsControls();
+    renderCanvas();
+  });
+}
+if (storyTextColorControls) {
+  storyTextColorControls.addEventListener("click", (event) => {
+    const button = event.target.closest("[data-story-text-color]");
+    if (!button) {
+      return;
+    }
+    const nextMode = normalizeStoryTextColorMode(button.dataset.storyTextColor);
+    if (state.settings.storyTextColorMode === nextMode) {
+      return;
+    }
+    state.settings.storyTextColorMode = nextMode;
     writeSettings();
     syncSettingsControls();
     renderCanvas();

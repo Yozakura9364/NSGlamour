@@ -17,17 +17,14 @@
       getItemName,
       getSilenceFashionBackground,
       getSelectedTemplateLocales,
+      getSelectedTemplateDyeLocales,
       getTemplateDefaultTopText,
-      getTemplateDisplayDyeEntries,
       getTemplateDyeText,
+      getTemplateDyeTextForOutput,
       getTemplateImageSlot,
+      isTemplateBilingualMode,
       state,
     } = deps;
-
-    function isEnJaMode() {
-      const locales = getSelectedTemplateLocales();
-      return locales.includes("ja") && locales.includes("en");
-    }
 
     function getSerifFamily(locale) {
       return locale === "ko"
@@ -35,10 +32,15 @@
         : SILENCE_FASHION_TEMPLATE.serifFamily;
     }
 
+    function getSerifFamilyForLocales(locales) {
+      const values = Array.isArray(locales) ? locales : [];
+      return getSerifFamily(values.includes("ko") ? "ko" : values[0]);
+    }
+
     function getSilenceFashionRows() {
       const template = TEMPLATE_DEFINITIONS["silence-fashion"];
-      const mode = isEnJaMode() ? "enJa" : "zh";
-      const locale = isEnJaMode() ? "ja" : (getSelectedTemplateLocales()[0] || state.locale || "zh");
+      const mode = isTemplateBilingualMode() ? "bilingual" : "zh";
+      const locale = getSelectedTemplateLocales()[0] || state.locale || "zh";
       return buildTemplateEquipmentRows(template, locale, { maxRows: SILENCE_FASHION_TEMPLATE[mode].maxRows });
     }
 
@@ -159,7 +161,7 @@
 
     function drawSilenceFashionText(ctx, metrics) {
       const t = SILENCE_FASHION_TEMPLATE;
-      const family = getSerifFamily(isEnJaMode() ? "ja" : (getSelectedTemplateLocales()[0] || state.locale || "zh"));
+      const family = getSerifFamily(getSelectedTemplateLocales()[0] || state.locale || "zh");
       ctx.fillStyle = t.textColor;
       ctx.textAlign = "left";
       ctx.textBaseline = "top";
@@ -238,9 +240,10 @@
       }
     }
 
-    function drawEnJaEquipment(ctx, metrics, rows) {
-      const layout = SILENCE_FASHION_TEMPLATE.enJa;
-      const family = getSerifFamily("ja");
+    function drawBilingualEquipment(ctx, metrics, rows) {
+      const layout = SILENCE_FASHION_TEMPLATE.bilingual;
+      const itemLocales = getSelectedTemplateLocales();
+      const dyeLocales = getSelectedTemplateDyeLocales();
       const itemX = figmaUnit(metrics, layout.itemX);
       const dyeX = figmaUnit(metrics, layout.dyeX);
       const itemWidth = getEquipmentTextWidth(metrics, itemX, figmaUnit(metrics, layout.width));
@@ -253,32 +256,30 @@
       for (const row of rows) {
         if (y >= bottomY) break;
         const raw = row.rawRow || row;
-        const jaResult = drawWrappedText(ctx, metrics, getItemName(raw.item, "ja"), itemX, y, itemWidth, {
-          size: layout.jaSize,
-          lineHeight: layout.jaLineHeight,
+        const primaryResult = drawWrappedText(ctx, metrics, getItemName(raw.item, itemLocales[0]), itemX, y, itemWidth, {
+          size: layout.primarySize,
+          lineHeight: layout.primaryLineHeight,
           weight: layout.weight,
-          family,
+          family: getSerifFamily(itemLocales[0]),
           bottomY,
         });
-        if (jaResult.clipped) break;
-        const enResult = drawWrappedText(ctx, metrics, getItemName(raw.item, "en"), itemX, jaResult.nextY + lineGap, itemWidth, {
-          size: layout.enSize,
-          lineHeight: layout.enLineHeight,
+        if (primaryResult.clipped) break;
+        const secondaryResult = drawWrappedText(ctx, metrics, getItemName(raw.item, itemLocales[1]), itemX, primaryResult.nextY + lineGap, itemWidth, {
+          size: layout.secondarySize,
+          lineHeight: layout.secondaryLineHeight,
           weight: layout.weight,
-          family,
+          family: getSerifFamily(itemLocales[1]),
           bottomY,
         });
-        if (enResult.clipped) break;
-        const dyeText = getTemplateDisplayDyeEntries(raw, "en", TEMPLATE_DEFINITIONS["silence-fashion"].equipmentFormat.dye)
-          .map((dye) => dye.name)
-          .join(" / ");
-        let contentBottom = enResult.nextY;
+        if (secondaryResult.clipped) break;
+        const dyeText = getTemplateDyeTextForOutput(raw, TEMPLATE_DEFINITIONS["silence-fashion"].equipmentFormat.dye);
+        let contentBottom = secondaryResult.nextY;
         if (dyeText) {
-          const dyeResult = drawWrappedText(ctx, metrics, dyeText, dyeX, enResult.nextY + lineGap, dyeWidth, {
+          const dyeResult = drawWrappedText(ctx, metrics, dyeText, dyeX, secondaryResult.nextY + lineGap, dyeWidth, {
             size: layout.dyeSize,
             lineHeight: layout.dyeLineHeight,
             weight: layout.weight,
-            family,
+            family: getSerifFamilyForLocales(dyeLocales),
             bottomY,
           });
           if (dyeResult.clipped) break;
@@ -294,8 +295,8 @@
       drawSilenceFashionImages(ctx, metrics);
       drawSilenceFashionText(ctx, metrics);
       const rows = getSilenceFashionRows();
-      if (isEnJaMode()) {
-        drawEnJaEquipment(ctx, metrics, rows);
+      if (isTemplateBilingualMode()) {
+        drawBilingualEquipment(ctx, metrics, rows);
       } else {
         drawZhEquipment(ctx, metrics, rows);
       }

@@ -1,8 +1,15 @@
 (() => {
   const snapshotId = String(window.NSGLAMOUR_SNAPSHOT_ID || "");
   const status = document.getElementById("snapshotStatus");
-  const languageControls = document.getElementById("snapshotLanguageControls");
+  const layoutToggleButton = document.getElementById("snapshotLayoutToggleButton");
+  const layoutToggleIcon = document.getElementById("snapshotLayoutToggleIcon");
+  const languageControl = document.getElementById("snapshotLanguageControl");
+  const languageButton = document.getElementById("snapshotLanguageButton");
+  const languageMenu = document.getElementById("snapshotLanguageMenu");
+  const themeToggleButton = document.getElementById("themeToggleBtn");
   const slotGrid = document.getElementById("snapshotSlotGrid");
+  const layoutApi = window.NSGlamourSnapshotLayout;
+  const layoutStorageKey = "nsglamour.snapshotLayout";
   const localeOrder = ["ja", "en", "fr", "de", "zh", "tc", "ko"];
   const localeLabels = {
     ja: "日本語",
@@ -43,12 +50,28 @@
     "Glasses",
     "FashionAccessory",
   ];
-  const equipmentSlotRanks = new Map(equipmentSlotOrder.map((slot, index) => [slot, index]));
   let snapshot = null;
   let locale = "zh";
+  let layoutMode = readLayoutMode();
 
   function appPath(path) {
     return window.NSGlamourCommon.appPath(path);
+  }
+
+  function readLayoutMode() {
+    try {
+      return layoutApi.normalizeMode(localStorage.getItem(layoutStorageKey));
+    } catch {
+      return layoutApi.COMPACT_MODE;
+    }
+  }
+
+  function saveLayoutMode() {
+    try {
+      localStorage.setItem(layoutStorageKey, layoutMode);
+    } catch {
+      // The viewer still works when browser storage is unavailable.
+    }
   }
 
   function resolveLocalized(names, selectedLocale = locale) {
@@ -71,26 +94,46 @@
     window.history.replaceState(null, "", url);
   }
 
+  function setLanguageMenuOpen(open) {
+    languageMenu.classList.toggle("hidden", !open);
+    languageMenu.setAttribute("aria-hidden", String(!open));
+    languageButton.setAttribute("aria-expanded", String(open));
+  }
+
   function renderLanguages() {
-    languageControls.replaceChildren();
+    languageMenu.replaceChildren();
     const locales = localeOrder.filter((value) => snapshot.locales.includes(value));
-    const select = document.createElement("select");
-    select.className = "snapshot-language-select";
-    select.setAttribute("aria-label", "装备名语言");
+    const currentLabel = localeLabels[locale] || locale;
+    languageButton.title = `语言：${currentLabel}`;
+    languageButton.setAttribute("aria-label", `语言：${currentLabel}`);
     locales.forEach((value) => {
-      const option = document.createElement("option");
-      option.value = value;
+      const option = document.createElement("button");
+      option.type = "button";
       option.lang = localeHtmlLang[value] || value;
       option.textContent = localeLabels[value] || value;
-      select.appendChild(option);
+      option.classList.toggle("active", value === locale);
+      option.setAttribute("role", "menuitemradio");
+      option.setAttribute("aria-checked", String(value === locale));
+      option.addEventListener("click", () => {
+        locale = value;
+        updateUrlLocale(locale);
+        setLanguageMenuOpen(false);
+        renderLanguages();
+        renderEquipment();
+        languageButton.focus();
+      });
+      languageMenu.appendChild(option);
     });
-    select.value = locale;
-    select.addEventListener("change", () => {
-      locale = select.value;
-      updateUrlLocale(locale);
-      renderEquipment();
-    });
-    languageControls.appendChild(select);
+  }
+
+  function updateLayoutControl() {
+    const isSpacious = layoutMode === layoutApi.SPACIOUS_MODE;
+    const currentLabel = isSpacious ? "宽松布局" : "紧凑布局";
+    const nextLabel = isSpacious ? "紧凑布局" : "宽松布局";
+    layoutToggleIcon.classList.toggle("is-spacious", isSpacious);
+    layoutToggleButton.title = `当前为${currentLabel}，切换为${nextLabel}`;
+    layoutToggleButton.setAttribute("aria-label", `当前为${currentLabel}，切换为${nextLabel}`);
+    layoutToggleButton.setAttribute("aria-pressed", String(isSpacious));
   }
 
   function createDyeChip(dye) {
@@ -111,10 +154,19 @@
     const slotName = document.createElement("h3");
     slotName.className = "editor-slot-name";
     slotName.lang = localeHtmlLang[locale] || locale;
-    slotName.textContent = resolveLocalized(entry.slot_names) || resolveLocalized(snapshot.slot_names[entry.slot]);
+    slotName.textContent = resolveLocalized(entry.slot_names)
+      || resolveLocalized(snapshot.slot_names[entry.slot])
+      || resolveLocalized(window.NSGlamourCommon.getSlotNames(entry.slot));
 
     const itemBox = document.createElement("div");
     itemBox.className = "editor-item";
+    if (!entry.item) {
+      row.classList.add("snapshot-empty-row");
+      itemBox.setAttribute("aria-hidden", "true");
+      row.append(slotName, itemBox);
+      return row;
+    }
+
     const iconUrl = window.NSGlamourCommon.buildIconUrl(entry.item.icon);
     if (iconUrl) {
       const icon = document.createElement("img");
@@ -143,6 +195,7 @@
       body.appendChild(dyes);
     }
     itemBox.appendChild(body);
+    window.NSGlamourItemReferenceMenu.attach(itemBox, entry.item);
     row.append(slotName, itemBox);
     return row;
   }
@@ -155,21 +208,16 @@
   }
 
   function renderEquipment() {
-    const entries = [...snapshot.entries].sort((left, right) => (
-      (equipmentSlotRanks.get(left.slot) ?? equipmentSlotOrder.length)
-      - (equipmentSlotRanks.get(right.slot) ?? equipmentSlotOrder.length)
-    ));
-    const isSingleColumn = entries.length <= 5;
-    slotGrid.classList.toggle("single-column", isSingleColumn);
-    if (isSingleColumn) {
-      slotGrid.replaceChildren(createColumn(entries));
-      return;
-    }
-    const splitAt = Math.ceil(entries.length / 2);
-    slotGrid.replaceChildren(
-      createColumn(entries.slice(0, splitAt)),
-      createColumn(entries.slice(splitAt)),
+    const entries = layoutApi.buildEntries(
+      snapshot.entries,
+      snapshot.slot_names,
+      layoutMode,
+      equipmentSlotOrder,
     );
+    const columns = layoutApi.splitEntries(entries);
+    slotGrid.classList.toggle("single-column", columns.length === 1);
+    slotGrid.classList.toggle("spacious-layout", layoutMode === layoutApi.SPACIOUS_MODE);
+    slotGrid.replaceChildren(...columns.map(createColumn));
   }
 
   async function loadSnapshot() {
@@ -194,6 +242,40 @@
     }
   }
 
+  layoutToggleButton.addEventListener("click", () => {
+    layoutMode = layoutMode === layoutApi.COMPACT_MODE
+      ? layoutApi.SPACIOUS_MODE
+      : layoutApi.COMPACT_MODE;
+    saveLayoutMode();
+    updateLayoutControl();
+    if (snapshot) renderEquipment();
+  });
+
+  languageButton.addEventListener("click", (event) => {
+    event.stopPropagation();
+    setLanguageMenuOpen(languageMenu.classList.contains("hidden"));
+  });
+
+  themeToggleButton.addEventListener("click", () => {
+    setLanguageMenuOpen(false);
+    window.NSGlamourCommon.toggleTheme();
+  });
+
+  document.addEventListener("click", (event) => {
+    if (!languageControl.contains(event.target)) {
+      setLanguageMenuOpen(false);
+    }
+  });
+
+  document.addEventListener("keydown", (event) => {
+    if (event.key === "Escape" && !languageMenu.classList.contains("hidden")) {
+      setLanguageMenuOpen(false);
+      languageButton.focus();
+    }
+  });
+
+  window.NSGlamourCommon.setupThemeListeners();
   window.NSGlamourCommon.loadTheme();
+  updateLayoutControl();
   loadSnapshot();
 })();

@@ -17,7 +17,7 @@
 
 ## 输入方式
 
-- 网页链接：石之家或 Eorzea Collection。
+- 网页链接：仅石之家幻化详情链接。
 - 文本信息：用户粘贴装备名、部位、染剂。
 - 隐藏 `.chara` 拖放：在链接输入区域处理。
 
@@ -62,7 +62,7 @@
 
 - 粘贴文本识别。
 - 导入石之家链接。
-- 导入 Eorzea Collection 链接。
+- 输入 Eorzea Collection 或其他域名时确认接口拒绝，且不会发起外部抓取。
 - 拖放 `.chara`。
 - 搜索替换装备。
 - 修改染剂。
@@ -74,7 +74,11 @@
 
 ## 只读快照
 
-- 公开页面路径：`/equipinfo/<snapshot_id>`，只提供装备名称语言切换，不挂载导入、搜索、替换、删除、保存或模板编辑控件。
+- 公开分享地址统一为 `https://n9s.site/g/<snapshot_id>?lang=<locale>`，由站点反向代理到轻量查看器；旧 `/equipinfo/<snapshot_id>` 路径继续兼容，不挂载导入、搜索、替换、删除、保存或模板编辑控件。
+- 快照工具栏固定为布局、装备名语言和昼夜主题三个图标按钮；语言选择继续写入链接的 `?lang=` 参数，主题沿用全站 `nsglamour.theme`。
+- 布局默认使用紧凑模式，只显示快照中的已有装备；宽松模式按既定顺序显示全部 14 个部位，未填写部位保留空行，桌面端均分两列、移动端单列。
+- 用户选择的快照布局保存在本机 `nsglamour.snapshotLayout`，不写入快照内容或分享链接；未保存过布局偏好的浏览器默认使用紧凑模式。
+- 有物品的装备行支持桌面端右键和移动端长按，菜单以固定站名打开最终幻想14中文维基、Lodestone、Garland Data 与韩国官方指南；菜单使用像素字体、无阴影和 `1px` 黑色边框。
 - 默认 SQLite：`.runtime/equipment-snapshots.sqlite3`；生产可用 `NSGLAMOUR_SNAPSHOT_DB_PATH` 指向持久目录。
 - 生成成功后沿用当前来源名自动写入 `nsglamour.recentLoadouts`，记录 `snapshotId`、`snapshotUrl` 和 `snapshotKey`。
 - 本地相同 `snapshotKey` 直接复用；本地记录缺失时继续依赖后端内容哈希去重。

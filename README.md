@@ -1,6 +1,6 @@
 # NSGlamour
 
-FFXIV 幻化展示图片生成工具。导入装备数据（Eorzea Collection、石之家、`.chara` 文件或文字），套用模板导出图片。
+FFXIV 幻化展示图片生成工具。导入装备数据（石之家、`.chara` 文件或文字），套用模板导出图片。
 
 ## 技术栈
 
@@ -9,7 +9,7 @@ FFXIV 幻化展示图片生成工具。导入装备数据（Eorzea Collection、
 | 后端 | Python 3 + Flask + gunicorn |
 | 前端 | 原生 JS + Canvas + CSS 变量 |
 | 存储 | JSON（装备库/国际化）+ IndexedDB（客户端） |
-| 集成 | Chrome DevTools Protocol（石之家）、HTML 抓取（Eorzea Collection） |
+| 集成 | Windows reader + Edge/CDP（石之家） |
 
 ## 快速启动
 
@@ -45,7 +45,7 @@ python scripts/app.py
 | `NSGLAMOUR_ICON_BASE_URL` | `https://img.nightingalesilence.com/ui/icon` | 图标源地址，可覆盖默认 CDN / 自定义域 |
 | `NSGLAMOUR_ICON_CACHE_DIR` | `.runtime/icon-cache` | 图标缓存目录 |
 | `NSGLAMOUR_DEBUG_ERRORS` | — | 设为 `1` 返回详细错误信息 |
-| `NSGLAMOUR_ENABLE_LINK_IMPORT` | `1` | 设为 `0` 临时关闭石之家和 Eorzea Collection 外链导入 |
+| `NSGLAMOUR_DISABLE_LINK_IMPORT` | 空 | 石之家链接导入默认开启；设为 `1` 可紧急关闭入口和接口 |
 | `NSGLAMOUR_RS_READER_URL` | — | 独立石之家 reader 地址 |
 | `NSGLAMOUR_RS_READER_TOKEN_FILE` | `.runtime/risingstones-reader-token` | reader Bearer token 文件路径 |
 | `NSGLAMOUR_RS_READER_REQUIRED` | — | 设为 `1` 禁止 reader 失败时回退旧浏览器 |

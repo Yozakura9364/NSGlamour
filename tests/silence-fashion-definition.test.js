@@ -36,7 +36,7 @@ const { TEMPLATE_DEFINITIONS, TEMPLATE_SELECT_ORDER } =
     RISINGSTONES_AVATAR_SLOT_ID: "risingstones-avatar",
     SILENCE_FASHION_TEMPLATE: {
       sourceSize: 3000,
-      enJa: { maxRows: 6 },
+      bilingual: { maxRows: 6 },
       imageRegion: { x: 171, y: 126, width: 1545, height: 2748 },
       avatarRegion: { x: 2431, y: 176, width: 324, height: 324 },
     },
@@ -45,9 +45,14 @@ const { TEMPLATE_DEFINITIONS, TEMPLATE_SELECT_ORDER } =
 
 const template = TEMPLATE_DEFINITIONS["silence-fashion"];
 assert.ok(template, "silence-fashion template should exist");
-assert.deepEqual(Array.from(template.languageOptions, (option) => option.label), ["chs", "tc", "ko", "en", "ja", "en+ja"]);
-assert.deepEqual(Array.from(template.languageOptions[5].locales), ["en", "ja"]);
+assert.equal(template.supportsBilingual, true);
+assert.deepEqual(Array.from(template.localeOrder), ["zh", "tc", "en", "ja", "ko", "fr", "de"]);
 assert.equal(template.controls.characterName, false);
 assert.equal(template.controls.ecSubtitle, true);
 assert.equal(template.imageSlots.length, 2);
 assert.ok(TEMPLATE_SELECT_ORDER.includes("silence-fashion"));
+assert.equal(TEMPLATE_DEFINITIONS.horizontal.supportsBilingual, true);
+assert.equal(TEMPLATE_DEFINITIONS.ec.supportsBilingual, true);
+assert.equal(TEMPLATE_DEFINITIONS.risingstones.supportsBilingual, true);
+assert.equal(TEMPLATE_DEFINITIONS.eorzea.supportsBilingual, undefined);
+assert.equal(TEMPLATE_DEFINITIONS.story.supportsBilingual, undefined);

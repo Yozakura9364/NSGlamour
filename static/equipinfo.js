@@ -54,11 +54,21 @@ const UI_LANGUAGE_TO_EQUIPINFO_LOCALE = {
   de: "de",
 };
 const LOCALE_LABELS = NSGlamourCommon.C.LOCALE_LABELS;
+const LOCALE_DISPLAY_LABELS = {
+  ja: "日本語",
+  en: "English",
+  fr: "Français",
+  de: "Deutsch",
+  zh: "简体中文",
+  tc: "繁體中文",
+  ko: "한국어",
+};
 const SLOT_DEFINITIONS = NSGlamourCommon.C.SLOT_DEFINITIONS;
 const EQUIPINFO_LEFT_COLUMN_SLOTS = ["MainHand", "HeadGear", "Body", "Hands", "Legs", "Feet", "Glasses"];
 const EQUIPINFO_RIGHT_COLUMN_SLOTS = ["OffHand", "Ears", "Neck", "Wrists", "LeftRing", "RightRing", "FashionAccessory"];
 const SNAPSHOT_LOCALES = ["ja", "en", "fr", "de", "zh", "tc", "ko"];
 const SNAPSHOT_LOCALE_URL_VALUES = { ja: "ja", en: "en", fr: "fr", de: "de", zh: "zh-CN", tc: "zh-TW", ko: "ko" };
+const SNAPSHOT_PUBLIC_ORIGIN = "https://n9s.site";
 const SNAPSHOT_SLOTS = ["MainHand", "OffHand", "HeadGear", "Body", "Hands", "Legs", "Feet", "Ears", "Neck", "Wrists", "LeftRing", "RightRing", "Glasses", "FashionAccessory"];
 const SNAPSHOT_SLOT_ORDER = new Map(SNAPSHOT_SLOTS.map((slot, index) => [slot, index]));
 const SNAPSHOT_HEX_PATTERN = /^#[0-9a-f]{6}$/i;
@@ -308,7 +318,7 @@ async function createSnapshotKey(request) {
 }
 
 function createSnapshotUrl(snapshotId) {
-  const url = new URL(appPath(`/equipinfo/${encodeURIComponent(snapshotId)}`), window.location.origin);
+  const url = new URL(`/g/${encodeURIComponent(snapshotId)}`, SNAPSHOT_PUBLIC_ORIGIN);
   const language = SNAPSHOT_LOCALE_URL_VALUES[state.locale];
   if (language) {
     url.searchParams.set("lang", language);
@@ -351,6 +361,10 @@ async function createEquipmentSnapshot() {
   if (!createSnapshotButton || createSnapshotButton.disabled || !getFilledEntries().length) {
     return;
   }
+  const snapshotWindow = window.open("about:blank", "_blank");
+  if (snapshotWindow) {
+    snapshotWindow.opener = null;
+  }
   createSnapshotButton.disabled = true;
   setCreateSnapshotButtonLabel("正在生成");
   try {
@@ -376,6 +390,9 @@ async function createEquipmentSnapshot() {
 
     const snapshotUrl = createSnapshotUrl(snapshotId);
     saveRecentSnapshot(state.displayName, { snapshotId, snapshotUrl, snapshotKey });
+    if (snapshotWindow && !snapshotWindow.closed) {
+      snapshotWindow.location.replace(snapshotUrl);
+    }
     if (await copySnapshotUrl(snapshotUrl)) {
       setCreateSnapshotButtonLabel("已复制链接");
       return;
@@ -386,6 +403,9 @@ async function createEquipmentSnapshot() {
     );
     setCreateSnapshotButtonLabel("生成快照");
   } catch (error) {
+    if (snapshotWindow && !snapshotWindow.closed) {
+      snapshotWindow.close();
+    }
     console.error("[equipinfo] failed to create snapshot", error);
     window.alert(window.NSGlamourUiLanguage?.translate?.("快照生成失败") || "快照生成失败");
     setCreateSnapshotButtonLabel("生成快照");
@@ -1065,17 +1085,66 @@ function renderLanguageControls() {
   if (!locales.includes(state.locale)) {
     state.locale = locales[0] || DEFAULT_LOCALE;
   }
-  for (const locale of locales) {
-    const button = document.createElement("button");
-    button.type = "button";
-    button.className = "language-button";
-    button.textContent = getLocaleLabel(locale);
-    button.classList.toggle("active", locale === state.locale);
-    button.addEventListener("click", () => {
+  const control = document.createElement("div");
+  control.className = "header-language-menu";
+
+  const button = document.createElement("button");
+  button.type = "button";
+  button.className = "header-icon-btn";
+  button.setAttribute("aria-haspopup", "menu");
+  button.setAttribute("aria-expanded", "false");
+  button.setAttribute("aria-label", `语言：${getLocaleDisplayLabel(state.locale)}`);
+  button.title = button.getAttribute("aria-label");
+  const icon = document.createElement("img");
+  icon.src = appPath("static/icons/language.svg");
+  icon.alt = "";
+  icon.setAttribute("aria-hidden", "true");
+  button.appendChild(icon);
+
+  const menu = document.createElement("div");
+  menu.className = "ui-language-popover hidden";
+  menu.setAttribute("role", "menu");
+  menu.setAttribute("aria-label", "装备名语言");
+  locales.forEach((locale) => {
+    const option = document.createElement("button");
+    option.type = "button";
+    option.className = "";
+    option.setAttribute("role", "menuitemradio");
+    option.setAttribute("aria-checked", String(locale === state.locale));
+    option.classList.toggle("active", locale === state.locale);
+    option.textContent = getLocaleDisplayLabel(locale);
+    option.addEventListener("click", () => {
       setEquipinfoLocale(locale);
+      closeEquipinfoLanguageMenu();
+      button.focus();
     });
-    languageControls.appendChild(button);
-  }
+    menu.appendChild(option);
+  });
+
+  button.addEventListener("click", (event) => {
+    event.stopPropagation();
+    const open = menu.classList.contains("hidden");
+    closeEquipinfoLanguageMenu();
+    if (open) {
+      menu.classList.remove("hidden");
+      button.setAttribute("aria-expanded", "true");
+    }
+  });
+  menu.addEventListener("click", (event) => event.stopPropagation());
+  control.append(button, menu);
+  languageControls.appendChild(control);
+}
+
+function getLocaleDisplayLabel(locale) {
+  return LOCALE_DISPLAY_LABELS[locale] || getLocaleLabel(locale) || locale;
+}
+
+function closeEquipinfoLanguageMenu() {
+  const control = languageControls?.querySelector(".header-language-menu");
+  const menu = control?.querySelector(".ui-language-popover");
+  const button = control?.querySelector(".header-icon-btn");
+  menu?.classList.add("hidden");
+  button?.setAttribute("aria-expanded", "false");
 }
 
 function closeDyePickers() { NSGlamourCommon.closeAllDyePickers(); }
@@ -1782,7 +1851,7 @@ async function importLink(event) {
   event.preventDefault();
   const url = urlInput?.value.trim() || "";
   if (!url) {
-    setStatus("请输入石之家或 Eorzea Collection 幻化链接", true);
+    setStatus("请输入石之家幻化详情链接", true);
     return;
   }
   setStatus("正在读取网页……");
@@ -2014,10 +2083,17 @@ window.addEventListener("storage", (event) => {
 });
 document.addEventListener("click", closeRecentPanel);
 document.addEventListener("click", closeCandidatePickers);
+document.addEventListener("click", closeEquipinfoLanguageMenu);
+document.addEventListener("keydown", (event) => {
+  if (event.key === "Escape") {
+    closeEquipinfoLanguageMenu();
+  }
+});
 window.addEventListener("nsglamour:header-popover-open", (event) => {
   if (event.detail?.source !== "recent") {
     closeRecentPanel();
   }
+  closeEquipinfoLanguageMenu();
 });
 textInput?.addEventListener("input", updateTextLineNumbers);
 textInput?.addEventListener("scroll", syncTextLineNumberScroll);

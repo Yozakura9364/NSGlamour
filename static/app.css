@@ -1194,12 +1194,11 @@ button.secondary:hover {
 
 .language-controls {
   display: inline-flex;
-  align-items: flex-end;
+  align-items: center;
   gap: 10px;
-  min-height: 30px;
+  min-height: 32px;
   padding: 0;
   border: 0;
-  border-bottom: 1px solid var(--divider);
   border-radius: 0;
   background: transparent;
 }
@@ -2372,6 +2371,8 @@ button.secondary:hover {
 .template-config-toolbar .language-controls {
   min-width: 0;
   flex: 0 1 auto;
+  flex-wrap: wrap;
+  gap: 8px 12px;
 }
 
 .template-config-toolbar .secondary {
@@ -2384,6 +2385,39 @@ button.secondary:hover {
 .template-language-settings {
   display: grid;
   gap: 0;
+}
+
+.template-bilingual-row {
+  display: grid;
+  grid-template-columns: minmax(52px, max-content) minmax(64px, 1fr) 12px minmax(64px, 1fr);
+  align-items: center;
+  gap: 8px;
+  padding: 8px 0;
+  border-bottom: 1px solid var(--divider);
+}
+
+.template-bilingual-row > strong {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text);
+}
+
+.template-language-select {
+  width: 100%;
+  min-width: 0;
+  min-height: 30px;
+  padding: 4px 26px 4px 8px;
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  background: var(--field);
+  color: var(--text);
+  font: inherit;
+  font-size: 12px;
+}
+
+.template-language-separator {
+  color: var(--text-dim);
+  text-align: center;
 }
 
 .template-language-settings:empty {
@@ -2652,6 +2686,32 @@ button.secondary:hover {
 
 .template-dye-frame-controls .segmented-button {
   min-width: 0;
+}
+
+.template-story-text-color-controls {
+  width: max-content;
+}
+
+.template-story-text-color-controls .segmented-button {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  min-width: 0;
+}
+
+.template-text-color-swatch {
+  width: 12px;
+  height: 12px;
+  flex: 0 0 12px;
+  border: 1px solid var(--divider-strong);
+}
+
+.template-text-color-swatch.is-white {
+  background: #ffffff;
+}
+
+.template-text-color-swatch.is-black {
+  background: #111111;
 }
 
 .template-story-swatch-field {
@@ -3031,6 +3091,12 @@ button.secondary:hover {
 
   .template-language-row {
     grid-template-columns: 1fr;
+  }
+
+  .template-bilingual-row {
+    grid-template-columns: minmax(48px, max-content) minmax(58px, 1fr) 10px minmax(58px, 1fr);
+    gap: 6px;
+    padding-right: 80px;
   }
 
   .template-crop-head,

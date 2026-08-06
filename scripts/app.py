@@ -118,7 +118,12 @@ RS_REMOTE_READER_TOKEN_FILE = Path(
 )
 RS_REMOTE_READER_REQUIRED = os.environ.get("NSGLAMOUR_RS_READER_REQUIRED", "").lower() in {"1", "true", "yes", "on"}
 RS_REMOTE_READER_MAX_BYTES = 2 * 1024 * 1024
-LINK_IMPORT_ENABLED = os.environ.get("NSGLAMOUR_ENABLE_LINK_IMPORT", "1").lower() in {"1", "true", "yes", "on"}
+LINK_IMPORT_ENABLED = os.environ.get("NSGLAMOUR_DISABLE_LINK_IMPORT", "").lower() not in {
+    "1",
+    "true",
+    "yes",
+    "on",
+}
 RS_READABLE_ERROR_PATTERNS = [
     (
         re.compile(r"请先登录", re.IGNORECASE),
@@ -2639,13 +2644,6 @@ def import_glamour_link():
     except Exception:
         host = ""
 
-    if host == EC_ALLOWED_HOST:
-        try:
-            document, final_url = fetch_ec_html(raw_url)
-            return jsonify(parse_ec_glamour_payload(document, final_url, get_mapping()))
-        except ValueError as exc:
-            return jsonify({"error": str(exc)}), 400
-
     if host == "ff14risingstones.web.sdo.com":
         ids = extract_risingstones_glamour_ids(raw_url)
         if not ids:
@@ -2668,7 +2666,7 @@ def import_glamour_link():
         except ValueError as exc:
             return jsonify({"error": str(exc)}), 400
 
-    return jsonify({"error": "无法识别，请输入石之家或 Eorzea Collection 链接"}), 400
+    return jsonify({"error": "只支持石之家幻化详情链接"}), 400
 
 
 @app.post("/api/equipinfo/parse-text")

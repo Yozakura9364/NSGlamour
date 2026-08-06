@@ -26,12 +26,14 @@
       getSelectedTemplateLocales,
       getTemplateDefaultTopText,
       getTemplateDisplayDyeEntries,
+      getTemplateDisplayDyeEntriesForOutput,
       getTemplateDyeFormat,
       getTemplateImageSlot,
       iconImageCache,
       makeRoundedRectPath,
       normalizeFigmaDyeName,
       normalizeHexColor,
+      isTemplateBilingualMode,
       state,
       strokeRoundedRect,
     } = deps;
@@ -349,8 +351,10 @@
       const x = xOverride != null ? xOverride : figmaUnit(metrics, measured.spec.x);
       const y = figmaUnit(metrics, dyeY ?? (rowY + getRisingstonesScaledValue(layout, "dyeYOffset", scale)));
       const height = figmaUnit(metrics, getRisingstonesScaledValue(layout, "dyeHeight", scale));
-      const textY = figmaUnit(metrics, rowY + getRisingstonesScaledValue(layout, "dyeTextYOffset", scale));
       const textHeight = figmaUnit(metrics, getRisingstonesScaledValue(layout, "dyeTextHeight", scale) || getRisingstonesScaledValue(layout, "dyeHeight", scale));
+      const textY = dyeY != null
+        ? y + (height - textHeight) / 2
+        : figmaUnit(metrics, rowY + getRisingstonesScaledValue(layout, "dyeTextYOffset", scale));
       const dotSize = figmaUnit(metrics, getRisingstonesScaledValue(layout, "dyeDotSize", scale));
       const dotX = x + figmaUnit(metrics, getRisingstonesScaledValue(layout, "dyeDotXOffset", scale));
       const dotY = y + (height - dotSize) / 2;
@@ -394,52 +398,88 @@
         textX,
         getRisingstonesTextInkCenterBaseline(ctx, label, textY + textHeight / 2),
       );
-      return measured.contentWidth;
+      return maxWidth != null ? Math.min(measured.contentWidth, maxWidth) : measured.contentWidth;
     }
 
     function drawRisingstonesEquipment(ctx, metrics) {
       const template = TEMPLATE_DEFINITIONS.risingstones;
-      const locale = getSelectedTemplateLocales()[0] || state.locale || DEFAULT_LOCALE;
-      const layout = RISINGSTONES_TEMPLATE.equipment;
+      const itemLocales = getSelectedTemplateLocales();
+      const locale = itemLocales[0] || state.locale || DEFAULT_LOCALE;
+      const bilingual = isTemplateBilingualMode();
+      const layout = bilingual
+        ? { ...RISINGSTONES_TEMPLATE.equipment, rowStep: 330 }
+        : RISINGSTONES_TEMPLATE.equipment;
       const rows = buildTemplateEquipmentRows(template, locale).slice(0, layout.maxRows);
       const equipmentScale = getRisingstonesEquipmentScale(rows.length, layout);
       rows.forEach((row, index) => {
         const rowY = getRisingstonesRowY(index, layout, equipmentScale);
         drawRisingstonesIcon(ctx, metrics, row, rowY, layout, equipmentScale);
 
-        const dyes = ACCESSORY_SLOTS.has(row.slot) ? [] : getTemplateDisplayDyeEntries(row, locale, getTemplateDyeFormat(template));
+        const raw = row.rawRow || row;
+        const dyes = ACCESSORY_SLOTS.has(row.slot)
+          ? []
+          : bilingual
+            ? getTemplateDisplayDyeEntriesForOutput(raw, getTemplateDyeFormat(template))
+            : getTemplateDisplayDyeEntries(raw, locale, getTemplateDyeFormat(template));
         const iconCenterY = getRisingstonesIconCenterY(rowY, layout, equipmentScale);
         const nameCenterY = dyes.length
           ? rowY + getRisingstonesScaledValue(layout, "nameYOffset", equipmentScale) + getRisingstonesScaledValue(layout, "nameHeight", equipmentScale) / 2
           : iconCenterY;
-        const dyeY = rowY + getRisingstonesScaledValue(layout, "dyeYOffset", equipmentScale);
+        let dyeY = rowY + getRisingstonesScaledValue(layout, "dyeYOffset", equipmentScale);
 
         const nameX = figmaUnit(metrics, layout.nameX);
-        const nameY = figmaUnit(metrics, nameCenterY);
         const nameWidth = getRisingstonesNameWidth(metrics, layout);
         ctx.fillStyle = RISINGSTONES_TEMPLATE.textColor;
         ctx.textAlign = "left";
-        drawEcFittedItemName(ctx, metrics, row.itemName ?? getItemName(row.item, locale), nameX, nameY, nameWidth, {
-          ...layout,
-          nameSize: getRisingstonesScaledValue(layout, "nameSize", equipmentScale),
-          nameMinSize: getRisingstonesScaledValue(layout, "nameMinSize", equipmentScale),
-          inkCenter: true,
-        });
+        const itemNames = itemLocales
+          .map((itemLocale) => getItemName(row.item, itemLocale))
+          .filter((name, nameIndex, names) => name && names.indexOf(name) === nameIndex);
+        if (bilingual && itemNames.length > 1) {
+          const nameLayout = {
+            ...layout,
+            nameSize: Math.max(Number(layout.dyeFontSize || 0), Number(layout.nameSize || 0) * 0.78) * equipmentScale,
+            nameMinSize: Math.max(Number(layout.nameMinSize || 0), Number(layout.dyeFontSize || 0)) * equipmentScale,
+            inkCenter: true,
+          };
+          const lineStep = getRisingstonesScaledValue(layout, "iconSize", equipmentScale) * 0.34;
+          const primaryCenterY = dyes.length
+            ? iconCenterY - lineStep
+            : iconCenterY - lineStep / 2;
+          const secondaryCenterY = dyes.length
+            ? iconCenterY
+            : iconCenterY + lineStep / 2;
+          if (dyes.length) {
+            dyeY = iconCenterY + lineStep - getRisingstonesScaledValue(layout, "dyeHeight", equipmentScale) / 2;
+          }
+          drawEcFittedItemName(ctx, metrics, itemNames[0], nameX, figmaUnit(metrics, primaryCenterY), nameWidth, nameLayout);
+          drawEcFittedItemName(ctx, metrics, itemNames[1], nameX, figmaUnit(metrics, secondaryCenterY), nameWidth, nameLayout);
+        } else {
+          const nameY = figmaUnit(metrics, nameCenterY);
+          drawEcFittedItemName(ctx, metrics, row.itemName ?? getItemName(row.item, locale), nameX, nameY, nameWidth, {
+            ...layout,
+            nameSize: getRisingstonesScaledValue(layout, "nameSize", equipmentScale),
+            nameMinSize: getRisingstonesScaledValue(layout, "nameMinSize", equipmentScale),
+            inkCenter: true,
+          });
+        }
 
         const visibleDyes = dyes.slice(0, 2);
         let dyeX = figmaUnit(metrics, layout.dyes?.[0]?.x || layout.nameX);
         const dyeGap = getRisingstonesDyeGap(metrics, layout, equipmentScale);
         const rowRight = figmaUnit(metrics, Number(layout.rowX || 0) + Number(layout.rowWidth || 0));
+        const maxChipWidth = bilingual && visibleDyes.length
+          ? Math.max(1, (rowRight - dyeX - dyeGap * (visibleDyes.length - 1)) / visibleDyes.length)
+          : null;
         visibleDyes.forEach((dye, dyeIndex) => {
           const measured = measureRisingstonesDyeChip(ctx, metrics, rowY, dye, dyeIndex, layout, locale, equipmentScale, dyeY);
           if (!measured) {
             return;
           }
-          const maxWidth = Math.max(0, rowRight - dyeX);
+          const maxWidth = maxChipWidth ?? Math.max(0, rowRight - dyeX);
           if (maxWidth <= 0) {
             return;
           }
-          drawRisingstonesDyeChip(
+          const drawnWidth = drawRisingstonesDyeChip(
             ctx,
             metrics,
             rowY,
@@ -452,7 +492,7 @@
             dyeX,
             maxWidth,
           );
-          dyeX += measured.contentWidth + dyeGap;
+          dyeX += drawnWidth + dyeGap;
         });
       });
     }

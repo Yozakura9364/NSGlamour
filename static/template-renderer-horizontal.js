@@ -16,44 +16,74 @@
       figmaRect,
       figmaUnit,
       figmaUnitY,
+      getItemName,
       getSelectedTemplateLocales,
       getTemplateDefaultTopText,
       getTemplateDyeFormat,
       getTemplateEquipmentFormat,
       getTemplateDyeText,
+      getTemplateDyeTextForOutput,
       getTemplateImageSlot,
       getTemplateImageSlotDefinitions,
       getTemplateImageSlotRect,
       loadHorizontalTemplateBackground,
+      isTemplateBilingualMode,
       state,
       getHorizontalTemplateBackground,
     } = deps;
 
     function getHorizontalDyeText(row, locale = state.locale) {
-      return row?.dyeText ?? getTemplateDyeText(row, locale, getTemplateDyeFormat(TEMPLATE_DEFINITIONS.horizontal));
+      const raw = row?.rawRow || row;
+      return isTemplateBilingualMode()
+        ? getTemplateDyeTextForOutput(raw, getTemplateDyeFormat(TEMPLATE_DEFINITIONS.horizontal))
+        : row?.dyeText ?? getTemplateDyeText(raw, locale, getTemplateDyeFormat(TEMPLATE_DEFINITIONS.horizontal));
     }
 
     function getHorizontalEquipmentRows(locale) {
+      const itemLocales = getSelectedTemplateLocales();
       return buildTemplateEquipmentRows(TEMPLATE_DEFINITIONS.horizontal, locale)
         .map((row) => ({
           slot: row.slot,
-          itemName: row.itemName,
+          itemNames: itemLocales
+            .map((itemLocale) => getItemName(row.item, itemLocale))
+            .filter((name, index, names) => name && names.indexOf(name) === index),
           hasDyeLine: row.hasDyeLine,
           dyeText: getHorizontalDyeText(row, locale),
         }));
     }
 
-    function getHorizontalRowAdvance(row, area = HORIZONTAL_TEMPLATE_EQUIPMENT_TEXT) {
-      return area.itemLineHeight + (row.hasDyeLine ? area.dyeLineHeight : 0) + area.groupGap;
+    function getHorizontalEquipmentArea() {
+      if (!isTemplateBilingualMode()) {
+        return HORIZONTAL_TEMPLATE_EQUIPMENT_TEXT;
+      }
+      return {
+        ...HORIZONTAL_TEMPLATE_EQUIPMENT_TEXT,
+        itemSize: 68,
+        secondaryItemSize: 58,
+        itemLineHeight: 72,
+        secondaryItemLineHeight: 64,
+        itemInkHeight: 58,
+        dyeSize: 44,
+        dyeLineHeight: 54,
+        dyeInkHeight: 38,
+        groupGap: 46,
+      };
     }
 
-    function getHorizontalRowInkHeight(row, area = HORIZONTAL_TEMPLATE_EQUIPMENT_TEXT) {
+    function getHorizontalRowAdvance(row, area = getHorizontalEquipmentArea()) {
+      return area.itemLineHeight
+        + (row.itemNames.length > 1 ? area.secondaryItemLineHeight : 0)
+        + (row.hasDyeLine ? area.dyeLineHeight : 0)
+        + area.groupGap;
+    }
+
+    function getHorizontalRowInkHeight(row, area = getHorizontalEquipmentArea()) {
       return row.hasDyeLine
-        ? area.itemLineHeight + area.dyeInkHeight
-        : area.itemInkHeight;
+        ? area.itemLineHeight + (row.itemNames.length > 1 ? area.secondaryItemLineHeight : 0) + area.dyeInkHeight
+        : area.itemInkHeight + (row.itemNames.length > 1 ? area.secondaryItemLineHeight : 0);
     }
 
-    function getHorizontalEquipmentHeight(rows, area = HORIZONTAL_TEMPLATE_EQUIPMENT_TEXT) {
+    function getHorizontalEquipmentHeight(rows, area = getHorizontalEquipmentArea()) {
       if (!rows.length) {
         return area.topPadding + area.itemLineHeight;
       }
@@ -65,7 +95,7 @@
       }, area.topPadding);
     }
 
-    function getHorizontalVisibleRows(rows, area = HORIZONTAL_TEMPLATE_EQUIPMENT_TEXT) {
+    function getHorizontalVisibleRows(rows, area = getHorizontalEquipmentArea()) {
       if (!rows.length) {
         return [];
       }
@@ -82,8 +112,9 @@
     }
 
     function getHorizontalContentLayout(rows) {
-      const visibleRows = getHorizontalVisibleRows(rows);
-      const equipmentHeight = getHorizontalEquipmentHeight(visibleRows);
+      const area = getHorizontalEquipmentArea();
+      const visibleRows = getHorizontalVisibleRows(rows, area);
+      const equipmentHeight = getHorizontalEquipmentHeight(visibleRows, area);
       const groupHeight = HORIZONTAL_TEMPLATE_CONTENT_GROUP.titleToEquipment + equipmentHeight;
       const groupBoundsHeight = HORIZONTAL_TEMPLATE_CONTENT_GROUP.bottom - HORIZONTAL_TEMPLATE_CONTENT_GROUP.top;
       const groupTop = HORIZONTAL_TEMPLATE_CONTENT_GROUP.top + Math.max(0, (groupBoundsHeight - groupHeight) / 2);
@@ -162,7 +193,7 @@
     }
 
     function drawHorizontalEquipmentText(ctx, metrics, layout, rows) {
-      const area = HORIZONTAL_TEMPLATE_EQUIPMENT_TEXT;
+      const area = getHorizontalEquipmentArea();
       const itemFormat = getTemplateEquipmentFormat(TEMPLATE_DEFINITIONS.horizontal).itemName || {};
       const box = figmaRect(metrics, {
         ...area,
@@ -182,30 +213,36 @@
       }
 
       const itemSize = figmaUnit(metrics, area.itemSize);
+      const secondaryItemSize = figmaUnit(metrics, area.secondaryItemSize || area.itemSize);
       const dyeSize = figmaUnit(metrics, area.dyeSize);
       const itemLineHeight = figmaUnitY(metrics, area.itemLineHeight);
+      const secondaryItemLineHeight = figmaUnitY(metrics, area.secondaryItemLineHeight || 0);
       const dyeLineHeight = figmaUnitY(metrics, area.dyeLineHeight);
       const groupGap = figmaUnitY(metrics, area.groupGap);
       let cursorY = box.y + figmaUnitY(metrics, area.topPadding);
       for (const row of rows) {
+        const secondaryInkHeight = row.itemNames.length > 1 ? secondaryItemLineHeight : 0;
         const rowInkHeight = row.hasDyeLine
-          ? itemLineHeight + figmaUnitY(metrics, area.dyeInkHeight)
-          : figmaUnitY(metrics, area.itemInkHeight);
+          ? itemLineHeight + secondaryInkHeight + figmaUnitY(metrics, area.dyeInkHeight)
+          : figmaUnitY(metrics, area.itemInkHeight) + secondaryInkHeight;
         if (cursorY + rowInkHeight > box.y + box.height) {
           break;
         }
-        const fittedItemSize = getHorizontalFittedFontSize(ctx, row.itemName, itemSize, box.width, itemFormat);
-        ctx.font = makeHorizontalEquipmentFont(fittedItemSize);
-        ctx.fillText(row.itemName, box.x, cursorY);
+        row.itemNames.forEach((itemName, itemIndex) => {
+          const baseSize = itemIndex === 0 ? itemSize : secondaryItemSize;
+          const fittedItemSize = getHorizontalFittedFontSize(ctx, itemName, baseSize, box.width, itemFormat);
+          ctx.font = makeHorizontalEquipmentFont(fittedItemSize);
+          ctx.fillText(itemName, box.x, cursorY);
+          cursorY += itemIndex === 0 ? itemLineHeight : secondaryItemLineHeight;
+        });
         if (row.hasDyeLine) {
-          cursorY += itemLineHeight;
           ctx.font = makeHorizontalEquipmentFont(dyeSize);
           if (row.dyeText) {
             ctx.fillText(row.dyeText, box.x, cursorY);
           }
           cursorY += dyeLineHeight + groupGap;
         } else {
-          cursorY += itemLineHeight + groupGap;
+          cursorY += groupGap;
         }
       }
       ctx.restore();

@@ -88,6 +88,46 @@
       "fr": "Teinture",
       "note": "Common UI label for dye/coloring sections."
     },
+    "common.ui.item_name": {
+      "zh-CN": "装备名",
+      "zh-TW": "裝備名",
+      "en": "Item name",
+      "ja": "装備名",
+      "ko": "장비명",
+      "de": "Ausrüstungsname",
+      "fr": "Nom de l'équipement",
+      "note": "Template output language label for item names."
+    },
+    "common.ui.dye_name": {
+      "zh-CN": "染剂",
+      "zh-TW": "染劑",
+      "en": "Dye",
+      "ja": "カララント",
+      "ko": "염료",
+      "de": "Farbstoff",
+      "fr": "Teinture",
+      "note": "Template output language label for dye names."
+    },
+    "common.ui.custom": {
+      "zh-CN": "自定义",
+      "zh-TW": "自訂",
+      "en": "Custom",
+      "ja": "カスタム",
+      "ko": "사용자 지정",
+      "de": "Benutzerdefiniert",
+      "fr": "Personnalisé",
+      "note": "Template output mode with user-selected item and dye languages."
+    },
+    "common.ui.hidden_option": {
+      "zh-CN": "不显示",
+      "zh-TW": "不顯示",
+      "en": "Hidden",
+      "ja": "表示しない",
+      "ko": "표시 안 함",
+      "de": "Ausblenden",
+      "fr": "Masquer",
+      "note": "Option for omitting the second dye language."
+    },
     "common.ui.read": {
       "zh-CN": "读取",
       "zh-TW": "讀取",
@@ -189,13 +229,13 @@
       "note": "Equipinfo URL input label."
     },
     "equipinfo.ui.post_link_placeholder": {
-      "zh-CN": "石之家或 Eorzea Collection 幻化链接",
-      "zh-TW": "石之家或 Eorzea Collection 幻化連結",
-      "en": "Rising Stones or Eorzea Collection glamour link",
-      "ja": "石之家または Eorzea Collection のミラプリリンク",
-      "ko": "石之家 또는 Eorzea Collection 장비 투영 링크",
-      "de": "Glamour-Link von 石之家 oder Eorzea Collection",
-      "fr": "Lien de mirage 石之家 ou Eorzea Collection",
+      "zh-CN": "石之家幻化详情链接",
+      "zh-TW": "石之家幻化詳情連結",
+      "en": "Rising Stones glamour detail link",
+      "ja": "石之家のミラプリ詳細リンク",
+      "ko": "石之家 장비 투영 상세 링크",
+      "de": "Rising-Stones-Glamour-Detail-Link",
+      "fr": "Lien de détail de mirage Rising Stones",
       "note": "Equipinfo URL placeholder and empty URL status."
     },
     "equipinfo.ui.language_meta": {
@@ -549,13 +589,13 @@
       "note": "Backend /api/equipinfo/parse-text error."
     },
     "equipinfo.backend.unrecognized_link": {
-      "zh-CN": "无法识别，请输入石之家或 Eorzea Collection 链接",
-      "zh-TW": "無法識別，請輸入石之家或 Eorzea Collection 連結",
-      "en": "Unable to recognize it. Please enter a Rising Stones or Eorzea Collection link",
-      "ja": "認識できません。石之家または Eorzea Collection のリンクを入力してください",
-      "ko": "인식할 수 없습니다. 石之家 또는 Eorzea Collection 링크를 입력하세요",
-      "de": "Erkennung fehlgeschlagen. Bitte gib einen 石之家- oder Eorzea Collection-Link ein",
-      "fr": "Impossible de reconnaître le lien. Veuillez saisir un lien 石之家 ou Eorzea Collection",
+      "zh-CN": "只支持石之家幻化详情链接",
+      "zh-TW": "僅支援石之家幻化詳情連結",
+      "en": "Only Rising Stones glamour detail links are supported",
+      "ja": "石之家のミラプリ詳細リンクのみ対応しています",
+      "ko": "石之家 장비 투영 상세 링크만 지원합니다",
+      "de": "Es werden nur Rising-Stones-Glamour-Detail-Links unterstützt",
+      "fr": "Seuls les liens de détail de mirage Rising Stones sont pris en charge",
       "note": "Backend /api/import-glamour-link error shown on equipinfo link import."
     },
     "equipinfo.backend.text_too_long": {
@@ -1278,13 +1318,13 @@
       ]
     },
     "static.template.frontend-literal.eorzea_collection_2": {
-      "zh-CN": "无法识别，请输入石之家或 Eorzea Collection 幻化链接",
-      "zh-TW": "無法識別，請輸入石之家或 Eorzea Collection 幻化連結",
-      "en": "Unrecognized link. Please enter a Rising Stones or Eorzea Collection glamour link",
-      "ja": "認識できません。石之家または Eorzea Collection のミラプリリンクを入力してください",
-      "ko": "인식할 수 없습니다. 石之家 또는 Eorzea Collection 장비 투영 링크를 입력하세요",
-      "de": "Nicht erkannt. Bitte gib einen Rising-Stones- oder Eorzea-Collection-Glamour-Link ein",
-      "fr": "Lien non reconnu. Veuillez saisir un lien de mirage Rising Stones ou Eorzea Collection",
+      "zh-CN": "只支持石之家幻化详情链接",
+      "zh-TW": "僅支援石之家幻化詳情連結",
+      "en": "Only Rising Stones glamour detail links are supported",
+      "ja": "石之家のミラプリ詳細リンクのみ対応しています",
+      "ko": "石之家 장비 투영 상세 링크만 지원합니다",
+      "de": "Es werden nur Rising-Stones-Glamour-Detail-Links unterstützt",
+      "fr": "Seuls les liens de détail de mirage Rising Stones sont pris en charge",
       "note": "Backend error/status message returned by API and shown in the UI.",
       "occurrences": [
         {
@@ -2556,6 +2596,62 @@
         }
       ]
     },
+    "template.template.html-text.story_text_color": {
+      "zh-CN": "文字颜色",
+      "zh-TW": "文字顏色",
+      "en": "Text Color",
+      "ja": "文字色",
+      "ko": "글자 색상",
+      "de": "Textfarbe",
+      "fr": "Couleur du texte",
+      "note": "Double Pic equipment and copyright text color control.",
+      "occurrences": [
+        {
+          "file": "templates/template.html",
+          "line": 105,
+          "kind": "html-text"
+        },
+        {
+          "file": "templates/template.html",
+          "line": 106,
+          "kind": "html-aria-label"
+        }
+      ]
+    },
+    "template.template.html-text.story_text_white": {
+      "zh-CN": "白字",
+      "zh-TW": "白字",
+      "en": "White",
+      "ja": "白文字",
+      "ko": "흰색 글자",
+      "de": "Weiß",
+      "fr": "Blanc",
+      "note": "White text option for Double Pic.",
+      "occurrences": [
+        {
+          "file": "templates/template.html",
+          "line": 107,
+          "kind": "html-text"
+        }
+      ]
+    },
+    "template.template.html-text.story_text_black": {
+      "zh-CN": "黑字",
+      "zh-TW": "黑字",
+      "en": "Black",
+      "ja": "黒文字",
+      "ko": "검은색 글자",
+      "de": "Schwarz",
+      "fr": "Noir",
+      "note": "Black text option for Double Pic.",
+      "occurrences": [
+        {
+          "file": "templates/template.html",
+          "line": 108,
+          "kind": "html-text"
+        }
+      ]
+    },
     "template.template.html-text.355": {
       "zh-CN": "清空配装",
       "zh-TW": "清空配裝",
@@ -2800,13 +2896,13 @@
       ]
     },
     "template.template.html-text.eorzea_collection": {
-      "zh-CN": "请输入石之家或 Eorzea Collection 幻化链接",
-      "zh-TW": "請輸入石之家或 Eorzea Collection 幻化連結",
-      "en": "Please enter a Rising Stones or Eorzea Collection glamour link",
-      "ja": "石之家または Eorzea Collection のミラプリリンクを入力してください",
-      "ko": "石之家 또는 Eorzea Collection 장비 투영 링크를 입력하세요",
-      "de": "Bitte gib einen Rising-Stones- oder Eorzea-Collection-Glamour-Link ein",
-      "fr": "Veuillez saisir un lien de mirage Rising Stones ou Eorzea Collection",
+      "zh-CN": "请输入石之家幻化详情链接",
+      "zh-TW": "請輸入石之家幻化詳情連結",
+      "en": "Please enter a Rising Stones glamour detail link",
+      "ja": "石之家のミラプリ詳細リンクを入力してください",
+      "ko": "石之家 장비 투영 상세 링크를 입력하세요",
+      "de": "Bitte gib einen Rising-Stones-Glamour-Detail-Link ein",
+      "fr": "Veuillez saisir un lien de détail de mirage Rising Stones",
       "note": "",
       "occurrences": [
         {

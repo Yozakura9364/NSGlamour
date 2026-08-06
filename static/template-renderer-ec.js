@@ -32,6 +32,7 @@
       getSelectedTemplateLocales,
       getTemplateDefaultTopText,
       getTemplateDisplayDyeEntries,
+      getTemplateDisplayDyeEntriesForOutput,
       getTemplateDyeFormat,
       getTemplateImageSlot,
       getTemplateImageSlotDefinition,
@@ -43,6 +44,7 @@
       normalizeEcSubtitleSymbol,
       normalizeFigmaDyeName,
       normalizeHexColor,
+      isTemplateBilingualMode,
       state,
     } = deps;
 
@@ -253,7 +255,10 @@
     }
 
     function getEcVisibleDyeEntries(row, locale = state.locale) {
-      return row?.dyes ?? getTemplateDisplayDyeEntries(row, locale, getTemplateDyeFormat(TEMPLATE_DEFINITIONS.ec));
+      const raw = row?.rawRow || row;
+      return isTemplateBilingualMode()
+        ? getTemplateDisplayDyeEntriesForOutput(raw, getTemplateDyeFormat(TEMPLATE_DEFINITIONS.ec))
+        : row?.dyes ?? getTemplateDisplayDyeEntries(raw, locale, getTemplateDyeFormat(TEMPLATE_DEFINITIONS.ec));
     }
 
     function getEcVariantLabel(row) {
@@ -286,10 +291,12 @@
       }
       const label = getEcDyeLabel(dye, locale);
       const isEmptyDye = dye.isEmpty || normalizeFigmaDyeName(dye.name) === FIGMA_EMPTY_DYE_NAME;
-      const y = figmaUnit(metrics, rowY + layout.dyeYOffset);
+      const centerY = Number.isFinite(options.centerY) ? options.centerY : null;
+      const y = figmaUnit(metrics, centerY != null ? centerY - layout.dyeHeight / 2 : rowY + layout.dyeYOffset);
       const height = figmaUnit(metrics, layout.dyeHeight);
       const dotSize = figmaUnit(metrics, layout.dyeDotSize);
-      const fontSize = figmaUnit(metrics, layout.dyeFontSize);
+      const fontSize = figmaUnit(metrics, options.fontSize || layout.dyeFontSize);
+      const fontWeight = Number(options.fontWeight || 400);
       const leftPadding = figmaUnit(metrics, layout.dyeTextXOffset);
       const rightPadding = figmaUnit(metrics, layout.dyeTextRightPadding || 34);
       const minWidth = Math.max(leftPadding + rightPadding, figmaUnit(metrics, layout.dyeDotXOffset) + dotSize + rightPadding);
@@ -301,8 +308,9 @@
       const dotY = y + (height - dotSize) / 2;
       const textX = x + leftPadding;
 
-      ctx.font = `400 ${fontSize}px 'Source Sans 3', 'Microsoft YaHei', sans-serif`;
-      const width = Math.max(minWidth, ctx.measureText(label).width + leftPadding + rightPadding);
+      ctx.font = `${fontWeight} ${fontSize}px 'Source Sans 3', 'Microsoft YaHei', sans-serif`;
+      const measuredWidth = Math.max(minWidth, ctx.measureText(label).width + leftPadding + rightPadding);
+      const width = options.maxWidth ? Math.min(measuredWidth, options.maxWidth) : measuredWidth;
 
       ctx.fillStyle = EC_TEMPLATE_COLORS.rowDeep;
       fillRoundedRect(ctx, x, y, width, height, figmaUnit(metrics, layout.dyeRadius));
@@ -312,10 +320,10 @@
       ctx.arc(dotX + dotSize / 2, dotY + dotSize / 2, dotSize / 2, 0, Math.PI * 2);
       ctx.fill();
 
-      ctx.fillStyle = EC_TEMPLATE_COLORS.textDim;
+      ctx.fillStyle = options.textColor || EC_TEMPLATE_COLORS.textDim;
       ctx.textAlign = "left";
       ctx.textBaseline = "middle";
-      ctx.fillText(label, textX, y + height / 2);
+      ctx.fillText(label, textX, y + height / 2, Math.max(1, width - leftPadding - rightPadding));
       return { x, y, width, height, right: x + width };
     }
 
@@ -337,17 +345,54 @@
         : ACCESSORY_SLOTS.has(row.slot)
           ? []
           : getEcVisibleDyeEntries(row, locale);
-      const itemName = row.itemName ?? getItemName(row.item, locale);
+      const itemLocales = getSelectedTemplateLocales();
+      const itemNames = itemLocales
+        .map((itemLocale) => getItemName(row.item, itemLocale))
+        .filter((name, nameIndex, names) => name && names.indexOf(name) === nameIndex);
+      const itemName = itemNames[0] || row.itemName || getItemName(row.item, locale);
       const nameX = figmaUnit(metrics, layout.nameX);
       const nameWidth = figmaUnit(metrics, layout.nameWidth);
-      const nameCenterY = getEcItemNameCenterY(rowBox, metrics, rowY, dyes, layout);
       ctx.fillStyle = getEcItemNameColor(row);
       ctx.textAlign = "left";
       ctx.textBaseline = "middle";
-      drawEcFittedItemName(ctx, metrics, itemName, nameX, nameCenterY, nameWidth, layout);
+      let bilingualDyeCenterY = null;
+      if (isTemplateBilingualMode() && itemNames.length > 1) {
+        const nameLayout = {
+          ...layout,
+          nameSize: Math.max(Math.round(layout.dyeFontSize * 1.2), Math.round(layout.nameSize * 0.9)),
+          nameMinSize: Math.max(layout.dyeFontSize, layout.nameMinSize),
+        };
+        const iconCenterY = rowY + layout.iconYOffset + layout.iconSize / 2;
+        const lineStep = layout.iconSize * 0.36;
+        const primaryCenterY = dyes.length
+          ? iconCenterY - lineStep
+          : iconCenterY - lineStep / 2;
+        const secondaryCenterY = dyes.length
+          ? iconCenterY
+          : iconCenterY + lineStep / 2;
+        bilingualDyeCenterY = dyes.length ? iconCenterY + lineStep : null;
+        drawEcFittedItemName(ctx, metrics, itemName, nameX, figmaUnit(metrics, primaryCenterY), nameWidth, nameLayout);
+        drawEcFittedItemName(ctx, metrics, itemNames[1], nameX, figmaUnit(metrics, secondaryCenterY), nameWidth, nameLayout);
+      } else {
+        const nameCenterY = getEcItemNameCenterY(rowBox, metrics, rowY, dyes, layout);
+        drawEcFittedItemName(ctx, metrics, itemName, nameX, nameCenterY, nameWidth, layout);
+      }
       let dyeRight = 0;
+      const dyeGap = figmaUnit(metrics, layout.dyeGap || 34);
+      const dyeStartX = figmaUnit(metrics, layout.dyes[0]?.x || layout.nameX);
+      const dyeMaxRight = figmaUnit(metrics, layout.rowX + layout.rowWidth - 24);
+      const maxChipWidth = isTemplateBilingualMode() && dyes.length
+        ? Math.max(1, (dyeMaxRight - dyeStartX - dyeGap * (dyes.length - 1)) / dyes.length)
+        : null;
       dyes.forEach((dye, dyeIndex) => {
-        const chip = drawEcDyeChip(ctx, metrics, rowY, dye, dyeIndex, layout, locale, { previousRight: dyeRight });
+        const chip = drawEcDyeChip(ctx, metrics, rowY, dye, dyeIndex, layout, locale, {
+          previousRight: dyeRight,
+          maxWidth: maxChipWidth,
+          centerY: bilingualDyeCenterY,
+          fontSize: bilingualDyeCenterY != null ? Math.round(layout.dyeFontSize * 1.1) : null,
+          fontWeight: bilingualDyeCenterY != null ? 500 : null,
+          textColor: bilingualDyeCenterY != null ? EC_TEMPLATE_COLORS.text : null,
+        });
         dyeRight = chip?.right || dyeRight;
       });
     }
@@ -362,11 +407,29 @@
       return EC_TEMPLATE_LAYOUTS.normal;
     }
 
+    function getEcBilingualEquipmentLayout(layout, rowCount) {
+      if (rowCount <= 1 || layout.rowY.length <= 1) {
+        return layout;
+      }
+      const firstY = layout.rowY[0];
+      const baseStep = layout.rowY[1] - firstY;
+      const availableBottom = layout.rowY[layout.rowY.length - 1] + layout.rowHeight;
+      const maxStep = (availableBottom - firstY - layout.rowHeight) / (rowCount - 1);
+      const rowStep = Math.min(baseStep + 28, maxStep);
+      return {
+        ...layout,
+        rowY: Array.from({ length: rowCount }, (_, index) => firstY + index * rowStep),
+      };
+    }
+
     function drawEcEquipment(ctx, metrics) {
       const locale = getSelectedTemplateLocales()[0] || state.locale || DEFAULT_LOCALE;
       const allRows = buildTemplateEquipmentRows(TEMPLATE_DEFINITIONS.ec, locale);
-      const layout = getEcEquipmentLayout(allRows.length);
-      const rows = allRows.slice(0, layout.maxRows);
+      const baseLayout = getEcEquipmentLayout(allRows.length);
+      const rows = allRows.slice(0, baseLayout.maxRows);
+      const layout = isTemplateBilingualMode()
+        ? getEcBilingualEquipmentLayout(baseLayout, rows.length)
+        : baseLayout;
       if (!rows.length) {
         return;
       }

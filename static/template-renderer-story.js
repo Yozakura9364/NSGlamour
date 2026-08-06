@@ -135,6 +135,12 @@
       return `rgba(${red}, ${green}, ${blue}, ${normalizedAlpha})`;
     }
 
+    function getStoryTextPalette() {
+      return state.settings.storyTextColorMode === "black"
+        ? { text: "#111111", glow: "#ffffff" }
+        : { text: "#ffffff", glow: "#000000" };
+    }
+
     function drawStoryEquipmentTextShape(ctx, lines, layout, color) {
       ctx.save();
       ctx.font = layout.font;
@@ -178,8 +184,8 @@
       return spreadCanvas;
     }
 
-    function drawStoryMaskOuterGlow(ctx, metrics, maskCanvas, x, y, area = STORY_TEMPLATE_EQUIPMENT_TEXT) {
-      const opacity = Number(area.outerGlowOpacity ?? 0.56);
+    function drawStoryMaskOuterGlow(ctx, metrics, maskCanvas, x, y, area = STORY_TEMPLATE_EQUIPMENT_TEXT, glowColor = null) {
+      const opacity = Number(area.outerGlowOpacity ?? 0.36);
       const glowSize = figmaUnit(metrics, area.outerGlowSize || 24);
       if (!maskCanvas || opacity <= 0 || glowSize <= 0) {
         return;
@@ -190,7 +196,7 @@
       const shadowOffset = Math.ceil(metrics.totalWidth + spreadCanvas.width + glowSize * 4 + 16);
 
       ctx.save();
-      ctx.shadowColor = colorWithAlpha(area.outerGlowColor || "#000000", opacity);
+      ctx.shadowColor = colorWithAlpha(glowColor || area.outerGlowColor || "#000000", opacity);
       ctx.shadowBlur = glowSize;
       ctx.shadowOffsetX = shadowOffset;
       ctx.shadowOffsetY = 0;
@@ -198,7 +204,7 @@
       ctx.restore();
     }
 
-    function drawStoryEquipmentOuterGlow(ctx, metrics, lines, layout, textBlockHeight, area) {
+    function drawStoryEquipmentOuterGlow(ctx, metrics, lines, layout, textBlockHeight, area, glowColor) {
       if (!lines.length) {
         return;
       }
@@ -219,7 +225,7 @@
 
       const drawX = layout.centerX - maskCanvas.width / 2;
       const drawY = layout.startY - padding;
-      drawStoryMaskOuterGlow(ctx, metrics, maskCanvas, drawX, drawY, area);
+      drawStoryMaskOuterGlow(ctx, metrics, maskCanvas, drawX, drawY, area, glowColor);
     }
 
     function drawStoryEquipmentText(ctx, metrics) {
@@ -250,17 +256,13 @@
         underlineOffset,
         underlineWidth,
       };
+      const palette = getStoryTextPalette();
 
       ctx.save();
       ctx.font = layout.font;
-      drawStoryEquipmentOuterGlow(ctx, metrics, visibleLines, layout, textBlockHeight, area);
-      drawStoryEquipmentTextShape(ctx, visibleLines, layout, "#ffffff");
+      drawStoryEquipmentOuterGlow(ctx, metrics, visibleLines, layout, textBlockHeight, area, palette.glow);
+      drawStoryEquipmentTextShape(ctx, visibleLines, layout, palette.text);
       ctx.restore();
-    }
-
-    function hasStoryEquipmentLines(template) {
-      const locale = getSelectedTemplateLocales()[0] || state.locale || DEFAULT_LOCALE;
-      return buildTemplateEquipmentRows(template, locale).some((row) => makeStoryEquipmentLine(row, locale));
     }
 
     function getStoryWatermarkFontSize(ctx, metrics, box) {
@@ -342,6 +344,7 @@
     }
 
     function drawStoryWatermark(ctx, metrics) {
+      const palette = getStoryTextPalette();
       const box = figmaRect(metrics, STORY_TEMPLATE_WATERMARK_RECT);
       const fontSize = getStoryWatermarkFontSize(ctx, metrics, box);
       const font = getStoryTemplateFont(fontSize);
@@ -359,8 +362,8 @@
         height: box.height,
       }, font, "#000000");
 
-      drawStoryMaskOuterGlow(ctx, metrics, maskCanvas, box.x - padding, box.y - padding);
-      drawStoryWatermarkTextShape(ctx, box, font, "#ffffff");
+      drawStoryMaskOuterGlow(ctx, metrics, maskCanvas, box.x - padding, box.y - padding, STORY_TEMPLATE_EQUIPMENT_TEXT, palette.glow);
+      drawStoryWatermarkTextShape(ctx, box, font, palette.text);
     }
 
     function renderStoryTemplateCanvas(ctx, metrics) {
@@ -408,6 +411,7 @@
     }
 
     function drawDoublePicCopyright(ctx, metrics) {
+      const palette = getStoryTextPalette();
       const box = figmaRect(metrics, DOUBLE_PIC_COPYRIGHT_RECT);
       const maxSize = figmaUnit(metrics, DOUBLE_PIC_COPYRIGHT_TEXT_STYLE.maxFontSize);
       const minSize = figmaUnit(metrics, DOUBLE_PIC_COPYRIGHT_TEXT_STYLE.minFontSize);
@@ -434,8 +438,8 @@
         height: box.height,
       }, font, "#000000", box.width);
 
-      drawStoryMaskOuterGlow(ctx, metrics, maskCanvas, box.x - padding, box.y - padding);
-      drawCenteredTextShape(ctx, DOUBLE_PIC_COPYRIGHT_TEXT, box, font, "#ffffff", box.width);
+      drawStoryMaskOuterGlow(ctx, metrics, maskCanvas, box.x - padding, box.y - padding, STORY_TEMPLATE_EQUIPMENT_TEXT, palette.glow);
+      drawCenteredTextShape(ctx, DOUBLE_PIC_COPYRIGHT_TEXT, box, font, palette.text, box.width);
     }
 
     function renderDoublePicTemplateCanvas(ctx, metrics) {
@@ -474,9 +478,7 @@
       }
 
       drawStoryEquipmentText(ctx, metrics);
-      if (hasStoryEquipmentLines(TEMPLATE_DEFINITIONS["double-pic"])) {
-        drawDoublePicCopyright(ctx, metrics);
-      }
+      drawDoublePicCopyright(ctx, metrics);
     }
 
     return {

@@ -159,7 +159,41 @@ def test_ec_legacy_author_and_gender():
     assert app.extract_ec_character(document) == {"race": "", "gender": "Female"}
 
 
-def test_link_import_can_be_disabled_without_removing_parsers():
+def test_link_import_accepts_risingstones_only():
+    parsed = {"resolved_equipment": [{"slot": "Body"}]}
+    with mock.patch.object(app, "LINK_IMPORT_ENABLED", True):
+        with mock.patch.object(
+            app,
+            "read_risingstones_details",
+            return_value={"details": [{"id": 274729}], "failures": []},
+        ):
+            with mock.patch.object(app, "parse_rs_glamour_payload", return_value=parsed):
+                with mock.patch.object(app, "get_mapping", return_value={}):
+                    with app.app.test_client() as client:
+                        response = client.post(
+                            "/api/import-glamour-link",
+                            json={"url": "https://ff14risingstones.web.sdo.com/pc/index.html#/glamour/detail/274729"},
+                        )
+                        assert response.status_code == 200
+                        assert response.get_json() == parsed
+                        assert b"templateImportLinkButton" in client.get("/template").data
+                        assert b"equipinfoLinkForm" in client.get("/equipinfo").data
+
+
+def test_link_import_rejects_eorzea_collection_without_fetching():
+    with mock.patch.object(app, "LINK_IMPORT_ENABLED", True):
+        with mock.patch.object(app, "fetch_ec_html") as fetch_ec_html:
+            with app.app.test_client() as client:
+                response = client.post(
+                    "/api/import-glamour-link",
+                    json={"url": EC_URL},
+                )
+                assert response.status_code == 400
+                assert response.get_json() == {"error": "只支持石之家幻化详情链接"}
+                fetch_ec_html.assert_not_called()
+
+
+def test_link_import_keeps_emergency_disable_switch():
     with mock.patch.object(app, "LINK_IMPORT_ENABLED", False):
         with app.app.test_client() as client:
             response = client.post(
@@ -179,6 +213,8 @@ test_risingstones_detail_id_forms()
 test_ec_legacy_equipment_layout()
 test_ec_legacy_accessory_slots()
 test_ec_legacy_author_and_gender()
-test_link_import_can_be_disabled_without_removing_parsers()
+test_link_import_accepts_risingstones_only()
+test_link_import_rejects_eorzea_collection_without_fetching()
+test_link_import_keeps_emergency_disable_switch()
 
 print("link import guards ok")

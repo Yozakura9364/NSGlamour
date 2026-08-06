@@ -54,7 +54,7 @@
 ## 验证建议
 
 - 加载 `/template`。
-- 导入真实石之家或 Eorzea Collection 数据。
+- 导入真实石之家数据，并确认 Eorzea Collection 链接被拒绝。
 - 切换多个模板。
 - 上传主图和头像图。
 - 调整裁剪。
